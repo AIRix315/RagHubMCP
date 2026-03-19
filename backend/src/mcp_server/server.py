@@ -65,7 +65,10 @@ def register_tools() -> None:
     This function imports and registers tools from the tools module.
     """
     from .tools.base import register_base_tools
+    from .tools.rerank import register_rerank_tools
+    
     register_base_tools(mcp)
+    register_rerank_tools(mcp)
 
 
 def main() -> None:
