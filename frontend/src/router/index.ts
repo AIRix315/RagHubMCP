@@ -23,6 +23,11 @@ const router = createRouter({
       name: 'benchmark',
       component: () => import('@/views/Benchmark.vue'),
     },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('@/views/Settings.vue'),
+    },
   ],
 })
 

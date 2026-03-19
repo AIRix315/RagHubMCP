@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { Home, Settings, Database, BarChart3 } from 'lucide-vue-next'
+import { Home, Settings, Database, BarChart3, SlidersHorizontal } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -42,6 +42,14 @@ import { Home, Settings, Database, BarChart3 } from 'lucide-vue-next'
         >
           <BarChart3 class="h-5 w-5" />
           效果对比
+        </RouterLink>
+        <RouterLink
+          to="/settings"
+          class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          active-class="bg-muted text-foreground"
+        >
+          <SlidersHorizontal class="h-5 w-5" />
+          系统设置
         </RouterLink>
       </nav>
     </aside>
