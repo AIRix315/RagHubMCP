@@ -504,7 +504,7 @@ TC-1.19.3: 前端构建成功 ✅
 - [x] 检查 CHANGELOG.md 记录完整
 - [x] 更新 TODO.md 标记 Phase 1.5 完成
 - [x] 记录 CHANGELOG.md 验收完成
-- [ ] Git 提交保存进度
+- [x] Git 提交保存进度 (6db96b7)
 
 **验收标准**:
 ```
