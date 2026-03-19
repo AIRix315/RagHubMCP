@@ -424,7 +424,7 @@ AC-1.16.5: README 包含快速开始指南 ✅
 TC-1.17.1: test_integration/ 目录存在 ✅
 TC-1.17.2: test_index_search.py 通过 ✅
 TC-1.17.3: test_mcp_api.py 通过 ✅
-TC-1.17.4: 所有测试通过 ✅ (270 tests)
+TC-1.17.4: 所有测试通过 ✅ (240 tests)
 ```
 
 **完成记录**: 2026-03-19 21:30

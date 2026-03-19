@@ -16,6 +16,23 @@
 
 ### Phase 1.5 进展
 
+#### 验证修复 (2026-03-19)
+
+- **时间**: 2026-03-19 21:50
+- **状态**: 完成
+- **问题**: MCP SDK 1.26.0 的 `call_tool` 返回格式为 `tuple(list[TextContent], dict)`
+- **修复**: 更正测试文件中的结果访问方式：`result[0].text` → `result[0][0].text`
+- **影响文件**:
+  - `tests/test_mcp_server/test_server.py`
+  - `tests/test_mcp_server/test_search_tool.py`
+  - `tests/test_mcp_server/test_rerank_tool.py`
+  - `tests/test_mcp_server/test_benchmark_tool.py`
+  - `tests/test_integration/test_mcp_api.py`
+  - `tests/test_integration/test_index_search.py`
+- **验证结果**:
+  - 后端测试: 240 passed ✅
+  - 前端测试: 8 passed ✅
+
 #### 1.20: Phase 1.5 验收 ✅
 
 - **时间**: 2026-03-19 22:20

@@ -173,8 +173,8 @@ def format_output(value: Any) -> str:
         
         # Step 3: Verify results
         import json
-        # result_json is a list of TextContent objects
-        result_data = json.loads(result_json[0].text)
+        # result_json is a tuple: (list[TextContent], dict)
+        result_data = json.loads(result_json[0][0].text)
         
         assert "results" in result_data
         assert result_data["count"] > 0

@@ -98,7 +98,7 @@ class TestSearchTool:
                 })
 
         # call_tool returns list[TextContent]
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         assert result_dict["count"] == 0
@@ -119,7 +119,7 @@ class TestSearchTool:
                     "rerank_top_k": 3,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         assert result_dict["count"] == 3
@@ -149,7 +149,7 @@ class TestSearchTool:
                     "rerank_top_k": 2,  # Request only top 2
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # Should return exactly 2 results
@@ -190,7 +190,7 @@ class TestSearchTool:
                     "rerank_top_k": 3,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # Each result should have a score
@@ -221,7 +221,7 @@ class TestSearchTool:
                     "rerank_top_k": 3,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # Results should be sorted by score descending
@@ -245,7 +245,7 @@ class TestSearchTool:
                     "rerank_top_k": 5,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         assert "error" in result_dict
@@ -271,7 +271,7 @@ class TestSearchTool:
             "rerank_top_k": 5,
         })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         assert "error" in result_dict
@@ -291,7 +291,7 @@ class TestSearchTool:
                     "rerank_top_k": 3,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         for item in result_dict["results"]:

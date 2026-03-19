@@ -60,7 +60,7 @@ class TestMCPAPIIntegration:
         async def test_ping():
             result = await mcp.call_tool("ping", {})
             # result is a list of TextContent objects
-            result_text = result[0].text
+            result_text = result[0][0].text
             return json.loads(result_text)
         
         ping_result = anyio.run(test_ping)
@@ -84,7 +84,7 @@ class TestMCPAPIIntegration:
         async def get_mcp_config():
             result = await mcp.call_tool("get_config", {})
             # result is a list of TextContent objects
-            result_text = result[0].text
+            result_text = result[0][0].text
             return json.loads(result_text)
         
         mcp_config = anyio.run(get_mcp_config)
@@ -148,7 +148,7 @@ class TestMCPAPIIntegration:
         })
         
         # result is a list of TextContent objects
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_data = json.loads(result_text)
         
         # Should return valid JSON with expected structure
