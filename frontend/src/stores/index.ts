@@ -13,8 +13,8 @@ export const useIndexStore = defineStore('index', () => {
 
   // WebSocket instance for real-time updates
   const {
-    isConnected: wsConnected,
-    progressData,
+    isConnected: _wsConnected,
+    progressData: _progressData,
     connect: wsConnect,
     disconnect: wsDisconnect,
   } = useWebSocket({

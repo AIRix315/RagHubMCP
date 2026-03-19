@@ -11,13 +11,58 @@
 
 ### 待开发
 
-- 统计仪表盘完善
-- 图表可视化
-- Qdrant迁移工具
+- Phase 3: 企业级功能
 
 ## [0.4.0] - 2026-03-19
 
 ### Phase 2 功能增强
+
+#### 2.4 迁移工具 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/utils/migrate.py`: VectorStoreMigrator核心类
+    - 支持 Chroma → Qdrant 迁移
+    - 批量处理、进度回调、数据完整性验证
+  - 创建 `src/mcp_server/tools/migrate.py`: MCP工具
+    - `migrate_vectorstore`: 迁移指定collections
+    - `list_vectorstore_collections`: 列出collections
+  - 创建 `src/cli/migrate.py`: 命令行工具
+    - 支持 `--dry-run`, `--collections`, `--batch-size` 等参数
+- **验证结果**: 14 tests passed ✅
+
+#### 2.3c 可视化图表 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 安装 chart.js + vue-chartjs (轻量级图表库)
+  - 创建 `frontend/src/components/charts/BenchmarkChart.vue`:
+    - 综合对比柱状图 (延迟/分数/结果数)
+    - 双Y轴设计
+  - 创建 `frontend/src/components/charts/LatencyChart.vue`:
+    - 延迟分析水平条形图
+    - 颜色编码指示快慢
+  - 更新 Benchmark.vue 添加 Tab 切换 (表格/图表)
+- **验证结果**: 13 tests passed ✅
+
+#### 2.3b 统计仪表盘 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `frontend/src/components/dashboard/StatsCard.vue`:
+    - 可复用统计卡片组件
+    - 支持图标、趋势、变体样式
+  - 创建 `frontend/src/components/dashboard/ProviderStatus.vue`:
+    - Provider状态展示组件
+  - 更新 `frontend/src/views/Home.vue`:
+    - Collection统计卡片 (总数、文档数、平均)
+    - 索引任务状态展示
+    - Provider配置状态
+  - 扩展 collection store 添加统计计算属性
+- **验证结果**: 14 tests passed ✅
 
 #### 2.5: 增量索引 ✅
 

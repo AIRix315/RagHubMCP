@@ -190,7 +190,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
   /**
    * Schedule a reconnection attempt
    */
-  function scheduleReconnect(taskId: string) {
+  function scheduleReconnect(_taskId: string) {
     if (reconnectTimer) {
       clearTimeout(reconnectTimer)
     }
