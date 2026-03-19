@@ -169,9 +169,9 @@
 **执行顺序**：
 ```
 Phase 1.5: MVP 完善
-├── 1.17 测试覆盖完善 → Git 备份
-├── 1.18 Provider 层补全 → Git 备份
-├── 1.19 前端完善 → Git 备份
+├── 1.17 测试覆盖完善 → Git 提交保存
+├── 1.18 Provider 层补全 → Git 提交保存
+├── 1.19 前端完善 → Git 提交保存
 └── 1.20 Phase 1.5 验收 → 进入 Phase 2
 ```
 
@@ -215,19 +215,7 @@ Phase 1.5: MVP 完善
 | 后端测试全部通过 | `pytest` | ≥250 tests |
 | 前端测试全部通过 | `npm run test` | ≥15 tests |
 | 效果对比功能可用 | 手动测试 | Ollama vs OpenAI 对比 |
-| Git 分支结构清晰 | `git branch -a` | main, dev, mvp/v0.2.x, mvp/v0.3.x |
 | CHANGELOG.md 更新完整 | 文档检查 | Phase 1.5 所有任务记录 |
-
-### 6.2 Git 分支规划
-
-```
-main
-├── mvp/v0.2.1     # 当前 MVP 保存点
-├── mvp/v0.2.2     # 1.17 测试覆盖完善后
-├── mvp/v0.3.0     # 1.18 Provider 层补全后
-├── mvp/v0.3.1     # 1.19 前端完善后
-└── dev            # 开发分支
-```
 
 ---
 
