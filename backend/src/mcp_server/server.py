@@ -66,9 +66,11 @@ def register_tools() -> None:
     """
     from .tools.base import register_base_tools
     from .tools.rerank import register_rerank_tools
+    from .tools.search import register_search_tools
     
     register_base_tools(mcp)
     register_rerank_tools(mcp)
+    register_search_tools(mcp)
 
 
 def main() -> None:
