@@ -1,0 +1,1 @@
+"""Check scripts package for RagHubMCP."""

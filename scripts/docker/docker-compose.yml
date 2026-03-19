@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: ../scripts/docker/Dockerfile.backend
+    container_name: raghub-backend
+    ports:
+      - "8818:8818"
+    volumes:
+      - raghub-data:/app/data
+      - raghub-logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8818/api/config"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: ../scripts/docker/Dockerfile.frontend
+    container_name: raghub-frontend
+    ports:
+      - "3315:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Optional: Chroma as a separate service
+  # chroma:
+  #   image: chromadb/chroma:latest
+  #   container_name: raghub-chroma
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - raghub-chroma:/chroma/chroma
+  #   restart: unless-stopped
+
+volumes:
+  raghub-data:
+  raghub-logs:
+  # raghub-chroma:

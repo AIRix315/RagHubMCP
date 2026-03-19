@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/user/RagHubMCP/main/schemas/config.schema.json",
+  "title": "RagHubMCP Deployment Configuration",
+  "description": "Configuration schema for RagHubMCP deployment scripts",
+  "type": "object",
+  "required": ["version", "paths", "ports", "database", "models"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Configuration file version",
+      "default": "1.0"
+    },
+    "paths": {
+      "type": "object",
+      "description": "Directory paths configuration",
+      "required": ["install_dir", "data_dir", "logs_dir", "docker_data_dir"],
+      "properties": {
+        "install_dir": {
+          "type": "string",
+          "description": "Installation directory",
+          "default": "~/RagHubMCP"
+        },
+        "data_dir": {
+          "type": "string",
+          "description": "Data storage directory",
+          "default": "~/RagHubMCP/data"
+        },
+        "logs_dir": {
+          "type": "string",
+          "description": "Log files directory",
+          "default": "~/RagHubMCP/logs"
+        },
+        "docker_data_dir": {
+          "type": "string",
+          "description": "Docker volumes directory",
+          "default": "~/RagHubMCP/docker-data"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ports": {
+      "type": "object",
+      "description": "Service ports configuration",
+      "required": ["backend", "frontend", "ollama", "qdrant"],
+      "properties": {
+        "backend": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Backend API server port",
+          "default": 8818
+        },
+        "frontend": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Frontend web server port",
+          "default": 3315
+        },
+        "ollama": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Ollama service port",
+          "default": 11434
+        },
+        "qdrant": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Qdrant service port",
+          "default": 6333
+        }
+      },
+      "additionalProperties": false
+    },
+    "database": {
+      "type": "object",
+      "description": "Database configuration",
+      "required": ["type", "persist_dir"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["chroma", "qdrant"],
+          "description": "Vector database type",
+          "default": "chroma"
+        },
+        "persist_dir": {
+          "type": "string",
+          "description": "Database persistence directory",
+          "default": "~/RagHubMCP/data/chroma"
+        }
+      },
+      "additionalProperties": false
+    },
+    "models": {
+      "type": "object",
+      "description": "Model configuration",
+      "required": ["mode", "embedding_model", "rerank_model"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["ollama", "api", "skip"],
+          "description": "Model serving mode",
+          "default": "ollama"
+        },
+        "embedding_model": {
+          "type": "string",
+          "description": "Embedding model name",
+          "default": "bge-m3",
+          "examples": ["bge-m3", "nomic-embed-text", "mxbai-embed-large"]
+        },
+        "rerank_model": {
+          "type": "string",
+          "description": "Rerank model name",
+          "default": "ms-marco-MiniLM-L-12-v2",
+          "examples": [
+            "ms-marco-TinyBERT-L-2-v2",
+            "ms-marco-MiniLM-L-12-v2",
+            "ms-marco-MultiBERT-L-12"
+          ]
+        },
+        "llm_model": {
+          "type": ["string", "null"],
+          "description": "LLM model name (optional)",
+          "default": null,
+          "examples": ["qwen2.5:7b", "llama3.1:8b"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
