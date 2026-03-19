@@ -89,7 +89,7 @@ class TestBenchmarkTool:
                 })
 
         # FastMCP returns (list[TextContent], dict)
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # Verify structure
@@ -121,7 +121,7 @@ class TestBenchmarkTool:
                     "configs": configs,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # Verify comparison table
@@ -171,7 +171,7 @@ class TestBenchmarkTool:
                     "configs": configs,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # Recall@3 = 2 relevant found in top 3 / 2 total relevant = 1.0
@@ -215,7 +215,7 @@ class TestBenchmarkTool:
                     "configs": configs,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # MRR = 1/1 = 1.0 (doc1 is at rank 1)
@@ -258,7 +258,7 @@ class TestBenchmarkTool:
                     "configs": configs,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         metrics = result_dict["results"][0]["metrics"]
@@ -330,7 +330,7 @@ class TestBenchmarkTool:
                     "configs": configs,
                 })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         # Best config should be config_a (MRR = 1.0)
@@ -348,7 +348,7 @@ class TestBenchmarkTool:
             "configs": [{"name": "test"}],
         })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         assert "error" in result_dict
@@ -372,7 +372,7 @@ class TestBenchmarkTool:
             "configs": [],  # Empty configs
         })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         assert "error" in result_dict
@@ -386,7 +386,7 @@ class TestBenchmarkTool:
             "configs": [{"name": "test"}],
         })
 
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
 
         assert "error" in result_dict

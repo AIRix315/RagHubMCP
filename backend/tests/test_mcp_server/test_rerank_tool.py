@@ -69,7 +69,7 @@ class TestRerankTool:
             })
         
         # Parse result - call_tool returns (list[TextContent], dict)
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         
         # Verify structure
@@ -94,7 +94,7 @@ class TestRerankTool:
                 "top_k": 2,
             })
         
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         
         # Verify each result has 'text' field
@@ -119,7 +119,7 @@ class TestRerankTool:
                 "top_k": 2,
             })
         
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         
         # Verify each result has 'score' field
@@ -152,7 +152,7 @@ class TestRerankTool:
                 "top_k": 2,
             })
         
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         
         # Verify only 2 results returned
@@ -175,7 +175,7 @@ class TestRerankTool:
             "top_k": 5,
         })
         
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         
         assert result_dict["count"] == 0
@@ -196,7 +196,7 @@ class TestRerankTool:
                 "top_k": 3,
             })
         
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         
         # Verify each result has 'index' field

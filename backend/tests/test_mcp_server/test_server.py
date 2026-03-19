@@ -104,7 +104,7 @@ class TestMCPServer:
         assert result is not None
         assert len(result) > 0
         # Result is a tuple: (list[TextContent], dict)
-        result_text = result[0].text
+        result_text = result[0][0].text
         assert "ok" in result_text.lower()
 
     @pytest.mark.anyio
@@ -145,7 +145,7 @@ class TestMCPServer:
         assert result is not None
         
         # Result is a list of TextContent objects
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         assert "reloaded" in result_dict.get("status", "").lower()
 
@@ -156,7 +156,7 @@ class TestMCPServer:
         register_tools()
         
         result = await mcp.call_tool("ping", {})
-        result_text = result[0].text
+        result_text = result[0][0].text
         result_dict = json.loads(result_text)
         
         assert result_dict.get("status") == "ok"
@@ -169,7 +169,7 @@ class TestMCPServer:
         register_tools()
         
         result = await mcp.call_tool("get_config", {})
-        result_text = result[0].text
+        result_text = result[0][0].text
         
         # Parse returned JSON
         config_dict = json.loads(result_text)
@@ -185,7 +185,7 @@ class TestMCPServer:
         register_tools()
         
         result = await mcp.call_tool("list_tools", {})
-        result_text = result[0].text
+        result_text = result[0][0].text
         
         tools = json.loads(result_text)
         assert isinstance(tools, list)
