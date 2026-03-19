@@ -13,8 +13,8 @@
 3. [关键问题清单](#三关键问题清单)
 4. [Phase 2 基础设施差距](#四phase-2-基础设施差距)
 5. [解决方案](#五解决方案)
-6. [Phase 1.5 任务规划](#六phase-15-任务规划)
-7. [验收标准](#七验收标准)
+6. [验收标准](#六验收标准)
+7. [附录](#七附录)
 
 ---
 
@@ -114,6 +114,13 @@
 | 6 | 增量索引缺失 | 每次全量索引浪费资源 | 🟡 重要 |
 | 7 | get_model_info() 接口缺失 | 无法获取模型元信息 | 🟡 重要 |
 
+### 3.3 一般问题（影响开发效率）
+
+| # | 问题 | 影响 | 状态 |
+|---|------|------|------|
+| 8 | benchmark.ts Store 缺失 | Benchmark 页面状态管理混乱 | 🟢 一般 |
+| 9 | 前端类型文件组织与文档不一致 | 开发者困惑 | 🟢 一般 |
+
 ---
 
 ## 四、Phase 2 基础设施差距
@@ -124,19 +131,40 @@
 |--------|---------|------|--------|
 | OpenAI Embedding Provider | ❌ 未实现 | 无法对比 OpenAI vs Ollama | **P0** |
 | HTTP Embedding Provider | ❌ 未实现 | 无法接入自定义模型 | **P0** |
+| TF-IDF 索引器 | ❌ 未实现 | 无法实现混合搜索 | P1 |
+| BM25 算法 | ❌ 未实现 | 无法实现混合搜索 | P1 |
 
-### 4.2 Web 控制台增强 (Phase 2.3) 阻塞项
+### 4.2 多语言 AST 切分 (Phase 2.2) 阻塞项
+
+| 缺失项 | 当前状态 | 影响 | 优先级 |
+|--------|---------|------|--------|
+| Tree-sitter 集成 | ❌ 未实现 | 无法实现 AST 切分 | P1 |
+| ChunkerRegistry | ✅ 已实现 | 可扩展插件架构就绪 | - |
+
+### 4.3 Web 控制台增强 (Phase 2.3) 阻塞项
 
 | 缺失项 | 当前状态 | 影响 | 优先级 |
 |--------|---------|------|--------|
 | Settings.vue 页面 | ❌ 未实现 | MCP 配置导出功能缺失 | **P0** |
 | benchmark.ts Store | ❌ 未实现 | Benchmark 状态管理缺失 | P1 |
+| 前端组件拆分 | ❌ 严重不足 | 扩展维护困难 | P1 |
+| WebSocket 支持 | ❌ 未实现 | 无法实时进度 | P2 |
+
+### 4.4 增量索引 (Phase 2.5) 阻塞项
+
+| 缺失项 | 当前状态 | 影响 | 优先级 |
+|--------|---------|------|--------|
+| 增量索引逻辑 | ❌ 未实现 | 每次全量索引 | P1 |
+| watchdog 监听 | ❌ 未实现 | 无实时同步 | P2 |
+| content_hash | ✅ 已实现 | 可扩展基础 | - |
 
 ---
 
 ## 五、解决方案
 
 ### 方案 A：渐进式完善（推荐）
+
+**优点**: 风险低，每阶段可验证，符合 MVP 迭代原则和 RULE.md "测试优先"原则
 
 **执行顺序**：
 ```
@@ -152,157 +180,35 @@ Phase 1.5: MVP 完善
 2. **降低回归风险**：先完善测试，再补充功能
 3. **便于验收**：每个阶段都有明确的测试验证点
 
----
+### 方案 B：并行开发
 
-## 六、Phase 1.5 任务规划
+**优点**: 速度快
 
-> **说明**: 本节内容将同步更新到 TODO.md，作为 Phase 1.16 之后的后续任务。
+**风险**: 测试覆盖不足，回归风险高
 
-### 1.17 测试覆盖完善
+**执行**：
+- 后端 Provider 补全
+- 前端 Settings 页面
+- 测试补充（可后置）
 
-**目标**: 建立完善的测试基础，支撑后续开发
+### 方案 C：最小修复
 
-**任务清单**:
+**优点**: 工作量最小
 
-| # | 任务 | 参考位置 | 产出 |
-|---|------|---------|------|
-| 1.17.1 | 创建 test_llm/ 目录结构 | 参考 `backend/tests/test_providers/` | 目录 + `__init__.py` |
-| 1.17.2 | 编写 test_llm_base.py | 参考 `backend/tests/test_providers/test_base.py` | LLM 基类测试用例 |
-| 1.17.3 | 编写 test_ollama_llm.py | 参考 `backend/tests/test_providers/test_ollama_embedding.py` | OllamaLLM 测试用例 |
-| 1.17.4 | 创建 test_integration/ 目录 | 新建目录 | 目录 + `__init__.py` |
-| 1.17.5 | 编写 test_index_search.py | 参考 `backend/tests/test_indexer/` | 索引→搜索集成测试 |
-| 1.17.6 | 编写 test_mcp_api.py | 参考 `backend/tests/test_mcp_server/` | MCP + API 联合测试 |
-| 1.17.7 | 扩充 test_services/ | 参考 `backend/tests/test_services/test_chroma_service.py` | Embedding/Rerank 服务测试 |
-| 1.17.8 | 运行全量测试验证 | `pytest --tb=short` | 测试报告 |
-| 1.17.9 | 更新 TODO.md | TODO.md | 标记完成 |
-| 1.17.10 | 更新 CHANGELOG.md | CHANGELOG.md | 记录完成 |
-| 1.17.11 | Git 提交和备份 | 创建分支 `mvp/v0.2.2` | Git 状态 |
-
-**测试用例**:
-```
-TC-1.17.1: test_llm/ 目录存在且非空
-TC-1.17.2: test_integration/ 目录存在且非空
-TC-1.17.3: 所有测试通过 (≥230 tests)
-TC-1.17.4: 覆盖率 ≥ 70%
-```
-
-**完成记录**: （待填写日期+时刻）
+**范围**：
+- 仅补充 LLM Provider (OllamaLLM)
+- 仅添加 Settings.vue
+- 测试后置
 
 ---
 
-### 1.18 Provider 层补全
-
-**目标**: 补齐缺失的 Provider 实现，实现核心价值"效果对比"
-
-**前置条件**: 1.17 测试覆盖完善完成
-
-**任务清单**:
-
-| # | 任务 | 参考位置 | 最佳实践参考 |
-|---|------|---------|-------------|
-| 1.18.1 | 实现 OpenAIEmbeddingProvider | `backend/src/providers/embedding/ollama.py` | Context7: OpenAI Embedding API |
-| 1.18.2 | 编写 test_openai_embedding.py | `backend/tests/test_providers/test_ollama_embedding.py` | - |
-| 1.18.3 | 实现 HTTPEmbeddingProvider | `backend/src/providers/embedding/ollama.py` | Context7: httpx async client |
-| 1.18.4 | 编写 test_http_embedding.py | 新建测试文件 | - |
-| 1.18.5 | 实现 OllamaLLMProvider | `backend/src/providers/llm/base.py` | Context7: Ollama API |
-| 1.18.6 | 编写 test_ollama_llm.py | 已在 1.17.3 创建 | - |
-| 1.18.7 | 实现 OpenAILLMProvider | `backend/src/providers/llm/base.py` | Context7: OpenAI Chat API |
-| 1.18.8 | 编写 test_openai_llm.py | 新建测试文件 | - |
-| 1.18.9 | 实现 CohereRerankProvider | `backend/src/providers/rerank/flashrank.py` | Context7: Cohere Rerank API |
-| 1.18.10 | 编写 test_cohere_rerank.py | `backend/tests/test_providers/test_flashrank.py` | - |
-| 1.18.11 | 实现 JinaRerankProvider | `backend/src/providers/rerank/flashrank.py` | Context7: Jina Rerank API |
-| 1.18.12 | 编写 test_jina_rerank.py | 新建测试文件 | - |
-| 1.18.13 | 添加 get_model_info() 接口 | `backend/src/providers/base.py` | - |
-| 1.18.14 | 更新 config.yaml 配置示例 | `backend/config.yaml` | - |
-| 1.18.15 | 运行全量测试验证 | `pytest --tb=short` | - |
-| 1.18.16 | 更新 TODO.md | TODO.md | 标记完成 |
-| 1.18.17 | 更新 CHANGELOG.md | CHANGELOG.md | 记录完成 |
-| 1.18.18 | Git 提交和备份 | 创建分支 `mvp/v0.3.0` | Git 状态 |
-
-**测试用例**:
-```
-TC-1.18.1: OpenAIEmbeddingProvider 可用
-TC-1.18.2: HTTPEmbeddingProvider 可用
-TC-1.18.3: OllamaLLMProvider 可用
-TC-1.18.4: OpenAILLMProvider 可用
-TC-1.18.5: CohereRerankProvider 可用
-TC-1.18.6: JinaRerankProvider 可用
-TC-1.18.7: get_model_info() 返回正确数据
-TC-1.18.8: 所有测试通过 (≥250 tests)
-```
-
-**完成记录**: （待填写日期+时刻）
+> **执行计划详见**: [TODO.md - Phase 1.5](../TODO.md#phase-15-mvp-完善)
 
 ---
 
-### 1.19 前端完善
+## 六、验收标准
 
-**目标**: 补齐前端缺失功能，完善用户界面
-
-**前置条件**: 1.18 Provider 层补全完成
-
-**任务清单**:
-
-| # | 任务 | 参考位置 | 最佳实践参考 |
-|---|------|---------|-------------|
-| 1.19.1 | 创建 Settings.vue 页面 | `frontend/src/views/Config.vue` | shadcn-vue 组件 |
-| 1.19.2 | 添加 Settings 路由 | `frontend/src/router/index.ts` | - |
-| 1.19.3 | 创建 benchmark.ts Store | `frontend/src/stores/config.ts` | Pinia 最佳实践 |
-| 1.19.4 | 更新 AppLayout.vue 导航 | `frontend/src/components/layout/AppLayout.vue` | - |
-| 1.19.5 | 前端测试补充 | `frontend/src/__tests__/` | Vitest |
-| 1.19.6 | 运行前端测试验证 | `npm run test` | - |
-| 1.19.7 | 前端构建验证 | `npm run build` | - |
-| 1.19.8 | 更新 TODO.md | TODO.md | 标记完成 |
-| 1.19.9 | 更新 CHANGELOG.md | CHANGELOG.md | 记录完成 |
-| 1.19.10 | Git 提交和备份 | 创建分支 `mvp/v0.3.1` | Git 状态 |
-
-**测试用例**:
-```
-TC-1.19.1: Settings 页面可访问
-TC-1.19.2: Settings 路由正常工作
-TC-1.19.3: benchmark.ts Store 正常工作
-TC-1.19.4: 前端构建成功
-TC-1.19.5: 前端测试通过 (≥15 tests)
-```
-
-**完成记录**: （待填写日期+时刻）
-
----
-
-### 1.20 Phase 1.5 验收
-
-**目标**: 全面验收 Phase 1.5 完成情况，准备进入 Phase 2
-
-**任务清单**:
-
-| # | 任务 | 参考位置 | 产出 |
-|---|------|---------|------|
-| 1.20.1 | 运行后端全量测试 | `pytest --tb=short` | 测试报告 |
-| 1.20.2 | 运行前端全量测试 | `npm run test` | 测试报告 |
-| 1.20.3 | 验证效果对比功能 | 手动测试 | 测试报告 |
-| 1.20.4 | 检查 Git 分支结构 | `git branch -a` | 分支清单 |
-| 1.20.5 | 检查 CHANGELOG.md | CHANGELOG.md | 记录完整 |
-| 1.20.6 | 更新 TODO.md | TODO.md | Phase 1.5 标记完成 |
-| 1.20.7 | 更新 CHANGELOG.md | CHANGELOG.md | 记录验收完成 |
-| 1.20.8 | Git 合并到 main | 合并 `mvp/v0.3.1` → `main` | Git 状态 |
-| 1.20.9 | 推送到远程 | `git push --all` | 远程同步 |
-
-**验收标准**:
-```
-AC-1.20.1: 后端测试全部通过 (≥250 tests)
-AC-1.20.2: 前端测试全部通过 (≥15 tests)
-AC-1.20.3: 效果对比功能可用（对比 Ollama vs OpenAI）
-AC-1.20.4: Git 分支结构清晰
-AC-1.20.5: CHANGELOG.md 更新完整
-```
-
-**完成记录**: （待填写日期+时刻）
-
----
-
-## 七、验收标准
-
-### 7.1 Phase 1.5 总体验收标准
+### 6.1 Phase 1.5 总体验收标准
 
 | 标准 | 验证方式 | 目标值 |
 |------|---------|--------|
@@ -312,7 +218,7 @@ AC-1.20.5: CHANGELOG.md 更新完整
 | Git 分支结构清晰 | `git branch -a` | main, dev, mvp/v0.2.x, mvp/v0.3.x |
 | CHANGELOG.md 更新完整 | 文档检查 | Phase 1.5 所有任务记录 |
 
-### 7.2 Git 分支规划
+### 6.2 Git 分支规划
 
 ```
 main
@@ -325,7 +231,7 @@ main
 
 ---
 
-## 附录
+## 七、附录
 
 ### A. Provider 实现参考
 
@@ -401,6 +307,6 @@ backend/tests/
 
 ---
 
-*本文档由 OpenCode AI 于 2026-03-19 生成，用于 RagHubMCP Phase 1.5 升级规划。*
+*本文档由 OpenCode AI 于 2026-03-19 生成，用于 RagHubMCP Phase 1.5 升级分析。*
 
 *执行原则：测试优先 → 实现代码 → 通过测试 → 更新 TODO → 记录 CHANGELOG → Git 保存*
