@@ -57,6 +57,48 @@
   - MCP Server 工具注册成功 (8 tools) ✅
   - 前端生产构建成功 ✅
 
+### Maintenance: 清理与文档更新
+
+- **时间**: 2026-03-19 19:05
+- **状态**: 完成
+- **内容**:
+
+  **临时文件清理**:
+  - 删除 `backend/temp_test_cache/` - 测试缓存目录
+  - 删除 `backend/.pytest_cache/` - pytest 缓存
+  - 删除根目录错误创建的 `frontend*/` 空文件夹 (14个)
+  - 删除错误创建的 `nul` 文件
+
+  **新增文档**:
+  - `Docs/05-MVP-Architecture_20260319.md` - MVP 实际架构说明
+    - 记录设计文档与实际实现的差异
+    - 列出已实现功能和测试覆盖
+    - Phase 2 规划
+
+### Git: MVP 分支创建
+
+- **时间**: 2026-03-19 19:10
+- **状态**: 完成
+- **提交记录** (4 commits):
+
+  | Hash | Message |
+  |------|---------|
+  | `b5ec220` | fix(backend): add src. prefix to import paths |
+  | `9c69490` | feat(frontend): add Vue 3 web console |
+  | `480a841` | docs: add MVP architecture document |
+  | `5e21490` | docs: update CHANGELOG for v0.2.1 bug fixes |
+
+- **分支创建**:
+  ```
+  * main            (当前分支, 19 commits ahead of origin/main)
+    mvp/v0.2.1      (MVP 保存点)
+  ```
+
+- **分支说明**:
+  - `mvp/v0.2.1` 保存完整 MVP 状态
+  - 包含所有测试通过的代码
+  - 可作为 Phase 2 开发的基准点
+
 ---
 
 ## [0.2.0] - 2026-03-19
