@@ -16,6 +16,24 @@
 
 ### Phase 1.5 进展
 
+#### 1.18: Provider 基础补全 ✅
+
+- **时间**: 2026-03-19 22:00
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/providers/embedding/http.py`: `HTTPEmbeddingProvider`
+    - 通用 HTTP Embedding Provider，支持所有 OpenAI-compatible APIs
+    - 支持: OpenAI、Azure OpenAI、LM Studio、LocalAI、vLLM 等
+    - 支持自定义 headers（适配 Azure OpenAI）
+    - 支持批量处理 (embed_batch)
+  - 创建 `tests/test_providers/test_http_embedding.py`: 11 个测试用例
+    - TC-1.18.1~4: 核心功能测试
+    - OpenAI API 格式验证
+  - 更新 `config.yaml`: 添加 HTTP Provider 配置示例
+- **验证结果**:
+  - HTTP Provider 测试: 11 passed ✅
+  - 全量测试: 281 passed ✅
+
 #### 1.17: 测试覆盖完善 ✅
 
 - **时间**: 2026-03-19 21:30

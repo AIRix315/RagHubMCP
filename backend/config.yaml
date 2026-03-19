@@ -28,6 +28,7 @@ providers:
   embedding:
     default: ollama-bge
     instances:
+    # Ollama local embedding providers
     - base_url: http://localhost:11434
       dimension: 1024
       model: bge-m3
@@ -38,6 +39,27 @@ providers:
       model: nomic-embed-text
       name: ollama-nomic
       type: ollama
+    # HTTP embedding providers (OpenAI-compatible APIs)
+    # Uncomment and configure as needed:
+    # - name: lmstudio-local
+    #   type: http
+    #   base_url: http://localhost:1234/v1
+    #   model: nomic-embed-text
+    #   dimension: 768
+    # - name: openai-small
+    #   type: http
+    #   base_url: https://api.openai.com/v1
+    #   model: text-embedding-3-small
+    #   dimension: 1536
+    #   api_key: ${OPENAI_API_KEY}
+    # - name: azure-openai
+    #   type: http
+    #   base_url: https://your-resource.openai.azure.com/openai/deployments/your-deployment
+    #   model: text-embedding-ada-002
+    #   dimension: 1536
+    #   api_key: ${AZURE_OPENAI_KEY}
+    #   headers:
+    #     api-key: ${AZURE_OPENAI_KEY}
   llm:
     default: ollama-qwen
     instances:

@@ -415,7 +415,7 @@ AC-1.16.5: README 包含快速开始指南 ✅
 - [x] 运行全量测试验证
 - [x] 更新 TODO.md 标记完成
 - [x] 记录 CHANGELOG.md
-- [ ] Git 提交保存进度
+- [x] Git 提交保存进度 (a590d0d)
 
 **参考位置**: `backend/tests/test_indexer/`, `backend/tests/test_mcp_server/`, `backend/tests/test_api/`
 
@@ -431,36 +431,36 @@ TC-1.17.4: 所有测试通过 ✅ (270 tests)
 
 ---
 
-### 1.18 Provider 基础补全
+### 1.18 Provider 基础补全 ✅
 
 **目标**: 补齐 HTTP Provider 基础设施
 
-**前置条件**: 1.17 完成
+**前置条件**: 1.17 完成 ✅
 
 **执行方式**: 测试优先 — 先写测试（失败）→ 实现 → 测试通过
 
-- [ ] 编写 test_http_embedding.py — 测试失败（未实现）
-- [ ] 实现 HTTPEmbeddingProvider — 通用 HTTP Embedding，支持所有兼容 OpenAI API 的服务
+- [x] 编写 test_http_embedding.py — 测试失败（未实现）
+- [x] 实现 HTTPEmbeddingProvider — 通用 HTTP Embedding，支持所有兼容 OpenAI API 的服务
   - 参考: `backend/src/providers/embedding/ollama.py`
   - Context7: `httpx async client`, `openai compatible api`
-- [ ] 测试通过
-- [ ] 更新 config.yaml 配置示例
-- [ ] 运行全量测试验证
-- [ ] 更新 TODO.md 标记完成
-- [ ] 记录 CHANGELOG.md
+- [x] 测试通过
+- [x] 更新 config.yaml 配置示例
+- [x] 运行全量测试验证
+- [x] 更新 TODO.md 标记完成
+- [x] 记录 CHANGELOG.md
 - [ ] Git 提交保存进度
 
 **参考位置**: `backend/src/providers/embedding/ollama.py`
 
 **测试用例**:
 ```
-TC-1.18.1: HTTPEmbeddingProvider 可实例化
-TC-1.18.2: embed_documents 返回正确维度
-TC-1.18.3: embed_query 返回正确维度
-TC-1.18.4: 配置驱动实例化成功
+TC-1.18.1: HTTPEmbeddingProvider 可实例化 ✅
+TC-1.18.2: embed_documents 返回正确维度 ✅
+TC-1.18.3: embed_query 返回正确维度 ✅
+TC-1.18.4: 配置驱动实例化成功 ✅
 ```
 
-**完成记录**: （待填写日期+时刻）
+**完成记录**: 2026-03-19 22:00
 
 ---
 
