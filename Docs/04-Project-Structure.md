@@ -144,10 +144,21 @@ RagHubMCP/
 │   ├── tsconfig.json
 │   └── index.html
 │
-├── docker/                           # Docker 配置
-│   ├── Dockerfile.backend            # 后端镜像
-│   ├── Dockerfile.frontend           # 前端镜像
-│   └── docker-compose.yaml           # 编排配置
+├── scripts/                          # 部署脚本
+│   ├── docker/                       # Docker 配置
+│   │   ├── Dockerfile.backend        # 后端镜像
+│   │   ├── Dockerfile.frontend       # 前端镜像
+│   │   ├── docker-compose.yaml       # 编排配置
+│   │   └── README.md                 # Docker部署说明
+│   ├── install/                      # 安装脚本
+│   │   ├── install.py                # 跨平台主脚本
+│   │   ├── install.sh                # Linux/Mac
+│   │   └── install.ps1               # Windows
+│   ├── check/                        # 环境检查
+│   │   └── check-env.py              # 环境检查脚本
+│   ├── config/                       # 配置生成
+│   │   └── generate-mcp-config.py    # MCP配置生成
+│   └── README.md                     # 脚本使用说明
 │
 ├── Docs/                             # 文档
 │   ├── 01-RagHubMCP_20260319.md      # 可行性分析

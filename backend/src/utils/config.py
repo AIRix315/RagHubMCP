@@ -23,7 +23,7 @@ class ServerConfig:
         debug: Enable debug mode.
     """
     host: str = "0.0.0.0"
-    port: int = 8000
+    port: int = 8818
     debug: bool = True
 
 
@@ -200,7 +200,7 @@ def _parse_config(data: dict[str, Any]) -> Config:
     server_data = data.get("server", {})
     server_config = ServerConfig(
         host=server_data.get("host", "0.0.0.0"),
-        port=server_data.get("port", 8000),
+        port=server_data.get("port", 8818),
         debug=server_data.get("debug", True)
     )
     

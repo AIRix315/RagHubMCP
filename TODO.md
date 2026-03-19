@@ -737,3 +737,340 @@ dev = [
 ---
 
 *项目结构详见: Docs/04-Project-Structure_20260319.md*
+
+---
+
+## Phase 4: 部署体验优化
+
+**阶段目标**: 建立完整的部署脚本体系，支持四层部署架构，实现AI自主部署
+
+**核心原则**: 
+1. **每个脚本独立运作** - 可单独运行，有自己的 `--help`
+2. **先手动跑通，后集成菜单** - 菜单是最后的手段
+3. **统一配置文件** - `~/.config/RagHubMCP/config.json` 集中管理
+
+**配置文件位置**:
+- Windows: `%USERPROFILE%\.config\RagHubMCP\config.json`
+- macOS/Linux: `~/.config/RagHubMCP/config.json`
+
+---
+
+### 4.1 配置系统初始化
+
+**前置条件**: 无
+
+**目标**: 建立统一的配置文件系统
+
+**任务**:
+- [ ] 创建 `schemas/config.schema.json` (JSON Schema)
+- [ ] 创建 `scripts/config/init-config.py`
+  - [ ] 交互式选择安装目录
+  - [ ] 生成默认 `config.json`
+  - [ ] 支持 `--dry-run` 预览配置
+- [ ] 创建配置读取工具 `scripts/lib/config.py`
+  - [ ] 跨平台路径解析
+  - [ ] 配置验证
+  - [ ] 默认值填充
+- [ ] 编写测试用例（5个测试）
+- [ ] Git 提交保存进度
+
+**测试用例**:
+```
+TC-4.1.1: 配置文件生成正确
+TC-4.1.2: JSON Schema验证通过
+TC-4.1.3: 跨平台路径解析正确
+TC-4.1.4: 默认值填充正确
+TC-4.1.5: 配置读取正确
+```
+
+**完成记录**: 待完成
+
+---
+
+### 4.2 环境检查脚本
+
+**前置条件**: 4.1 完成
+
+**目标**: 独立的环境检查脚本，读取配置并输出报告
+
+**任务**:
+- [ ] 创建 `scripts/check/check-env.py`
+  - [ ] 读取配置文件
+  - [ ] Python版本检查（>=3.11）
+  - [ ] Node.js版本检查（>=18）
+  - [ ] Git环境检查
+  - [ ] Docker环境检查
+  - [ ] Ollama环境检查（服务状态 + 模型列表）
+  - [ ] 数据库检测（Chroma/Qdrant）
+  - [ ] 端口占用检测
+  - [ ] 硬件资源评估
+  - [ ] 输出环境报告
+  - [ ] 智能推荐部署方式
+- [ ] 支持 `--json` 输出格式
+- [ ] 支持 `--fix` 自动修复建议
+- [ ] 编写测试用例（10个测试）
+- [ ] Git 提交保存进度
+
+**测试用例**:
+```
+TC-4.2.1: Python版本检测正确
+TC-4.2.2: Node.js版本检测正确
+TC-4.2.3: Docker可用性检测
+TC-4.2.4: Ollama可用性检测
+TC-4.2.5: Chroma本地检测
+TC-4.2.6: Qdrant服务检测
+TC-4.2.7: 端口占用检测正确
+TC-4.2.8: 硬件资源检测准确
+TC-4.2.9: JSON输出格式正确
+TC-4.2.10: 跨平台兼容
+```
+
+**完成记录**: 待完成
+
+---
+
+---
+
+### 4.3 组件安装脚本（独立）
+
+**前置条件**: 4.1 完成
+
+**目标**: 每个脚本独立运行，读取配置文件
+
+**任务**:
+
+**4.3.1 Ollama安装**:
+- [ ] 创建 `scripts/setup/setup-ollama.py`
+  - [ ] 读取配置：`models.ollama_models_dir`
+  - [ ] 检测操作系统
+  - [ ] 自动下载安装（调用官方脚本）
+  - [ ] 启动服务
+  - [ ] 验证服务运行（端口 `ports.ollama`）
+  - [ ] 支持 `--check` 仅检测
+  - [ ] 支持 `--start` 启动服务
+
+**4.3.2 Qdrant安装**:
+- [ ] 创建 `scripts/setup/setup-qdrant.py`
+  - [ ] 读取配置：`database.qdrant_persist_dir`, `ports.qdrant`
+  - [ ] Docker方式安装（优先）
+  - [ ] 本地二进制安装（备选）
+  - [ ] 启动服务
+  - [ ] 验证服务运行
+
+**4.3.3 Chroma安装**:
+- [ ] 创建 `scripts/setup/setup-chroma.py`
+  - [ ] 读取配置：`database.persist_dir`
+  - [ ] pip安装chromadb
+  - [ ] 创建数据目录
+  - [ ] 验证可用性
+
+- [ ] 编写测试用例（12个测试）
+- [ ] Git 提交保存进度
+
+**测试用例**:
+```
+TC-4.3.1: Ollama检测正确
+TC-4.3.2: Ollama安装成功
+TC-4.3.3: Ollama服务启动正确
+TC-4.3.4: Qdrant Docker安装成功
+TC-4.3.5: Qdrant服务启动正确
+TC-4.3.6: Chroma安装成功
+TC-4.3.7: Chroma目录创建正确
+TC-4.3.8: 配置路径读取正确
+TC-4.3.9: 已安装检测正确
+TC-4.3.10: 服务状态验证正确
+TC-4.3.11: 安装失败提示友好
+TC-4.3.12: 跨平台兼容
+```
+
+**完成记录**: 待完成
+
+---
+
+### 4.4 MCP配置生成器（独立）
+
+**前置条件**: 4.1 完成
+
+**目标**: 独立生成MCP配置文件
+
+**任务**:
+- [ ] 创建 `scripts/config/generate-mcp-config.py`
+  - [ ] 读取配置文件
+  - [ ] Claude Desktop配置
+  - [ ] Cursor配置
+  - [ ] Windsurf配置
+  - [ ] VS Code配置
+  - [ ] OpenCode配置
+  - [ ] CherryStudio配置
+- [ ] 创建配置模板目录 `scripts/config/templates/`
+- [ ] 支持Docker模式配置
+- [ ] 支持原生模式配置
+- [ ] 支持 `--ide` 指定IDE
+- [ ] 支持 `--print` 打印到终端
+- [ ] 支持 `--write` 写入文件
+- [ ] 编写测试用例（8个测试）
+- [ ] Git 提交保存进度
+
+**测试用例**:
+```
+TC-4.4.1: Claude配置生成正确
+TC-4.4.2: Cursor配置生成正确
+TC-4.4.3: OpenCode配置生成正确
+TC-4.4.4: CherryStudio配置生成正确
+TC-4.4.5: Docker模式配置正确
+TC-4.4.6: 原生模式配置正确
+TC-4.4.7: 路径自动检测正确
+TC-4.4.8: 配置JSON格式有效
+```
+
+**完成记录**: 待完成
+
+---
+
+### 4.5 Docker配置（独立）
+
+**前置条件**: 4.1 完成
+
+**目标**: Docker部署配置，读取配置文件设置路径
+
+**任务**:
+- [ ] 创建 `scripts/docker/Dockerfile.backend`
+- [ ] 创建 `scripts/docker/Dockerfile.frontend`
+- [ ] 创建 `scripts/docker/docker-compose.yml`
+  - [ ] 读取 `config.json` 中的路径配置
+  - [ ] 数据持久化到配置目录
+- [ ] 创建 `scripts/docker/docker-compose.dev.yml`
+- [ ] 创建 `scripts/docker/docker-compose.prod.yml`
+- [ ] 创建 `.env.docker` 模板
+- [ ] 编写测试用例（6个测试）
+- [ ] Git 提交保存进度
+
+**测试用例**:
+```
+TC-4.5.1: Docker镜像构建成功
+TC-4.5.2: 容器启动成功
+TC-4.5.3: 服务健康检查通过
+TC-4.5.4: 数据持久化正常
+TC-4.5.5: 配置路径挂载正确
+TC-4.5.6: 端口映射正确
+```
+
+**完成记录**: 待完成
+
+---
+
+### 4.6 一键安装脚本（集成）
+
+**前置条件**: 4.2-4.5 完成
+
+**目标**: 集成所有独立脚本的安装入口
+
+**任务**:
+- [ ] 创建 `scripts/install/install.py`
+  - [ ] 调用 `check-env.py` 检测环境
+  - [ ] 根据检测结果调用对应的 `setup-*.py`
+  - [ ] 调用 `generate-mcp-config.py` 生成MCP配置
+  - [ ] 输出安装报告
+- [ ] 支持 `--mode docker|native|manual`
+- [ ] 支持 `--skip-mcp` 跳过MCP配置
+- [ ] 支持 `--dry-run` 预览安装步骤
+- [ ] 编写测试用例（8个测试）
+- [ ] Git 提交保存进度
+
+**测试用例**:
+```
+TC-4.6.1: 环境检测调用正确
+TC-4.6.2: 组件安装调用正确
+TC-4.6.3: MCP配置生成正确
+TC-4.6.4: 安装报告输出正确
+TC-4.6.5: Docker模式正确
+TC-4.6.6: 原生模式正确
+TC-4.6.7: dry-run模式正确
+TC-4.6.8: 跨平台兼容
+```
+
+**完成记录**: 待完成
+
+---
+
+### 4.7 交互菜单（可选）
+
+**前置条件**: 4.6 完成
+
+**目标**: 提供交互式安装向导（最后的手段）
+
+**任务**:
+- [ ] 完善原型 `scripts/prototype_menu.py`
+  - [ ] 实现真实环境检测
+  - [ ] 集成各独立脚本
+- [ ] 重命名为 `scripts/install/install-wizard.py`
+- [ ] 编写测试用例（5个测试）
+- [ ] Git 提交保存进度
+
+**测试用例**:
+```
+TC-4.7.1: Windows菜单交互正常
+TC-4.7.2: Linux菜单交互正常
+TC-4.7.3: Mac菜单交互正常
+TC-4.7.4: 脚本调用正确
+TC-4.7.5: 配置读取正确
+```
+
+**完成记录**: 待完成
+
+---
+
+### 4.8 AI自主部署指南
+
+**前置条件**: 4.6 完成
+
+**目标**: 创建AI Agent部署指南
+
+**任务**:
+- [ ] 创建 `scripts/AI_DEPLOYMENT_GUIDE.md`
+- [ ] 更新 `Docs/07-RaghubMCP-Install.md`
+- [ ] Git 提交保存进度
+
+**完成记录**: 待完成
+
+---
+
+### 4.9 Phase 4 验收
+
+**前置条件**: 4.1-4.8 全部完成
+
+**任务**:
+- [ ] 运行全量测试
+- [ ] 跨平台测试（Win/Mac/Linux）
+- [ ] AI自主部署测试
+- [ ] 文档完整性检查
+- [ ] 更新 CHANGELOG.md
+- [ ] Git 提交保存进度
+
+**完成记录**: 待完成
+
+---
+
+## Phase 4 完成总结
+
+**配置文件**: `~/.config/RagHubMCP/config.json`
+
+**独立脚本**（可单独运行）:
+- `scripts/config/init-config.py` - 初始化配置
+- `scripts/check/check-env.py` - 环境检查
+- `scripts/setup/setup-ollama.py` - 安装Ollama
+- `scripts/setup/setup-qdrant.py` - 安装Qdrant
+- `scripts/setup/setup-chroma.py` - 安装Chroma
+- `scripts/config/generate-mcp-config.py` - 生成MCP配置
+
+**集成脚本**:
+- `scripts/install/install.py` - 一键安装
+- `scripts/install/install-wizard.py` - 交互向导（可选）
+
+**核心价值**:
+- 每个脚本独立运作，可单独运行
+- 统一配置文件管理所有路径和端口
+- 用户可自定义安装位置
+- 支持AI Agent自主部署
+
+---

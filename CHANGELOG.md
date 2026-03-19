@@ -9,9 +9,50 @@
 
 ## [Unreleased]
 
-### 待开发
+### 规划
 
-- 持续优化和bug修复
+- Phase 4: 部署体验优化
+
+### 变更 (2026-03-20)
+
+#### 端口调整
+
+- 后端 API 端口: 8000 → **8818**
+- 前端 Web 端口: 5173 → **3315**
+- WebSocket 端口同步更新
+
+**涉及文件**:
+- `backend/config.yaml`: `server.port: 8818`
+- `backend/.env.example`: `APP_PORT=8818`
+- `backend/src/utils/config.py`: 默认端口 8818
+- `frontend/vite.config.ts`: `port: 3315`, proxy target `localhost:8818`
+- `frontend/.env.example`: `VITE_API_BASE_URL=http://localhost:8818/api`
+- `frontend/src/composables/useWebSocket.ts`: `ws://localhost:8818`
+
+#### 文档更新
+
+- `Docs/07-RaghubMCP-Install.md`: 
+  - 更新所有端口引用
+  - 更新脚本路径 (`scripts/check-env.py` → `scripts/check/check-env.py`)
+  - 新增配置文件说明 (`~/.config/RagHubMCP/config.json`)
+
+#### TODO.md Phase 4 重构
+
+- 新增 4.1 配置系统初始化
+- 调整任务顺序：独立脚本在前，集成脚本在后
+- 新增统一配置文件设计：
+  - 位置: `~/.config/RagHubMCP/config.json`
+  - JSON Schema 支持 (`$schema` 字段)
+  - 跨平台路径解析
+
+#### 原型脚本
+
+- 创建 `scripts/prototype_menu.py`: 交互式安装向导原型
+  - 跨平台键盘输入支持
+  - 历史累积显示
+  - 端口冲突检测
+
+---
 
 ## [0.5.0] - 2026-03-20
 

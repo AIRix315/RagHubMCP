@@ -58,7 +58,7 @@ export interface UseWebSocketReturn {
 }
 
 const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || 
-  (import.meta.env.PROD ? 'wss://' + window.location.host : 'ws://localhost:8000')
+  (import.meta.env.PROD ? 'wss://' + window.location.host : 'ws://localhost:8818')
 
 /**
  * Composable for WebSocket-based real-time progress updates.
