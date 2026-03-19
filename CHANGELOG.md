@@ -11,13 +11,29 @@
 
 ### 待开发
 
-- FlashRank Rerank 集成
 - Web 控制台
 - 效果对比仪表盘
 
 ---
 
 ## [0.1.0] - 2026-03-19
+
+### 1.4: FlashRank Rerank 实现 ✅
+
+- **时间**: 2026-03-19 10:30
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/providers/rerank/flashrank.py`:
+    - `FlashRankRerankProvider` 类，继承 `BaseRerankProvider`
+    - 支持多种模型: TinyBERT (4MB), MiniLM (34MB), MultiBERT (150MB)
+    - 类级别单例缓存，避免重复加载模型
+    - 装饰器自动注册到 registry
+  - 模型缓存机制:
+    - 自动下载到 `./data/flashrank_cache/`
+    - 相同配置复用 Ranker 实例
+  - 创建测试套件 `tests/test_providers/test_flashrank.py`:
+    - 13 个测试用例覆盖全部 TC-1.4.1 ~ TC-1.4.7
+- **测试**: TC-1.4.1 ~ TC-1.4.7 全部通过 (13 个测试用例，总计 61 个测试)
 
 ### 1.3: Provider 抽象层 ✅
 

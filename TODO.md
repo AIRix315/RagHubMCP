@@ -108,23 +108,25 @@ TC-1.3.4: 不支持的 provider 类型抛出明确异常 ✅
 
 ---
 
-### 1.4 FlashRank Rerank 实现
+### 1.4 FlashRank Rerank 实现 ✅
 
-- [ ] 实现 FlashRankRerankProvider
-- [ ] 支持模型选择 (TinyBERT/MiniLM/MultiBERT)
-- [ ] 实现 rerank 接口
-- [ ] 添加模型缓存机制
+- [x] 实现 FlashRankRerankProvider
+- [x] 支持模型选择 (TinyBERT/MiniLM/MultiBERT)
+- [x] 实现 rerank 接口
+- [x] 添加模型缓存机制
 
-**测试用例**:
+**测试用例**: ✅ 全部通过
 ```
-TC-1.4.1: 模型首次加载成功
-TC-1.4.2: 模型缓存命中，二次调用更快
-TC-1.4.3: rerank 返回正确排序结果
-TC-1.4.4: rerank 返回 score 在有效范围 [0, 1]
-TC-1.4.5: 空文档列表返回空结果
-TC-1.4.6: 单文档返回正确结果
-TC-1.4.7: 不同模型切换成功
+TC-1.4.1: 模型首次加载成功 ✅
+TC-1.4.2: 模型缓存命中，二次调用更快 ✅
+TC-1.4.3: rerank 返回正确排序结果 ✅
+TC-1.4.4: rerank 返回 score 在有效范围 [0, 1] ✅
+TC-1.4.5: 空文档列表返回空结果 ✅
+TC-1.4.6: 单文档返回正确结果 ✅
+TC-1.4.7: 不同模型切换成功 ✅
 ```
+
+**完成时间**: 2026-03-19 10:30
 
 ---
 
