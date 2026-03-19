@@ -518,8 +518,8 @@ TC-1.19.5: 前端测试通过 (≥15 tests)
 - [ ] 检查 CHANGELOG.md 记录完整
 - [ ] 更新 TODO.md 标记 Phase 1.5 完成
 - [ ] 记录 CHANGELOG.md 验收完成
-- [ ] Git 合并到 main — 合并 mvp/v0.3.1 → main
-- [ ] 推送到远程 — `git push --all`
+- [ ] Git 提交保存点
+- [ ] **等待用户确认是否合并到 main**
 
 **验收标准**:
 ```
