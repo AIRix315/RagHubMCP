@@ -68,7 +68,7 @@ class TestRerankTool:
                 "top_k": 3,
             })
         
-        # Parse result - call_tool returns list[TextContent] directly
+        # Parse result - call_tool returns (list[TextContent], dict)
         result_text = result[0].text
         result_dict = json.loads(result_text)
         

@@ -103,7 +103,7 @@ class TestMCPServer:
         result = await mcp.call_tool("ping", {})
         assert result is not None
         assert len(result) > 0
-        # Result is a list of TextContent objects
+        # Result is a tuple: (list[TextContent], dict)
         result_text = result[0].text
         assert "ok" in result_text.lower()
 
