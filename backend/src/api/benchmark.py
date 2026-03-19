@@ -13,7 +13,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from utils.config import get_config
+from src.utils.config import get_config
 
 from .schemas import (
     BenchmarkConfig,

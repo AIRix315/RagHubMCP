@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 from fastapi import APIRouter, HTTPException
 
-from utils.config import (
+from src.utils.config import (
     Config,
     config_to_dict,
     get_config,

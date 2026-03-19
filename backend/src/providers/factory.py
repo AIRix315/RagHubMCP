@@ -12,7 +12,7 @@ import hashlib
 import json
 from typing import Any
 
-from utils.config import get_config
+from src.utils.config import get_config
 
 from .base import (
     ProviderCategory,

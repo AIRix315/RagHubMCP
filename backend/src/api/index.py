@@ -13,7 +13,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
-from utils.config import get_config
+from src.utils.config import get_config
 
 from .schemas import (
     ErrorResponse,

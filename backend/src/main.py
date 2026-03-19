@@ -18,8 +18,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from api.router import api_router
-from utils.config import get_config, load_config
+from src.api.router import api_router
+from src.utils.config import get_config, load_config
 
 # Configure logging
 logging.basicConfig(
@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize providers (warm up)
     try:
-        from providers.factory import factory
+        from src.providers.factory import factory
         config = get_config()
 
         # Pre-load default providers
