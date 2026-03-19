@@ -234,26 +234,21 @@ Phase 1.5: MVP 完善
 
 ### B. 测试用例补充清单
 
-**必须补充**：
+**必须补充（1.17 任务）**：
 ```
 backend/tests/
-├── test_llm/
-│   ├── __init__.py
-│   ├── test_base.py           # LLM 基类测试
-│   └── test_ollama_llm.py     # Ollama LLM 测试
-│
 └── test_integration/
     ├── __init__.py
     ├── test_index_search.py   # 索引→搜索流程
     └── test_mcp_api.py        # MCP + API 联合
 ```
 
-**建议补充**：
+**1.18 任务（TDD 方式）**：
 ```
 backend/tests/
-├── test_services/
-│   ├── test_embedding_service.py
-│   └── test_rerank_service.py
+├── test_llm/
+│   ├── __init__.py
+│   └── test_ollama_llm.py     # Ollama LLM 测试
 │
 └── test_providers/
     ├── test_openai_embedding.py
@@ -262,6 +257,8 @@ backend/tests/
     ├── test_cohere_rerank.py
     └── test_jina_rerank.py
 ```
+
+**注意**: `test_llm/test_base.py` 已存在于 `test_providers/test_base.py` 中
 
 ### C. CHANGELOG 记录模板
 
