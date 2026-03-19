@@ -16,6 +16,24 @@
 
 ### Phase 1.5 进展
 
+#### 1.20: Phase 1.5 验收 ✅
+
+- **时间**: 2026-03-19 22:20
+- **状态**: 完成
+- **验收结果**:
+  - 后端测试: 281 passed ✅
+  - 前端测试: 8 passed ✅
+  - HTTPEmbeddingProvider: 可用 ✅
+  - Settings 页面: 可访问 ✅
+  - CHANGELOG.md: 更新完整 ✅
+
+**Phase 1.5 完成总结**:
+- 新增集成测试目录 test_integration/ (18 tests)
+- 新增 HTTPEmbeddingProvider 支持 OpenAI 兼容 API
+- 新增 Settings 页面支持 MCP 配置导出
+- 修复 MCP 测试 API 兼容性问题
+- 总测试数: 270 → 281
+
 #### 1.19: 前端基础补全 ✅
 
 - **时间**: 2026-03-19 22:15

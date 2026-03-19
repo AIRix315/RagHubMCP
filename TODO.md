@@ -477,9 +477,7 @@ TC-1.18.4: 配置驱动实例化成功 ✅
 - [x] 前端构建验证 — `npm run build`
 - [x] 更新 TODO.md 标记完成
 - [x] 记录 CHANGELOG.md
-- [ ] Git 提交保存进度
-
-**Settings.vue 功能**:
+- [x] Git 提交保存进度 (f9b00ff)
 - MCP 配置导出
 - 系统信息展示
 
@@ -494,33 +492,30 @@ TC-1.19.3: 前端构建成功 ✅
 
 ---
 
-### 1.20 Phase 1.5 验收
+### 1.20 Phase 1.5 验收 ✅
 
 **目标**: 全面验收，准备进入 Phase 2
 
-**前置条件**: 1.17-1.19 全部完成
+**前置条件**: 1.17-1.19 全部完成 ✅
 
-- [ ] 运行后端全量测试 — `pytest --tb=short`
-- [ ] 运行前端全量测试 — `npm run test`
-- [ ] 验证 HTTP Provider 功能 — 手动测试兼容 API
-- [ ] 检查 CHANGELOG.md 记录完整
-- [ ] 更新 TODO.md 标记 Phase 1.5 完成
-- [ ] 记录 CHANGELOG.md 验收完成
+- [x] 运行后端全量测试 — `pytest --tb=short`
+- [x] 运行前端全量测试 — `npm run test`
+- [x] 验证 HTTP Provider 功能 — 手动测试兼容 API
+- [x] 检查 CHANGELOG.md 记录完整
+- [x] 更新 TODO.md 标记 Phase 1.5 完成
+- [x] 记录 CHANGELOG.md 验收完成
 - [ ] Git 提交保存进度
 
 **验收标准**:
 ```
-AC-1.20.1: 后端测试全部通过
-AC-1.20.2: 前端测试全部通过
-AC-1.20.3: HTTPEmbeddingProvider 可用
-AC-1.20.4: Settings 页面可访问
-AC-1.20.5: CHANGELOG.md 更新完整
+AC-1.20.1: 后端测试全部通过 ✅ (281 tests)
+AC-1.20.2: 前端测试全部通过 ✅ (8 tests)
+AC-1.20.3: HTTPEmbeddingProvider 可用 ✅
+AC-1.20.4: Settings 页面可访问 ✅
+AC-1.20.5: CHANGELOG.md 更新完整 ✅
 ```
 
-**完成记录**: （待填写日期+时刻）
-```
-
-**完成记录**: （待填写日期+时刻）
+**完成记录**: 2026-03-19 22:20
 
 ---
 
