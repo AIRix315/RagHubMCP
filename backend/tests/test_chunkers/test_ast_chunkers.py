@@ -16,24 +16,6 @@ import pytest
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-# Check if tree-sitter is available
-TREE_SITTER_AVAILABLE = False
-try:
-    import tree_sitter
-    import tree_sitter_python
-    import tree_sitter_typescript
-    import tree_sitter_go
-    TREE_SITTER_AVAILABLE = True
-except ImportError:
-    pass
-
-
-# Skip all tests in this module if tree-sitter is not available
-pytestmark = pytest.mark.skipif(
-    not TREE_SITTER_AVAILABLE,
-    reason="tree-sitter not installed. Install with: pip install raghub-mcp[ast]"
-)
-
 
 class TestPythonASTChunker:
     """TC-2.2.1: PythonASTChunker 按函数/类切分"""

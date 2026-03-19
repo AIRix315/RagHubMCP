@@ -32,6 +32,10 @@ def create_mock_embedding():
 class MockEmbeddingFunction:
     """ChromaDB-compatible mock embedding function."""
     
+    # ChromaDB required attributes
+    default_space = "cosine"
+    supported_spaces = ["cosine", "l2", "ip"]
+    
     def __call__(self, input: list[str]) -> list[list[float]]:
         """Embed a list of texts."""
         return [[0.1] * 768 for _ in input]
@@ -39,6 +43,10 @@ class MockEmbeddingFunction:
     def name(self) -> str:
         """Return the embedding function name."""
         return "mock_embedding"
+    
+    def is_legacy(self) -> bool:
+        """Return whether this is a legacy embedding function."""
+        return False
 
 
 def create_mock_embedding_function():
@@ -257,27 +265,33 @@ class TestChromaProviderDocumentOps:
         finally:
             gc.collect()
     
-    @pytest.mark.skip(reason="Mock embedding dimension mismatch - works in real environment")
     def test_update_documents(self):
         """Test updating documents."""
         from providers.vectorstore.chroma import ChromaProvider
         
         tmpdir = tempfile.mkdtemp()
         try:
-            with patch('src.services.chroma_service._get_embedding_function', return_value=create_mock_embedding_function()):
+            # Create mock embedding with consistent dimension
+            mock_embedding = create_mock_embedding_function()
+            
+            with patch('src.services.chroma_service._get_embedding_function', return_value=mock_embedding):
                 provider = ChromaProvider(persist_dir=tmpdir)
                 provider.create_collection("update_test")
                 
+                # Add with same mock embedding
                 provider.add(
                     collection="update_test",
                     documents=["original"],
                     ids=["id1"],
                 )
                 
+                # Update - use pre-computed embeddings to avoid dimension mismatch
+                mock_emb = mock_embedding(["updated"])[0]
                 provider.update(
                     collection="update_test",
                     ids=["id1"],
                     documents=["updated"],
+                    embeddings=[mock_emb],
                 )
                 
                 results = provider.get(

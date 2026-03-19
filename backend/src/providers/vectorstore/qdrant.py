@@ -9,12 +9,16 @@ Features:
 - Remote mode: Connect to Qdrant server or Qdrant Cloud
 - gRPC support for faster uploads
 - Metadata filtering with Qdrant filter syntax
+
+ID Requirements:
+- Qdrant supports two ID types: 64-bit unsigned integers or UUID strings
+- Non-UUID string IDs are NOT supported by Qdrant
+- If you need custom string IDs, store them in payload and use integer/UUID as point ID
 """
 
 from __future__ import annotations
 
 import logging
-import uuid
 from typing import Any
 
 from ..base import ProviderCategory
@@ -227,7 +231,7 @@ class QdrantProvider(BaseVectorStoreProvider):
             embedding_provider = self._get_embedding_provider()
             embeddings = embedding_provider.embed_documents(documents)
         
-        # Build points
+        # Build points - Qdrant requires integer or UUID format IDs
         points = []
         for i, (doc_id, doc, emb) in enumerate(zip(ids, documents, embeddings)):
             payload = {"document": doc}
@@ -235,7 +239,7 @@ class QdrantProvider(BaseVectorStoreProvider):
                 payload.update(metadatas[i])
             
             points.append(models.PointStruct(
-                id=doc_id,
+                id=doc_id,  # Qdrant accepts int or UUID string
                 vector=emb,
                 payload=payload,
             ))
@@ -374,7 +378,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         
         Args:
             collection: Collection name
-            ids: Optional list of document IDs to retrieve
+            ids: Optional list of document IDs to retrieve (int or UUID format)
             where: Optional metadata filter
             limit: Maximum number of documents
             offset: Number of documents to skip
@@ -385,7 +389,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         client = self._get_client()
         
         if ids:
-            # Retrieve by IDs
+            # Retrieve by IDs - Qdrant accepts int or UUID
             points = client.retrieve(
                 collection_name=collection,
                 ids=ids,
@@ -435,7 +439,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         
         Args:
             collection: Collection name
-            ids: Optional list of document IDs to delete
+            ids: Optional list of document IDs to delete (int or UUID format)
             where: Optional metadata filter
         
         Returns:
@@ -444,6 +448,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         client = self._get_client()
         
         if ids:
+            # Delete by IDs - Qdrant accepts int or UUID
             client.delete(
                 collection_name=collection,
                 points_selector=ids,
@@ -476,7 +481,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         
         Args:
             collection: Collection name
-            ids: List of document IDs to update
+            ids: List of document IDs to update (int or UUID format)
             documents: Optional new document texts
             metadatas: Optional new metadata dictionaries
             embeddings: Optional new embeddings

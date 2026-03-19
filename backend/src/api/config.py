@@ -77,6 +77,16 @@ def _config_to_model(config: Config) -> ConfigModel:
             "format": config.logging.format,
             "file": config.logging.file,
         },
+        hybrid={
+            "alpha": config.hybrid.alpha,
+            "beta": config.hybrid.beta,
+            "rrf_k": config.hybrid.rrf_k,
+            "bm25_persist_dir": config.hybrid.bm25_persist_dir,
+        } if hasattr(config, 'hybrid') and config.hybrid else None,
+        watcher={
+            "enabled": config.watcher.enabled,
+            "debounce_seconds": config.watcher.debounce_seconds,
+        } if hasattr(config, 'watcher') and config.watcher else None,
     )
 
 

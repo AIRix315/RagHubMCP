@@ -12,15 +12,6 @@ src_path = Path(__file__).parent.parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
 
-# Check if qdrant-client is available
-try:
-    import qdrant_client  # noqa: F401
-    QDRANT_AVAILABLE = True
-except ImportError:
-    QDRANT_AVAILABLE = False
-
-
-@pytest.mark.skipif(not QDRANT_AVAILABLE, reason="qdrant-client not installed")
 class TestQdrantProviderInit:
     """Tests for QdrantProvider initialization."""
     
@@ -100,7 +91,6 @@ class TestQdrantProviderInit:
         assert provider._port == 6333
 
 
-@pytest.mark.skipif(not QDRANT_AVAILABLE, reason="qdrant-client not installed")
 class TestQdrantProviderCollectionOps:
     """Tests for collection operations."""
     
@@ -138,7 +128,6 @@ class TestQdrantProviderCollectionOps:
         assert not memory_provider.collection_exists("nonexistent")
 
 
-@pytest.mark.skipif(not QDRANT_AVAILABLE, reason="qdrant-client not installed")
 class TestQdrantProviderDocumentOps:
     """Tests for document operations with mock embeddings."""
     
@@ -180,7 +169,7 @@ class TestQdrantProviderDocumentOps:
         provider_with_mock_embedding.add(
             collection="add_test",
             documents=["doc1", "doc2"],
-            ids=["id1", "id2"],
+            ids=["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"],
             embeddings=embeddings,
         )
         
@@ -193,7 +182,7 @@ class TestQdrantProviderDocumentOps:
         provider_with_mock_embedding.add(
             collection="auto_embed_test",
             documents=["doc1", "doc2"],
-            ids=["id1", "id2"],
+            ids=["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"],
         )
         
         # Should have called embed_documents
@@ -209,17 +198,17 @@ class TestQdrantProviderDocumentOps:
         provider_with_mock_embedding.add(
             collection="get_test",
             documents=["doc1", "doc2"],
-            ids=["id1", "id2"],
+            ids=["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"],
             embeddings=embeddings,
         )
-        
+
         results = provider_with_mock_embedding.get(
             collection="get_test",
-            ids=["id1"],
+            ids=["00000000-0000-0000-0000-000000000001"],
         )
-        
+
         assert len(results) == 1
-        assert results[0].id == "id1"
+        assert results[0].id == "00000000-0000-0000-0000-000000000001"
         assert results[0].document == "doc1"
     
     def test_delete_documents_by_ids(self, provider_with_mock_embedding):
@@ -231,21 +220,20 @@ class TestQdrantProviderDocumentOps:
         provider_with_mock_embedding.add(
             collection="delete_test",
             documents=["doc1", "doc2"],
-            ids=["id1", "id2"],
+            ids=["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"],
             embeddings=embeddings,
         )
-        
+
         assert provider_with_mock_embedding.count("delete_test") == 2
-        
+
         deleted = provider_with_mock_embedding.delete(
             collection="delete_test",
-            ids=["id1"],
+            ids=["00000000-0000-0000-0000-000000000001"],
         )
         
         assert deleted == 1
 
 
-@pytest.mark.skipif(not QDRANT_AVAILABLE, reason="qdrant-client not installed")
 class TestQdrantProviderQuery:
     """Tests for query operations."""
     
@@ -277,7 +265,7 @@ class TestQdrantProviderQuery:
         provider.add(
             collection="query_test",
             documents=["Python is a programming language", "JavaScript is also a programming language", "The sky is blue"],
-            ids=["p1", "p2", "p3"],
+            ids=["00000000-0000-0000-0000-000000000011", "00000000-0000-0000-0000-000000000012", "00000000-0000-0000-0000-000000000013"],
             embeddings=embeddings,
         )
         
@@ -292,7 +280,7 @@ class TestQdrantProviderQuery:
         )
         
         assert len(results.results) == 2
-        assert results.results[0].id in ["p1", "p2", "p3"]
+        assert results.results[0].id in ["00000000-0000-0000-0000-000000000011", "00000000-0000-0000-0000-000000000012", "00000000-0000-0000-0000-000000000013"]
     
     def test_query_with_query_text(self, provider_with_data):
         """Test query with text (auto-embedded)."""

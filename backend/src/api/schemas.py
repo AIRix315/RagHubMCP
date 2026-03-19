@@ -101,6 +101,22 @@ class LoggingConfigModel(BaseModel):
     file: str | None = Field(default=None)
 
 
+class HybridConfigModel(BaseModel):
+    """Hybrid search configuration."""
+
+    alpha: float = Field(default=0.5, ge=0.0, le=1.0)
+    beta: float = Field(default=0.5, ge=0.0, le=1.0)
+    rrf_k: int = Field(default=60, ge=1)
+    bm25_persist_dir: str = Field(default="./data/bm25")
+
+
+class WatcherConfigModel(BaseModel):
+    """File watcher configuration."""
+
+    enabled: bool = Field(default=True)
+    debounce_seconds: float = Field(default=1.0, ge=0.0)
+
+
 class ConfigModel(BaseModel):
     """Full configuration model."""
 
@@ -109,6 +125,8 @@ class ConfigModel(BaseModel):
     providers: ProvidersConfigModel
     indexer: IndexerConfigModel
     logging: LoggingConfigModel
+    hybrid: HybridConfigModel | None = Field(default=None)
+    watcher: WatcherConfigModel | None = Field(default=None)
 
 
 class ConfigUpdateRequest(BaseModel):
@@ -122,6 +140,8 @@ class ConfigUpdateRequest(BaseModel):
     providers: ProvidersConfigModel | None = None
     indexer: IndexerConfigModel | None = None
     logging: LoggingConfigModel | None = None
+    hybrid: HybridConfigModel | None = None
+    watcher: WatcherConfigModel | None = None
 
 
 # =============================================================================

@@ -289,16 +289,20 @@ class ChromaProvider(BaseVectorStoreProvider):
             ids: List of document IDs to update
             documents: Optional new document texts
             metadatas: Optional new metadata dictionaries
-            embeddings: Optional new embeddings (not used, Chroma auto-embeds)
+            embeddings: Optional pre-computed embeddings
         """
         service = self._get_service()
         chroma_collection = service.get_collection(collection)
         
-        chroma_collection.update(
-            ids=ids,
-            documents=documents,
-            metadatas=metadatas,
-        )
+        update_kwargs = {"ids": ids}
+        if documents is not None:
+            update_kwargs["documents"] = documents
+        if metadatas is not None:
+            update_kwargs["metadatas"] = metadatas
+        if embeddings is not None:
+            update_kwargs["embeddings"] = embeddings
+        
+        chroma_collection.update(**update_kwargs)
         logger.debug(f"Updated {len(ids)} documents in collection '{collection}'")
     
     def reset(self) -> None:

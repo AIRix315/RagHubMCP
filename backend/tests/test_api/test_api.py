@@ -115,8 +115,6 @@ class TestIndexAPI:
         assert "task_id" in data
         assert data["message"] == "Indexing task started"
         assert "status_url" in data
-        
-        return data["task_id"]
 
     def test_tc_1_15_4_get_index_status(self, test_client, tmp_path):
         """TC-1.15.4: GET /api/index/status queries task status."""
