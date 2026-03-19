@@ -407,28 +407,25 @@ AC-1.16.5: README 包含快速开始指南 ✅
 
 ### 1.17 测试覆盖完善
 
-**目标**: 建立完善的测试基础，支撑后续开发
+**目标**: 为已存在的代码补充集成测试和服务测试
 
-- [ ] 创建 test_llm/ 目录结构
-- [ ] 编写 test_llm_base.py — LLM 基类测试
-- [ ] 编写 test_ollama_llm.py — OllamaLLM 测试
 - [ ] 创建 test_integration/ 目录
-- [ ] 编写 test_index_search.py — 索引→搜索集成测试
-- [ ] 编写 test_mcp_api.py — MCP + API 联合测试
-- [ ] 扩充 test_services/ — Embedding/Rerank 服务测试
+- [ ] 编写 test_index_search.py — 索引→搜索集成测试（测试已存在的 Indexer + ChromaService）
+- [ ] 编写 test_mcp_api.py — MCP + API 联合测试（测试已存在的 MCP Server + REST API）
+- [ ] 扩充 test_services/ — 补充服务层测试
 - [ ] 运行全量测试验证
 - [ ] 更新 TODO.md 标记完成
 - [ ] 记录 CHANGELOG.md
 - [ ] Git 提交保存进度
 
-**参考位置**: `backend/tests/test_providers/`, `backend/tests/test_indexer/`
+**参考位置**: `backend/tests/test_indexer/`, `backend/tests/test_mcp_server/`, `backend/tests/test_api/`
 
 **测试用例**:
 ```
-TC-1.17.1: test_llm/ 目录存在且非空
-TC-1.17.2: test_integration/ 目录存在且非空
-TC-1.17.3: 所有测试通过 (≥230 tests)
-TC-1.17.4: 覆盖率 ≥ 70%
+TC-1.17.1: test_integration/ 目录存在且非空
+TC-1.17.2: test_index_search.py 测试通过
+TC-1.17.3: test_mcp_api.py 测试通过
+TC-1.17.4: 所有测试通过 (≥230 tests)
 ```
 
 **完成记录**: （待填写日期+时刻）
@@ -441,17 +438,40 @@ TC-1.17.4: 覆盖率 ≥ 70%
 
 **前置条件**: 1.17 完成
 
-- [ ] 实现 OpenAIEmbeddingProvider — 参考 `backend/src/providers/embedding/ollama.py`，Context7: `openai embeddings`
-- [ ] 编写 test_openai_embedding.py
+**执行方式**: 测试优先 — 先写测试（失败）→ 实现 → 测试通过
+
+#### OpenAI Embedding Provider
+- [ ] 编写 test_openai_embedding.py — 测试失败（未实现）
+- [ ] 实现 OpenAIEmbeddingProvider — Context7: `openai embeddings`
+- [ ] 测试通过
+
+#### HTTP Embedding Provider  
+- [ ] 编写 test_http_embedding.py — 测试失败（未实现）
 - [ ] 实现 HTTPEmbeddingProvider — Context7: `httpx async client`
-- [ ] 编写 test_http_embedding.py
-- [ ] 实现 OllamaLLMProvider — 参考 `backend/src/providers/llm/base.py`，Context7: `ollama api chat`
+- [ ] 测试通过
+
+#### Ollama LLM Provider
+- [ ] 创建 test_llm/ 目录
+- [ ] 编写 test_ollama_llm.py — 测试失败（未实现）
+- [ ] 实现 OllamaLLMProvider — Context7: `ollama api chat`
+- [ ] 测试通过
+
+#### OpenAI LLM Provider
+- [ ] 编写 test_openai_llm.py — 测试失败（未实现）
 - [ ] 实现 OpenAILLMProvider — Context7: `openai chat completions`
-- [ ] 编写 test_openai_llm.py
-- [ ] 实现 CohereRerankProvider — 参考 `backend/src/providers/rerank/flashrank.py`，Context7: `cohere rerank api`
-- [ ] 编写 test_cohere_rerank.py
+- [ ] 测试通过
+
+#### Cohere Rerank Provider
+- [ ] 编写 test_cohere_rerank.py — 测试失败（未实现）
+- [ ] 实现 CohereRerankProvider — Context7: `cohere rerank api`
+- [ ] 测试通过
+
+#### Jina Rerank Provider
+- [ ] 编写 test_jina_rerank.py — 测试失败（未实现）
 - [ ] 实现 JinaRerankProvider — Context7: `jina rerank api`
-- [ ] 编写 test_jina_rerank.py
+- [ ] 测试通过
+
+#### 其他
 - [ ] 添加 get_model_info() 接口 — `backend/src/providers/base.py`
 - [ ] 更新 config.yaml 配置示例
 - [ ] 运行全量测试验证
@@ -459,14 +479,16 @@ TC-1.17.4: 覆盖率 ≥ 70%
 - [ ] 记录 CHANGELOG.md
 - [ ] Git 提交保存进度
 
+**参考位置**: `backend/src/providers/embedding/ollama.py`, `backend/src/providers/rerank/flashrank.py`, `backend/src/providers/llm/base.py`
+
 **测试用例**:
 ```
-TC-1.18.1: OpenAIEmbeddingProvider 可用
-TC-1.18.2: HTTPEmbeddingProvider 可用
-TC-1.18.3: OllamaLLMProvider 可用
-TC-1.18.4: OpenAILLMProvider 可用
-TC-1.18.5: CohereRerankProvider 可用
-TC-1.18.6: JinaRerankProvider 可用
+TC-1.18.1: OpenAIEmbeddingProvider 测试通过
+TC-1.18.2: HTTPEmbeddingProvider 测试通过
+TC-1.18.3: OllamaLLMProvider 测试通过
+TC-1.18.4: OpenAILLMProvider 测试通过
+TC-1.18.5: CohereRerankProvider 测试通过
+TC-1.18.6: JinaRerankProvider 测试通过
 TC-1.18.7: get_model_info() 返回正确数据
 TC-1.18.8: 所有测试通过 (≥250 tests)
 ```
@@ -514,7 +536,6 @@ TC-1.19.5: 前端测试通过 (≥15 tests)
 - [ ] 运行后端全量测试 — `pytest --tb=short`
 - [ ] 运行前端全量测试 — `npm run test`
 - [ ] 验证效果对比功能 — 手动测试 Ollama vs OpenAI
-- [ ] 检查 Git 分支结构 — `git branch -a`
 - [ ] 检查 CHANGELOG.md 记录完整
 - [ ] 更新 TODO.md 标记 Phase 1.5 完成
 - [ ] 记录 CHANGELOG.md 验收完成
@@ -525,8 +546,7 @@ TC-1.19.5: 前端测试通过 (≥15 tests)
 AC-1.20.1: 后端测试全部通过 (≥250 tests)
 AC-1.20.2: 前端测试全部通过 (≥15 tests)
 AC-1.20.3: 效果对比功能可用（对比 Ollama vs OpenAI）
-AC-1.20.4: Git 分支结构清晰
-AC-1.20.5: CHANGELOG.md 更新完整
+AC-1.20.4: CHANGELOG.md 更新完整
 ```
 
 **完成记录**: （待填写日期+时刻）
