@@ -403,16 +403,15 @@ AC-1.16.5: README 包含快速开始指南 ✅
 
 ## Phase 1.5: MVP 完善
 
-> **说明**: 本阶段任务基于 `Docs/06-MVP-Upgrade-Analysis_20260319.md` 分析，在进入 Phase 2 前补齐 MVP 基础设施。
+> **说明**: 本阶段任务基于 `Docs/06-MVP-Upgrade-Analysis_20260319.md` 分析。核心是修复完善原本应该有的基础，给阶段二阶段三任务铺垫。
 
 ### 1.17 测试覆盖完善
 
-**目标**: 为已存在的代码补充集成测试和服务测试
+**目标**: 建立集成测试基础
 
 - [ ] 创建 test_integration/ 目录
-- [ ] 编写 test_index_search.py — 索引→搜索集成测试（测试已存在的 Indexer + ChromaService）
-- [ ] 编写 test_mcp_api.py — MCP + API 联合测试（测试已存在的 MCP Server + REST API）
-- [ ] 扩充 test_services/ — 补充服务层测试
+- [ ] 编写 test_index_search.py — 索引→搜索流程测试
+- [ ] 编写 test_mcp_api.py — MCP + API 联合测试
 - [ ] 运行全量测试验证
 - [ ] 更新 TODO.md 标记完成
 - [ ] 记录 CHANGELOG.md
@@ -422,105 +421,73 @@ AC-1.16.5: README 包含快速开始指南 ✅
 
 **测试用例**:
 ```
-TC-1.17.1: test_integration/ 目录存在且非空
-TC-1.17.2: test_index_search.py 测试通过
-TC-1.17.3: test_mcp_api.py 测试通过
-TC-1.17.4: 所有测试通过 (≥230 tests)
+TC-1.17.1: test_integration/ 目录存在
+TC-1.17.2: test_index_search.py 通过
+TC-1.17.3: test_mcp_api.py 通过
+TC-1.17.4: 所有测试通过
 ```
 
 **完成记录**: （待填写日期+时刻）
 
 ---
 
-### 1.18 Provider 层补全
+### 1.18 Provider 基础补全
 
-**目标**: 补齐缺失的 Provider 实现，实现核心价值"效果对比"
+**目标**: 补齐 HTTP Provider 基础设施
 
 **前置条件**: 1.17 完成
 
 **执行方式**: 测试优先 — 先写测试（失败）→ 实现 → 测试通过
 
-#### OpenAI Embedding Provider
-- [ ] 编写 test_openai_embedding.py — 测试失败（未实现）
-- [ ] 实现 OpenAIEmbeddingProvider — Context7: `openai embeddings`
-- [ ] 测试通过
-
-#### HTTP Embedding Provider  
 - [ ] 编写 test_http_embedding.py — 测试失败（未实现）
-- [ ] 实现 HTTPEmbeddingProvider — Context7: `httpx async client`
+- [ ] 实现 HTTPEmbeddingProvider — 通用 HTTP Embedding，支持所有兼容 OpenAI API 的服务
+  - 参考: `backend/src/providers/embedding/ollama.py`
+  - Context7: `httpx async client`, `openai compatible api`
 - [ ] 测试通过
-
-#### Ollama LLM Provider
-- [ ] 创建 test_llm/ 目录
-- [ ] 编写 test_ollama_llm.py — 测试失败（未实现）
-- [ ] 实现 OllamaLLMProvider — Context7: `ollama api chat`
-- [ ] 测试通过
-
-#### OpenAI LLM Provider
-- [ ] 编写 test_openai_llm.py — 测试失败（未实现）
-- [ ] 实现 OpenAILLMProvider — Context7: `openai chat completions`
-- [ ] 测试通过
-
-#### Cohere Rerank Provider
-- [ ] 编写 test_cohere_rerank.py — 测试失败（未实现）
-- [ ] 实现 CohereRerankProvider — Context7: `cohere rerank api`
-- [ ] 测试通过
-
-#### Jina Rerank Provider
-- [ ] 编写 test_jina_rerank.py — 测试失败（未实现）
-- [ ] 实现 JinaRerankProvider — Context7: `jina rerank api`
-- [ ] 测试通过
-
-#### 其他
-- [ ] 添加 get_model_info() 接口 — `backend/src/providers/base.py`
 - [ ] 更新 config.yaml 配置示例
 - [ ] 运行全量测试验证
 - [ ] 更新 TODO.md 标记完成
 - [ ] 记录 CHANGELOG.md
 - [ ] Git 提交保存进度
 
-**参考位置**: `backend/src/providers/embedding/ollama.py`, `backend/src/providers/rerank/flashrank.py`, `backend/src/providers/llm/base.py`
+**参考位置**: `backend/src/providers/embedding/ollama.py`
 
 **测试用例**:
 ```
-TC-1.18.1: OpenAIEmbeddingProvider 测试通过
-TC-1.18.2: HTTPEmbeddingProvider 测试通过
-TC-1.18.3: OllamaLLMProvider 测试通过
-TC-1.18.4: OpenAILLMProvider 测试通过
-TC-1.18.5: CohereRerankProvider 测试通过
-TC-1.18.6: JinaRerankProvider 测试通过
-TC-1.18.7: get_model_info() 返回正确数据
-TC-1.18.8: 所有测试通过 (≥250 tests)
+TC-1.18.1: HTTPEmbeddingProvider 可实例化
+TC-1.18.2: embed_documents 返回正确维度
+TC-1.18.3: embed_query 返回正确维度
+TC-1.18.4: 配置驱动实例化成功
 ```
 
 **完成记录**: （待填写日期+时刻）
 
 ---
 
-### 1.19 前端完善
+### 1.19 前端基础补全
 
-**目标**: 补齐前端缺失功能，完善用户界面
+**目标**: 补齐 Settings 页面基础
 
 **前置条件**: 1.18 完成
 
-- [ ] 创建 Settings.vue 页面 — 参考 `frontend/src/views/Config.vue`，shadcn-vue 组件
+- [ ] 创建 Settings.vue 页面 — 参考 `frontend/src/views/Config.vue`
 - [ ] 添加 Settings 路由 — `frontend/src/router/index.ts`
-- [ ] 创建 benchmark.ts Store — 参考 `frontend/src/stores/config.ts`，Pinia 最佳实践
 - [ ] 更新 AppLayout.vue 导航 — `frontend/src/components/layout/AppLayout.vue`
-- [ ] 前端测试补充 — `frontend/src/__tests__/`，Vitest
 - [ ] 运行前端测试验证 — `npm run test`
 - [ ] 前端构建验证 — `npm run build`
 - [ ] 更新 TODO.md 标记完成
 - [ ] 记录 CHANGELOG.md
 - [ ] Git 提交保存进度
 
+**Settings.vue 功能**:
+- MCP 配置导出
+- 系统信息展示
+
 **测试用例**:
 ```
 TC-1.19.1: Settings 页面可访问
 TC-1.19.2: Settings 路由正常工作
-TC-1.19.3: benchmark.ts Store 正常工作
-TC-1.19.4: 前端构建成功
-TC-1.19.5: 前端测试通过 (≥15 tests)
+TC-1.19.3: 前端构建成功
 ```
 
 **完成记录**: （待填写日期+时刻）
@@ -529,13 +496,13 @@ TC-1.19.5: 前端测试通过 (≥15 tests)
 
 ### 1.20 Phase 1.5 验收
 
-**目标**: 全面验收 Phase 1.5 完成情况，准备进入 Phase 2
+**目标**: 全面验收，准备进入 Phase 2
 
 **前置条件**: 1.17-1.19 全部完成
 
 - [ ] 运行后端全量测试 — `pytest --tb=short`
 - [ ] 运行前端全量测试 — `npm run test`
-- [ ] 验证效果对比功能 — 手动测试 Ollama vs OpenAI
+- [ ] 验证 HTTP Provider 功能 — 手动测试兼容 API
 - [ ] 检查 CHANGELOG.md 记录完整
 - [ ] 更新 TODO.md 标记 Phase 1.5 完成
 - [ ] 记录 CHANGELOG.md 验收完成
@@ -543,10 +510,14 @@ TC-1.19.5: 前端测试通过 (≥15 tests)
 
 **验收标准**:
 ```
-AC-1.20.1: 后端测试全部通过 (≥250 tests)
-AC-1.20.2: 前端测试全部通过 (≥15 tests)
-AC-1.20.3: 效果对比功能可用（对比 Ollama vs OpenAI）
-AC-1.20.4: CHANGELOG.md 更新完整
+AC-1.20.1: 后端测试全部通过
+AC-1.20.2: 前端测试全部通过
+AC-1.20.3: HTTPEmbeddingProvider 可用
+AC-1.20.4: Settings 页面可访问
+AC-1.20.5: CHANGELOG.md 更新完整
+```
+
+**完成记录**: （待填写日期+时刻）
 ```
 
 **完成记录**: （待填写日期+时刻）
