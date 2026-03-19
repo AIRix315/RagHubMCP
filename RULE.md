@@ -159,6 +159,46 @@ date '+%Y-%m-%d %H:%M'
 
 ---
 
+## Shell 命令规范
+
+### 重定向注意事项
+
+**问题**: Git Bash 环境下，Windows 的 `nul` 设备名会被当作普通文件名处理，导致创建实际的 `nul` 文件。
+
+| 环境 | `2>nul` 行为 | 结果 |
+|------|-------------|------|
+| Windows CMD | 重定向到空设备 | ✅ 正确 |
+| Windows PowerShell | 重定向到空设备 | ✅ 正确 |
+| **Git Bash** | 创建名为 `nul` 的实际文件 | ❌ 创建了文件 |
+
+### 正确写法
+
+```bash
+# ❌ 错误 (Git Bash 会创建 nul 文件)
+mkdir -p some/path 2>nul
+command 2>nul
+
+# ✅ 正确方式 1: 使用 /dev/null (Git Bash/WSL/Linux/Mac 通用)
+mkdir -p some/path 2>/dev/null
+command 2>/dev/null
+
+# ✅ 正确方式 2: 不使用重定向，用 || true 或 || echo
+mkdir -p some/path || true
+command || echo "ignored error"
+
+# ✅ 正确方式 3: 在 Windows PowerShell 中使用
+mkdir some/path 2>$null
+command 2>$null
+```
+
+### 规则
+
+1. **统一使用 `/dev/null`**: 所有 shell 命令中需要丢弃输出时，使用 `/dev/null`
+2. **避免 `nul` 关键字**: 不要在 bash 命令中使用 `nul` 作为重定向目标
+3. **跨平台兼容**: 优先使用 `|| true` 或条件判断代替重定向
+
+---
+
 ## 参考资源
 
 | 资源 | 用途 |
@@ -170,4 +210,4 @@ date '+%Y-%m-%d %H:%M'
 
 ---
 
-*最后更新: 2026-03-19 09:08*
+*最后更新: 2026-03-20 00:10*

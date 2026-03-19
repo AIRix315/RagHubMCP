@@ -1,0 +1,71 @@
+# Pre-commit configuration for RagHubMCP
+# See https://pre-commit.com for more information
+
+minimum_pre_commit_version: "4.0.0"
+
+default_stages: [pre-commit]
+
+repos:
+  # Basic file hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: debug-statements
+        files: \.py$
+
+  # Ruff - Fast Python linter & formatter
+  # Replaces black, isort, flake8, and more
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Type checking with MyPy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.5.0
+          - types-PyYAML
+          - types-requests
+        args: [--ignore-missing-imports]
+        pass_filenames: false
+        entry: mypy backend/src
+
+  # Security checks with Gitleaks
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.0
+    hooks:
+      - id: gitleaks
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.43.0
+    hooks:
+      - id: markdownlint
+        args: [--fix]
+        types: [markdown]
+
+# CI integration settings
+ci:
+  autofix_prs: true
+  autofix_commit_msg: "style: auto-fix pre-commit issues"
+  autoupdate_branch: main
+  autoupdate_schedule: weekly
+  skip: [mypy]  # Skip slow type check in CI (has separate job)

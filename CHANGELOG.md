@@ -11,7 +11,97 @@
 
 ### 待开发
 
-- Phase 3: 企业级功能
+- 持续优化和bug修复
+
+## [0.5.0] - 2026-03-20
+
+### Phase 3 企业级功能 ✅
+
+#### 3.3: CI/CD 集成 ✅
+
+- **时间**: 2026-03-20 00:02
+- **状态**: 完成
+- **内容**:
+  - 创建 `.github/workflows/ci.yml`: GitHub Actions CI流水线
+    - 矩阵测试 (Python 3.11/3.12/3.13)
+    - Ruff lint + format检查
+    - MyPy类型检查
+    - 前端构建验证
+    - Trivy安全扫描
+  - 创建 `.pre-commit-config.yaml`: Pre-commit hooks
+    - Ruff (linter + formatter)
+    - MyPy类型检查
+    - 文件检查 (trailing whitespace, large files, merge conflicts)
+    - Gitleaks密钥检测
+  - 创建 `src/webhook/handler.py`: GitHub Webhook处理器
+    - HMAC-SHA256签名验证
+    - Push/PullRequest/Release事件处理
+    - FastAPI路由集成
+- **验证结果**: 11 tests passed ✅
+
+#### 3.2: 团队协作 ✅
+
+- **时间**: 2026-03-20 00:00
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/auth/models.py`: 用户模型
+    - User, Role, Tenant数据类
+    - 多租户支持
+    - 角色权限映射
+  - 创建 `src/auth/security.py`: 安全工具
+    - bcrypt密码哈希
+    - JWT token生成/验证
+    - 密码验证器
+  - 创建 `src/auth/dependencies.py`: FastAPI依赖
+    - get_current_user
+    - RoleChecker, PermissionChecker
+- **验证结果**: 27 tests passed ✅
+
+#### 3.1: 代码图谱 ✅
+
+- **时间**: 2026-03-19 23:44
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/graph/dependency_analyzer.py`: 依赖分析器
+    - Python AST import解析
+    - 相对导入处理
+    - 标准库过滤
+  - 创建 `src/graph/call_graph_builder.py`: 调用链构建器
+    - Tree-sitter多语言支持 (Python/TypeScript/Go)
+    - 函数/类/方法节点提取
+    - 调用边关系构建
+  - 创建 `src/graph/graph_store.py`: 图谱存储
+    - NetworkXStore: 内存图存储
+    - Neo4jStore: 持久化图存储
+    - 路径查找、邻居查询
+  - 更新 `pyproject.toml`: 添加 networkx 依赖
+- **验证结果**: 29 tests passed ✅
+
+### 测试统计变更
+
+| 阶段 | 测试数 |
+|------|--------|
+| Phase 2 | 474 |
+| Phase 3 | 512 (+38) |
+
+### 新增模块
+
+```
+backend/src/
+├── graph/              # 代码图谱
+│   ├── base.py
+│   ├── dependency_analyzer.py
+│   ├── call_graph_builder.py
+│   └── graph_store.py
+├── auth/               # 认证授权
+│   ├── models.py
+│   ├── security.py
+│   └── dependencies.py
+└── webhook/            # GitHub集成
+    └── handler.py
+```
+
+---
 
 ## [0.4.0] - 2026-03-19
 

@@ -30,6 +30,7 @@ dependencies = [
     "tree-sitter-typescript>=0.23.0",
     "tree-sitter-go>=0.23.0",
     "qdrant-client>=1.7.0",
+    "networkx>=3.2.0",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +40,18 @@ dev = [
     "pytest-cov>=4.1.0",
     "ruff>=0.2.0",
     "mypy>=1.8.0",
+]
+
+# Optional dependencies for graph features
+graph = [
+    "neo4j>=5.0.0",
+]
+
+# Optional dependencies for enterprise features
+enterprise = [
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "pygithub>=2.0.0",
 ]
 
 [project.scripts]
