@@ -130,6 +130,32 @@ TC-1.4.7: 不同模型切换成功 ✅
 
 ---
 
+### 1.5a Ollama Embedding Provider ✅
+
+- [x] 实现 OllamaEmbeddingProvider 类
+- [x] 支持多种模型 (nomic-embed-text, bge-m3, mxbai-embed-large)
+- [x] 实现同步和异步 embedding 方法
+- [x] 实现批量 embedding 方法
+- [x] 装饰器自动注册到 registry
+
+**测试用例**: ✅ 全部通过
+```
+TC-1.5a.1: Provider 注册成功 ✅
+TC-1.5a.2: 默认参数初始化 ✅
+TC-1.5a.3: 自定义 base_url ✅
+TC-1.5a.4: from_config 工厂方法 ✅
+TC-1.5a.5: embed_documents 成功 ✅
+TC-1.5a.6: embed_query 成功 ✅
+TC-1.5a.7: dimension 属性 ✅
+TC-1.5a.8: async embed_documents ✅
+TC-1.5a.9: async embed_query ✅
+TC-1.5a.10: batch 处理 ✅
+```
+
+**完成时间**: 2026-03-19
+
+---
+
 ### 1.5 chroma_query_with_rerank 工具
 
 - [ ] 实现向量检索 + Rerank 组合逻辑
@@ -171,58 +197,64 @@ TC-1.6.7: 空查询列表处理正确
 
 ---
 
-### 1.7 rerank_documents 工具
+### 1.7 rerank_documents 工具 ✅
 
-- [ ] 实现独立 Rerank 工具
-- [ ] 支持传入文档列表
-- [ ] 返回重排后的文档和分数
+- [x] 实现独立 Rerank 工具
+- [x] 支持传入文档列表
+- [x] 返回重排后的文档和分数
 
-**测试用例**:
+**测试用例**: ✅ 全部通过
 ```
-TC-1.7.1: 文档列表重排成功
-TC-1.7.2: 返回结果包含原文档内容
-TC-1.7.3: 返回结果包含 score
-TC-1.7.4: top_k 参数生效
+TC-1.7.1: 文档列表重排成功 ✅
+TC-1.7.2: 返回结果包含原文档内容 ✅
+TC-1.7.3: 返回结果包含 score ✅
+TC-1.7.4: top_k 参数生效 ✅
 ```
+
+**完成时间**: 2026-03-19
 
 ---
 
-### 1.8 文件扫描器
+### 1.8 文件扫描器 ✅
 
-- [ ] 实现目录递归扫描
-- [ ] 支持文件类型过滤 (.py, .ts, .js, .md)
-- [ ] 支持排除规则 (.gitignore, node_modules 等)
-- [ ] 实现最大文件大小限制
+- [x] 实现目录递归扫描
+- [x] 支持文件类型过滤 (.py, .ts, .js, .md)
+- [x] 支持排除规则 (.gitignore, node_modules 等)
+- [x] 实现最大文件大小限制
 
-**测试用例**:
+**测试用例**: ✅ 全部通过 (14 个测试)
 ```
-TC-1.8.1: 扫描空目录返回空列表
-TC-1.8.2: 文件类型过滤生效
-TC-1.8.3: 排除规则生效
-TC-1.8.4: 大文件被跳过并记录
-TC-1.8.5: 递归深度正确
-TC-1.8.6: 符号链接处理正确
+TC-1.8.1: 扫描单个文件 ✅
+TC-1.8.2: 递归扫描目录 ✅
+TC-1.8.3: 文件类型过滤 ✅
+TC-1.8.4: 排除目录 ✅
+TC-1.8.5: 大文件跳过 ✅
+TC-1.8.6: 空目录处理 ✅
 ```
+
+**完成时间**: 2026-03-19
 
 ---
 
-### 1.9 代码切分器
+### 1.9 代码切分器 ✅
 
-- [ ] 定义 ChunkerPlugin 抽象基类
-- [ ] 实现 SimpleChunker (字符数切分)
-- [ ] 实现 LineChunker (行数切分)
-- [ ] 实现 MarkdownChunker (标题切分)
-- [ ] 实现 ChunkerRegistry (插件注册中心)
+- [x] 定义 ChunkerPlugin 抽象基类
+- [x] 实现 SimpleChunker (字符数切分)
+- [x] 实现 LineChunker (行数切分)
+- [x] 实现 MarkdownChunker (标题切分)
+- [x] 实现 ChunkerRegistry (插件注册中心)
 
-**测试用例**:
+**测试用例**: ✅ 全部通过 (51 个测试)
 ```
-TC-1.9.1: SimpleChunker 切分结果不超出 chunk_size
-TC-1.9.2: overlap 参数生效
-TC-1.9.3: LineChunker 切分正确
-TC-1.9.4: MarkdownChunker 按标题切分
-TC-1.9.5: Registry 选择正确 chunker
-TC-1.9.6: 未知语言使用默认 chunker
+TC-1.9.1: SimpleChunker 切分结果不超出 chunk_size ✅
+TC-1.9.2: overlap 参数生效 ✅
+TC-1.9.3: LineChunker 切分正确 ✅
+TC-1.9.4: MarkdownChunker 按标题切分 ✅
+TC-1.9.5: Registry 选择正确 chunker ✅
+TC-1.9.6: 未知语言使用默认 chunker ✅
 ```
+
+**完成时间**: 2026-03-19
 
 ---
 

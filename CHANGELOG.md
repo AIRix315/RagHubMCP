@@ -18,6 +18,56 @@
 
 ## [0.1.0] - 2026-03-19
 
+### 1.9: 代码切分器 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/chunkers/base.py`: `Chunk` dataclass + `ChunkerPlugin` 抽象基类
+  - 创建 `src/chunkers/simple.py`: `SimpleChunker` - 按字符数切分
+  - 创建 `src/chunkers/line.py`: `LineChunker` - 按行数切分
+  - 创建 `src/chunkers/markdown.py`: `MarkdownChunker` - 按标题切分
+  - 创建 `src/chunkers/registry.py`: `ChunkerRegistry` - 插件注册中心
+  - 支持语言感知选择 chunker
+  - 支持 overlap 参数
+- **测试**: 51 个测试用例全部通过
+
+### 1.8: 文件扫描器 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/indexer/scanner.py`: `FileScanner` + `FileInfo` dataclass
+  - 支持递归扫描目录
+  - 支持文件类型过滤
+  - 支持排除目录
+  - 支持大文件跳过
+  - 支持内容 hash 计算
+- **测试**: 14 个测试用例全部通过
+
+### 1.7: rerank_documents MCP 工具 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/mcp_server/tools/rerank.py`: `rerank_documents` MCP 工具
+  - 支持文档列表重排
+  - 支持 top_k 参数
+  - 返回 JSON 格式结果 (index, score, text)
+- **测试**: 7 个测试用例全部通过
+
+### 1.5a: Ollama Embedding Provider ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/providers/embedding/ollama.py`: `OllamaEmbeddingProvider`
+  - 支持多种模型 (nomic-embed-text, bge-m3, mxbai-embed-large)
+  - 实现同步和异步 embedding 方法
+  - 实现批量 embedding 方法 (embed_batch)
+  - 装饰器自动注册到 registry
+- **测试**: 12 个测试用例全部通过
+
 ### 1.4: FlashRank Rerank 实现 ✅
 
 - **时间**: 2026-03-19 10:30
