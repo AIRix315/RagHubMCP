@@ -405,29 +405,29 @@ AC-1.16.5: README 包含快速开始指南 ✅
 
 > **说明**: 本阶段任务基于 `Docs/06-MVP-Upgrade-Analysis_20260319.md` 分析。核心是修复完善原本应该有的基础，给阶段二阶段三任务铺垫。
 
-### 1.17 测试覆盖完善
+### 1.17 测试覆盖完善 ✅
 
 **目标**: 建立集成测试基础
 
-- [ ] 创建 test_integration/ 目录
-- [ ] 编写 test_index_search.py — 索引→搜索流程测试
-- [ ] 编写 test_mcp_api.py — MCP + API 联合测试
-- [ ] 运行全量测试验证
-- [ ] 更新 TODO.md 标记完成
-- [ ] 记录 CHANGELOG.md
+- [x] 创建 test_integration/ 目录
+- [x] 编写 test_index_search.py — 索引→搜索流程测试
+- [x] 编写 test_mcp_api.py — MCP + API 联合测试
+- [x] 运行全量测试验证
+- [x] 更新 TODO.md 标记完成
+- [x] 记录 CHANGELOG.md
 - [ ] Git 提交保存进度
 
 **参考位置**: `backend/tests/test_indexer/`, `backend/tests/test_mcp_server/`, `backend/tests/test_api/`
 
 **测试用例**:
 ```
-TC-1.17.1: test_integration/ 目录存在
-TC-1.17.2: test_index_search.py 通过
-TC-1.17.3: test_mcp_api.py 通过
-TC-1.17.4: 所有测试通过
+TC-1.17.1: test_integration/ 目录存在 ✅
+TC-1.17.2: test_index_search.py 通过 ✅
+TC-1.17.3: test_mcp_api.py 通过 ✅
+TC-1.17.4: 所有测试通过 ✅ (270 tests)
 ```
 
-**完成记录**: （待填写日期+时刻）
+**完成记录**: 2026-03-19 21:30
 
 ---
 
