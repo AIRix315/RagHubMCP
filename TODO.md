@@ -419,6 +419,7 @@ AC-1.16.5: README 包含快速开始指南 ✅
 - [ ] 运行全量测试验证
 - [ ] 更新 TODO.md 标记完成
 - [ ] 记录 CHANGELOG.md
+- [ ] Git 提交保存进度
 
 **参考位置**: `backend/tests/test_providers/`, `backend/tests/test_indexer/`
 
@@ -456,6 +457,7 @@ TC-1.17.4: 覆盖率 ≥ 70%
 - [ ] 运行全量测试验证
 - [ ] 更新 TODO.md 标记完成
 - [ ] 记录 CHANGELOG.md
+- [ ] Git 提交保存进度
 
 **测试用例**:
 ```
@@ -488,6 +490,7 @@ TC-1.18.8: 所有测试通过 (≥250 tests)
 - [ ] 前端构建验证 — `npm run build`
 - [ ] 更新 TODO.md 标记完成
 - [ ] 记录 CHANGELOG.md
+- [ ] Git 提交保存进度
 
 **测试用例**:
 ```
@@ -515,7 +518,7 @@ TC-1.19.5: 前端测试通过 (≥15 tests)
 - [ ] 检查 CHANGELOG.md 记录完整
 - [ ] 更新 TODO.md 标记 Phase 1.5 完成
 - [ ] 记录 CHANGELOG.md 验收完成
-- [ ] **等待用户确认是否合并到 main**
+- [ ] Git 提交保存进度
 
 **验收标准**:
 ```
