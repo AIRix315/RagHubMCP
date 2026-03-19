@@ -18,6 +18,59 @@
 
 ## [0.1.0] - 2026-03-19
 
+### 1.15: REST API 实现 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/api/router.py`: FastAPI 路由器
+  - 创建 `src/api/schemas.py`: Pydantic 请求/响应模型
+  - 创建 `src/api/config.py`: 配置管理 API (GET/POST)
+  - 创建 `src/api/index.py`: 索引任务 API (POST/GET)
+  - 创建 `src/api/search.py`: 检索测试 API (POST)
+  - 创建 `src/api/benchmark.py`: Benchmark API (POST)
+  - 创建 `src/main.py`: FastAPI 应用入口
+  - 统一错误响应格式
+- **测试**: 17 个测试用例全部通过
+
+### 1.10: 索引编排 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/indexer/indexer.py`: `Indexer` 主类
+  - 集成 FileScanner + ChunkerRegistry + OllamaEmbeddingProvider
+  - 实现批量入库逻辑 (ChromaDB batch insert)
+  - 添加进度回调机制 (ProgressCallback)
+  - 支持增量索引 (基于 content_hash)
+- **测试**: 12 个测试用例全部通过
+
+### 1.6: benchmark_search_config MCP 工具 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/mcp_server/tools/benchmark.py`: `benchmark_search_config` MCP 工具
+  - 支持多配置对比测试
+  - 计算 Recall@K 指标
+  - 计算 MRR (Mean Reciprocal Rank) 指标
+  - 计算延迟统计 (avg/min/max/p95)
+  - 返回最优配置推荐
+- **测试**: 20 个测试用例全部通过
+
+### 1.5: chroma_query_with_rerank MCP 工具 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/services/chroma_service.py`: `ChromaService` 单例服务
+  - 创建 `src/mcp_server/tools/search.py`: `chroma_query_with_rerank` MCP 工具
+  - 支持向量检索 + Rerank 组合
+  - 支持 n_results / rerank_top_k 参数
+  - 支持元数据过滤 (where 条件)
+  - 返回带分数的重排结果
+- **测试**: 10 个测试用例全部通过
+
 ### 1.9: 代码切分器 ✅
 
 - **时间**: 2026-03-19

@@ -156,44 +156,49 @@ TC-1.5a.10: batch 处理 ✅
 
 ---
 
-### 1.5 chroma_query_with_rerank 工具
+### 1.5 chroma_query_with_rerank 工具 ✅
 
-- [ ] 实现向量检索 + Rerank 组合逻辑
-- [ ] 支持 n_results / rerank_top_k 参数
-- [ ] 支持元数据过滤
-- [ ] 返回带分数的重排结果
+- [x] 实现向量检索 + Rerank 组合逻辑
+- [x] 支持 n_results / rerank_top_k 参数
+- [x] 支持元数据过滤
+- [x] 返回带分数的重排结果
+- [x] 创建 ChromaService 单例服务
 
-**测试用例**:
+**测试用例**: ✅ 全部通过
 ```
-TC-1.5.1: 查询空 collection 返回空结果
-TC-1.5.2: 查询返回正确数量文档
-TC-1.5.3: rerank_top_k 生效
-TC-1.5.4: where 条件过滤生效
-TC-1.5.5: 返回结果包含 scores
-TC-1.5.6: 结果按 score 降序排列
-TC-1.5.7: 无效 collection_name 抛出明确错误
+TC-1.5.1: 查询空 collection 返回空结果 ✅
+TC-1.5.2: 查询返回正确数量文档 ✅
+TC-1.5.3: rerank_top_k 生效 ✅
+TC-1.5.4: where 条件过滤生效 ✅
+TC-1.5.5: 返回结果包含 scores ✅
+TC-1.5.6: 结果按 score 降序排列 ✅
+TC-1.5.7: 无效 collection_name 抛出明确错误 ✅
 ```
+
+**完成时间**: 2026-03-19
 
 ---
 
-### 1.6 benchmark_search_config 工具
+### 1.6 benchmark_search_config 工具 ✅
 
-- [ ] 实现多配置对比测试
-- [ ] 计算 Recall 指标
-- [ ] 计算 MRR 指标
-- [ ] 计算延迟统计
-- [ ] 返回最优配置推荐
+- [x] 实现多配置对比测试
+- [x] 计算 Recall@K 指标
+- [x] 计算 MRR 指标
+- [x] 计算延迟统计
+- [x] 返回最优配置推荐
 
-**测试用例**:
+**测试用例**: ✅ 全部通过
 ```
-TC-1.6.1: 单配置 benchmark 成功
-TC-1.6.2: 多配置对比成功
-TC-1.6.3: Recall 计算正确
-TC-1.6.4: MRR 计算正确
-TC-1.6.5: 延迟统计正确 (avg/min/max)
-TC-1.6.6: 推荐配置是 MRR 最高的
-TC-1.6.7: 空查询列表处理正确
+TC-1.6.1: 单配置 benchmark 成功 ✅
+TC-1.6.2: 多配置对比成功 ✅
+TC-1.6.3: Recall 计算正确 ✅
+TC-1.6.4: MRR 计算正确 ✅
+TC-1.6.5: 延迟统计正确 (avg/min/max) ✅
+TC-1.6.6: 推荐配置是 MRR 最高的 ✅
+TC-1.6.7: 空查询列表处理正确 ✅
 ```
+
+**完成时间**: 2026-03-19
 
 ---
 
@@ -258,22 +263,24 @@ TC-1.9.6: 未知语言使用默认 chunker ✅
 
 ---
 
-### 1.10 索引编排
+### 1.10 索引编排 ✅
 
-- [ ] 实现 Indexer 主逻辑
-- [ ] 集成 Embedding Provider
-- [ ] 实现批量入库逻辑
-- [ ] 添加进度回调机制
+- [x] 实现 Indexer 主逻辑
+- [x] 集成 Embedding Provider
+- [x] 实现批量入库逻辑
+- [x] 添加进度回调机制
 
-**测试用例**:
+**测试用例**: ✅ 全部通过 (12 个测试)
 ```
-TC-1.10.1: 索引单个文件成功
-TC-1.10.2: 索引目录成功
-TC-1.10.3: 增量索引只处理变更文件
-TC-1.10.4: 进度回调正确触发
-TC-1.10.5: 入库后可检索到内容
-TC-1.10.6: 大批量索引不 OOM
+TC-1.10.1: 索引单个文件成功 ✅
+TC-1.10.2: 索引目录成功 ✅
+TC-1.10.3: 增量索引只处理变更文件 ✅
+TC-1.10.4: 进度回调正确触发 ✅
+TC-1.10.5: 入库后可检索到内容 ✅
+TC-1.10.6: 大批量索引不 OOM ✅
 ```
+
+**完成时间**: 2026-03-19
 
 ---
 
@@ -349,23 +356,25 @@ TC-1.14.5: 结果可导出
 
 ---
 
-### 1.15 REST API 实现
+### 1.15 REST API 实现 ✅
 
-- [ ] 配置管理 API
-- [ ] 索引任务 API
-- [ ] 检索测试 API
-- [ ] Benchmark API
+- [x] 配置管理 API
+- [x] 索引任务 API
+- [x] 检索测试 API
+- [x] Benchmark API
 
-**测试用例**:
+**测试用例**: ✅ 全部通过 (17 个测试)
 ```
-TC-1.15.1: GET /api/config 返回配置
-TC-1.15.2: POST /api/config 更新配置
-TC-1.15.3: POST /api/index 启动索引
-TC-1.15.4: GET /api/index/status 查询状态
-TC-1.15.5: POST /api/search 执行检索
-TC-1.15.6: POST /api/benchmark 执行对比
-TC-1.15.7: 错误响应格式统一
+TC-1.15.1: GET /api/config 返回配置 ✅
+TC-1.15.2: POST /api/config 更新配置 ✅
+TC-1.15.3: POST /api/index 启动索引 ✅
+TC-1.15.4: GET /api/index/status 查询状态 ✅
+TC-1.15.5: POST /api/search 执行检索 ✅
+TC-1.15.6: POST /api/benchmark 执行对比 ✅
+TC-1.15.7: 错误响应格式统一 ✅
 ```
+
+**完成时间**: 2026-03-19
 
 ---
 
