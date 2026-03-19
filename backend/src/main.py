@@ -14,11 +14,12 @@ from pathlib import Path
 from typing import Any
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api.router import api_router
+from src.api.websocket import manager as ws_manager
 from src.utils.config import get_config, load_config
 
 # Configure logging
@@ -116,6 +117,35 @@ def create_app() -> FastAPI:
             "version": "0.1.0",
         }
 
+    # WebSocket endpoint for progress updates
+    @app.websocket("/ws/progress/{task_id}")
+    async def websocket_progress(websocket: WebSocket, task_id: str):
+        """WebSocket endpoint for real-time progress updates.
+
+        Args:
+            websocket: WebSocket connection.
+            task_id: Task ID to subscribe to.
+        """
+        await ws_manager.connect(websocket, task_id)
+        try:
+            while True:
+                # Wait for any message from client (heartbeat or close)
+                data = await websocket.receive_text()
+
+                # Handle heartbeat
+                if data == "pong" or data == "ping":
+                    await ws_manager.send_heartbeat(websocket)
+                else:
+                    # Echo back unknown messages as heartbeat
+                    await ws_manager.send_heartbeat(websocket)
+
+        except WebSocketDisconnect:
+            logger.info(f"WebSocket disconnected for task: {task_id}")
+        except Exception as e:
+            logger.error(f"WebSocket error: {e}")
+        finally:
+            await ws_manager.disconnect(websocket)
+
     # Add root endpoint
     @app.get("/", tags=["root"])
     async def root() -> dict[str, Any]:
@@ -127,6 +157,7 @@ def create_app() -> FastAPI:
             "docs": "/docs",
             "api": "/api",
             "health": "/health",
+            "websocket": "/ws/progress/{task_id}",
         }
 
     return app

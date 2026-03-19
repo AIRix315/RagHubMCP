@@ -18,14 +18,16 @@ from typing import Any
 class ProviderCategory(str, Enum):
     """Provider category enumeration.
     
-    Defines the three main categories of providers in RagHubMCP:
+    Defines the main categories of providers in RagHubMCP:
     - EMBEDDING: Vector embedding providers (Ollama, OpenAI, etc.)
     - RERANK: Document reranking providers (FlashRank, etc.)
     - LLM: Large language model providers (Ollama, OpenAI, etc.)
+    - VECTORSTORE: Vector database providers (Chroma, Qdrant, etc.)
     """
     EMBEDDING = "embedding"
     RERANK = "rerank"
     LLM = "llm"
+    VECTORSTORE = "vectorstore"
 
 
 # =============================================================================

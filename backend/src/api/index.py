@@ -13,6 +13,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
+from src.api.websocket import manager as ws_manager
 from src.utils.config import get_config
 
 from .schemas import (
@@ -74,9 +75,23 @@ async def run_index_task(
     """
     task = _tasks[task_id]
 
+    async def broadcast_progress():
+        """Broadcast current progress via WebSocket."""
+        await ws_manager.broadcast_progress(
+            task_id=task_id,
+            status=task.status.value,
+            progress=task.progress,
+            message=task.message,
+            total_files=task.total_files,
+            processed_files=task.processed_files,
+            total_chunks=task.total_chunks,
+            error=task.error,
+        )
+
     try:
         task.status = TaskStatusEnum.RUNNING
         task.message = "Scanning files..."
+        await broadcast_progress()
 
         # Get configuration
         config = get_config()
@@ -94,11 +109,13 @@ async def run_index_task(
         files = scanner.scan(root_path, compute_hash=True)
         task.total_files = len(files)
         task.message = f"Found {len(files)} files to index"
+        await broadcast_progress()
 
         if not files:
             task.status = TaskStatusEnum.COMPLETED
             task.message = "No files to index"
             task.completed_at = datetime.now()
+            await broadcast_progress()
             return
 
         # Process files
@@ -107,6 +124,10 @@ async def run_index_task(
             task.message = f"Processing {file_info.path.name}"
             task.processed_files = i + 1
             task.progress = (i + 1) / len(files)
+            
+            # Broadcast progress every 10 files or at completion
+            if (i + 1) % 10 == 0 or i == len(files) - 1:
+                await broadcast_progress()
 
             # Simulate chunking and embedding (placeholder)
             # In full implementation, this would:
@@ -127,6 +148,7 @@ async def run_index_task(
         task.message = f"Indexing completed: {len(files)} files, {chunks_created} chunks"
         task.progress = 1.0
         task.completed_at = datetime.now()
+        await broadcast_progress()
 
         logger.info(f"Index task {task_id} completed: {task.message}")
 
@@ -135,6 +157,7 @@ async def run_index_task(
         task.error = str(e)
         task.message = f"Indexing failed: {str(e)}"
         task.completed_at = datetime.now()
+        await broadcast_progress()
         logger.error(f"Index task {task_id} failed: {e}")
 
 

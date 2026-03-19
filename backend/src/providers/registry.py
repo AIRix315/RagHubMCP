@@ -42,6 +42,7 @@ class ProviderRegistry:
                 ProviderCategory.EMBEDDING: {},
                 ProviderCategory.RERANK: {},
                 ProviderCategory.LLM: {},
+                ProviderCategory.VECTORSTORE: {},
             }
         return cls._instance
     

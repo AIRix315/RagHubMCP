@@ -68,11 +68,13 @@ def register_tools() -> None:
     from .tools.benchmark import register_benchmark_tools
     from .tools.rerank import register_rerank_tools
     from .tools.search import register_search_tools
+    from .tools.hybrid import register_hybrid_tools
     
     register_base_tools(mcp)
     register_benchmark_tools(mcp)
     register_rerank_tools(mcp)
     register_search_tools(mcp)
+    register_hybrid_tools(mcp)
 
 
 def main() -> None:

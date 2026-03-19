@@ -11,8 +11,109 @@
 
 ### 待开发
 
-- Web 控制台增强 (WebSocket 实时进度)
-- 效果对比图表可视化
+- 统计仪表盘完善
+- 图表可视化
+- Qdrant迁移工具
+
+## [0.4.0] - 2026-03-19
+
+### Phase 2 功能增强
+
+#### 2.5: 增量索引 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/indexer/watcher.py`: 文件监听服务
+    - 使用 watchdog.Observer 实现
+    - 支持递归监听、排除目录、文件类型过滤
+    - 防抖处理避免频繁操作
+  - 创建 `src/indexer/incremental.py`: 增量索引器
+    - 基于 content_hash 检测变更
+    - 支持新增/修改/删除文件处理
+    - 包含 SimpleChunker fallback 机制
+  - 创建 MCP工具: `start_watcher`, `stop_watcher`, `get_watcher_status`, `sync_directory`
+- **验证结果**:
+  - 新增测试: 34 passed ✅
+  - 总索引器测试: 60 passed ✅
+
+#### 2.4: Qdrant 支持 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/providers/vectorstore/base.py`: VectorStoreProvider 抽象基类
+    - 统一接口: create_collection, add, query, delete, count
+    - SearchResult, QueryResult 数据类
+  - 创建 `src/providers/vectorstore/chroma.py`: ChromaProvider
+    - 包装现有 ChromaService，零侵入性
+  - 创建 `src/providers/vectorstore/qdrant.py`: QdrantProvider
+    - 支持 memory, local, remote, cloud 模式
+    - 自动嵌入生成
+  - 更新 `src/providers/factory.py`: get_vectorstore_provider() 方法
+- **验证结果**:
+  - 新增测试: 22 passed, 19 skipped (qdrant-client未安装) ✅
+
+#### 2.3a: WebSocket 实时进度 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `backend/src/api/websocket.py`: ConnectionManager
+    - 连接管理、广播进度、心跳机制
+  - 添加 WebSocket 端点: `/ws/progress/{task_id}`
+  - 创建 `frontend/src/composables/useWebSocket.ts`: Vue composable
+  - 更新 IndexStore 使用 WebSocket + REST 回退
+- **验证结果**:
+  - 后端测试: 13 passed ✅
+  - 前端测试: 8 passed ✅
+
+#### 2.2: 多语言 AST 切分 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/chunkers/ast_base.py`: AST切分器抽象基类
+    - Tree-sitter 解析和查询通用逻辑
+    - 优雅降级处理
+  - 创建 `src/chunkers/python_ast.py`: Python AST切分器
+    - 函数级别切分 (function_definition)
+    - 类级别切分 (class_definition)
+  - 创建 `src/chunkers/typescript_ast.py`: TypeScript/TSX AST切分器
+    - 函数声明、类声明、方法定义、箭头函数
+  - 创建 `src/chunkers/go_ast.py`: Go AST切分器
+    - 函数声明、方法声明、类型声明
+  - 更新 ChunkerRegistry 自动注册 AST 切分器
+  - 添加可选依赖组 `[ast]`
+- **验证结果**:
+  - 新增测试: 36 passed ✅
+  - 总切分器测试: 87 passed ✅
+
+#### 2.1: 混合搜索 ✅
+
+- **时间**: 2026-03-19
+- **状态**: 完成
+- **内容**:
+  - 创建 `src/services/bm25_service.py`: BM25索引服务
+    - 使用 bm25s 库 (100x faster than rank_bm25)
+    - 支持 per-collection 索引管理
+    - 持久化存储
+  - 创建 `src/services/hybrid_search.py`: 混合搜索服务
+    - RRF (Reciprocal Rank Fusion) 算法
+    - 可配置权重 alpha (向量) / beta (BM25)
+  - 创建 MCP工具: `hybrid_search`, `bm25_index_documents`, `bm25_query`
+  - 更新配置: HybridConfig
+- **验证结果**:
+  - 新增测试: 26 passed ✅
+
+### 测试统计变更
+
+| 阶段 | 测试数 |
+|------|--------|
+| Phase 1.5 | 240 |
+| Phase 2 | 334 (+94) |
+
+---
 
 ### Phase 1.5 进展
 

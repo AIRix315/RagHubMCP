@@ -113,6 +113,18 @@ class ProviderFactory:
         """
         return self._get_provider(ProviderCategory.LLM, name)
     
+    def get_vectorstore_provider(self, name: str | None = None) -> BaseVectorStoreProvider:
+        """Get a vector store provider instance.
+        
+        Args:
+            name: Provider instance name from config.yaml.
+                  If None, uses the default provider.
+                  
+        Returns:
+            BaseVectorStoreProvider instance
+        """
+        return self._get_provider(ProviderCategory.VECTORSTORE, name)
+    
     def _get_provider(
         self,
         category: ProviderCategory,
@@ -195,6 +207,7 @@ class ProviderFactory:
 from .embedding.base import BaseEmbeddingProvider
 from .rerank.base import BaseRerankProvider
 from .llm.base import BaseLLMProvider
+from .vectorstore.base import BaseVectorStoreProvider
 
 
 # Global factory instance

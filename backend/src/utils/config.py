@@ -79,10 +79,12 @@ class ProvidersConfig:
         embedding: Embedding provider configurations.
         rerank: Rerank provider configurations.
         llm: LLM provider configurations.
+        vectorstore: Vector store provider configurations.
     """
     embedding: ProviderCategoryConfig = field(default_factory=lambda: ProviderCategoryConfig(default=""))
     rerank: ProviderCategoryConfig = field(default_factory=lambda: ProviderCategoryConfig(default=""))
     llm: ProviderCategoryConfig = field(default_factory=lambda: ProviderCategoryConfig(default=""))
+    vectorstore: ProviderCategoryConfig = field(default_factory=lambda: ProviderCategoryConfig(default=""))
 
 
 @dataclass
@@ -101,6 +103,34 @@ class IndexerConfig:
     max_file_size: int = 1048576  # 1MB
     file_types: list[str] = field(default_factory=lambda: [".py", ".ts", ".js", ".md", ".vue"])
     exclude_dirs: list[str] = field(default_factory=lambda: ["node_modules", ".git", "__pycache__", "venv", ".venv", "dist", "build"])
+
+
+@dataclass
+class WatcherConfig:
+    """File watcher configuration.
+    
+    Attributes:
+        enabled: Whether the watcher is enabled.
+        debounce_seconds: Seconds to wait before processing batched events.
+    """
+    enabled: bool = True
+    debounce_seconds: float = 1.0
+
+
+@dataclass
+class HybridConfig:
+    """Hybrid search configuration.
+    
+    Attributes:
+        alpha: Weight for vector search results (default: 0.5).
+        beta: Weight for BM25 search results (default: 0.5).
+        rrf_k: RRF constant for reciprocal rank fusion (default: 60).
+        bm25_persist_dir: Directory for BM25 index storage.
+    """
+    alpha: float = 0.5
+    beta: float = 0.5
+    rrf_k: int = 60
+    bm25_persist_dir: str = "./data/bm25"
 
 
 @dataclass
@@ -126,13 +156,17 @@ class Config:
         chroma: Chroma database configuration.
         providers: Provider configurations.
         indexer: Indexer configuration.
+        watcher: File watcher configuration.
         logging: Logging configuration.
+        hybrid: Hybrid search configuration.
     """
     server: ServerConfig = field(default_factory=ServerConfig)
     chroma: ChromaConfig = field(default_factory=ChromaConfig)
     providers: ProvidersConfig = field(default_factory=ProvidersConfig)
     indexer: IndexerConfig = field(default_factory=IndexerConfig)
+    watcher: WatcherConfig = field(default_factory=WatcherConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
+    hybrid: HybridConfig = field(default_factory=HybridConfig)
 
 
 # Global configuration instance
@@ -181,7 +215,8 @@ def _parse_config(data: dict[str, Any]) -> Config:
     providers_config = ProvidersConfig(
         embedding=_parse_provider_category(providers_data.get("embedding", {})),
         rerank=_parse_provider_category(providers_data.get("rerank", {})),
-        llm=_parse_provider_category(providers_data.get("llm", {}))
+        llm=_parse_provider_category(providers_data.get("llm", {})),
+        vectorstore=_parse_provider_category(providers_data.get("vectorstore", {}))
     )
     
     indexer_data = data.get("indexer", {})
@@ -200,12 +235,28 @@ def _parse_config(data: dict[str, Any]) -> Config:
         file=logging_data.get("file")
     )
     
+    hybrid_data = data.get("hybrid", {})
+    hybrid_config = HybridConfig(
+        alpha=hybrid_data.get("alpha", 0.5),
+        beta=hybrid_data.get("beta", 0.5),
+        rrf_k=hybrid_data.get("rrf_k", 60),
+        bm25_persist_dir=hybrid_data.get("bm25_persist_dir", "./data/bm25")
+    )
+    
+    watcher_data = data.get("watcher", {})
+    watcher_config = WatcherConfig(
+        enabled=watcher_data.get("enabled", True),
+        debounce_seconds=watcher_data.get("debounce_seconds", 1.0)
+    )
+    
     return Config(
         server=server_config,
         chroma=chroma_config,
         providers=providers_config,
         indexer=indexer_config,
-        logging=logging_config
+        watcher=watcher_config,
+        logging=logging_config,
+        hybrid=hybrid_config
     )
 
 

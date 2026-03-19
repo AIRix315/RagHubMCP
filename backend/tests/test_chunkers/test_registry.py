@@ -130,13 +130,21 @@ class TestRegistryLanguageSelection:
         assert chunker_cls is SimpleChunker
 
     def test_get_for_python_language(self):
-        """TC-1.9.6: Python (no special chunker) uses default."""
+        """TC-1.9.6: Python uses PythonASTChunker when tree-sitter is available."""
         from chunkers.registry import registry
-        from chunkers.simple import SimpleChunker
         
-        # Python doesn't have a special chunker registered
+        # Python has a special AST chunker registered
         chunker_cls = registry.get_for_language("python")
-        assert chunker_cls is SimpleChunker
+        
+        # Check if tree-sitter is available
+        try:
+            import tree_sitter_python
+            from chunkers.python_ast import PythonASTChunker
+            assert chunker_cls is PythonASTChunker
+        except ImportError:
+            # Fallback to SimpleChunker if tree-sitter not available
+            from chunkers.simple import SimpleChunker
+            assert chunker_cls is SimpleChunker
 
     def test_language_case_insensitive(self):
         """Language matching is case-insensitive."""

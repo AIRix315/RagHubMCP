@@ -167,5 +167,36 @@ def _register_builtin_chunkers() -> None:
                 registry._language_map[lang.lower()] = chunker_cls
 
 
+def _register_ast_chunkers() -> None:
+    """Register AST chunker implementations (if tree-sitter is available)."""
+    try:
+        from .python_ast import PythonASTChunker
+        if PythonASTChunker.NAME not in registry._chunkers:
+            registry._chunkers[PythonASTChunker.NAME] = PythonASTChunker
+            for lang in PythonASTChunker.SUPPORTED_LANGUAGES:
+                registry._language_map[lang.lower()] = PythonASTChunker
+    except ImportError:
+        pass  # tree-sitter not available
+    
+    try:
+        from .typescript_ast import TypeScriptASTChunker
+        if TypeScriptASTChunker.NAME not in registry._chunkers:
+            registry._chunkers[TypeScriptASTChunker.NAME] = TypeScriptASTChunker
+            for lang in TypeScriptASTChunker.SUPPORTED_LANGUAGES:
+                registry._language_map[lang.lower()] = TypeScriptASTChunker
+    except ImportError:
+        pass  # tree-sitter not available
+    
+    try:
+        from .go_ast import GoASTChunker
+        if GoASTChunker.NAME not in registry._chunkers:
+            registry._chunkers[GoASTChunker.NAME] = GoASTChunker
+            for lang in GoASTChunker.SUPPORTED_LANGUAGES:
+                registry._language_map[lang.lower()] = GoASTChunker
+    except ImportError:
+        pass  # tree-sitter not available
+
+
 # Register built-ins on module import
 _register_builtin_chunkers()
+_register_ast_chunkers()
