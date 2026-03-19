@@ -3,7 +3,7 @@
 本文件记录项目所有重要变更。
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
-版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+版本本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
 ---
 
@@ -11,8 +11,108 @@
 
 ### 待开发
 
-- Web 控制台
-- 效果对比仪表盘
+- Web 控制台增强 (WebSocket 实时进度)
+- 效果对比图表可视化
+
+---
+
+## [0.2.1] - 2026-03-19
+
+### Bug Fixes: 导入路径与类型定义修复
+
+- **时间**: 2026-03-19 18:55
+- **状态**: 完成
+- **问题发现**:
+  - 后端导入路径缺失 `src.` 前缀导致模块无法加载
+  - 前端类型定义循环引用
+  - 前端缺少 `IndexRequest`, `IndexResponse`, `IndexTaskStatus` 类型
+  - TypeScript 配置缺少 `vite/client` 类型
+  - vite.config.ts 与 vitest 类型冲突
+
+- **修复内容**:
+  
+  **后端修复**:
+  - `src/main.py`: 添加 `src.` 前缀到导入路径
+  - `src/api/benchmark.py`: 修复 `from utils.config` → `from src.utils.config`
+  - `src/api/search.py`: 同上
+  - `src/api/index.py`: 同上
+  - `src/api/config.py`: 同上
+  - `src/providers/factory.py`: 同上
+  
+  **前端修复**:
+  - `src/types/index.ts`: 移除循环引用，添加 `indexing` 导出
+  - `src/types/indexing.ts`: 新增 Index 相关类型定义
+  - `tsconfig.app.json`: 添加 `"types": ["vite/client"]`
+  - `tsconfig.node.json`: 添加 `"types": ["vitest/config"]`
+  - `vite.config.ts`: 移除 test 配置（已存在于 vitest.config.ts）
+  - `src/views/Benchmark.vue`: 修复 rerank_provider 类型问题
+  - `src/views/Config.vue`: 移除未使用的导入
+  - `src/stores/collection.ts`: 移除未使用的导入
+  - `src/components/layout/AppLayout.vue`: 移除未使用的 RouterView 导入
+
+- **验证结果**:
+  - 后端测试: 214 tests passed ✅
+  - 前端测试: 8 tests passed ✅
+  - FastAPI 应用加载成功 ✅
+  - MCP Server 工具注册成功 (8 tools) ✅
+  - 前端生产构建成功 ✅
+
+---
+
+## [0.2.0] - 2026-03-19
+
+### 1.14: 效果对比页面 ✅
+
+- **时间**: 2026-03-19 18:29
+- **状态**: 完成
+- **内容**:
+  - 创建 `frontend/src/views/Benchmark.vue`
+  - 支持多配置对比测试
+  - 对比结果表格展示
+  - 最快配置高亮推荐
+  - 详细结果分页展示
+- **测试**: TC-1.14.1 ~ TC-1.14.3 全部通过
+
+### 1.13: Collection 管理页面 ✅
+
+- **时间**: 2026-03-19 18:29
+- **状态**: 完成
+- **内容**:
+  - 创建 `frontend/src/views/Collections.vue`
+  - Collection 列表展示
+  - 文档统计信息
+  - 删除操作 (含确认弹窗)
+  - 集成 useCollectionStore
+- **测试**: TC-1.13.1 ~ TC-1.13.3 全部通过
+
+### 1.12: 配置管理页面 ✅
+
+- **时间**: 2026-03-19 18:29
+- **状态**: 完成
+- **内容**:
+  - 创建 `frontend/src/views/Config.vue`
+  - Provider 展示组件 (Embedding + Rerank)
+  - 索引参数配置表单
+  - 配置保存/加载功能
+  - 集成 useConfigStore
+- **测试**: TC-1.12.1 ~ TC-1.12.4 全部通过
+
+### 1.11: 前端项目初始化 ✅
+
+- **时间**: 2026-03-19 18:29
+- **状态**: 完成
+- **内容**:
+  - 创建 Vue 3 + Vite + TypeScript 项目
+  - 配置 shadcn-vue 组件库 (Tailwind CSS)
+  - 配置 Pinia 状态管理
+  - 配置 Vue Router (4 路由)
+  - 配置 API 请求封装 (Axios)
+  - 创建类型定义 (匹配后端 schemas)
+  - 创建视图组件 (Home, Config, Collections, Benchmark)
+  - 创建 Pinia Stores (config, collection, index)
+  - 创建 API 层 (config, indexing, search, benchmark)
+  - 编写单元测试 (8 tests passing)
+- **测试**: TC-1.11.1 ~ TC-1.11.4 全部通过 (8 tests)
 
 ---
 
