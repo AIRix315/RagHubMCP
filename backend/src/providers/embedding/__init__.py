@@ -1,1 +1,8 @@
-"""Embedding providers module."""
+"""Embedding providers module.
+
+Provides base class for embedding providers and exports common types.
+"""
+
+from .base import BaseEmbeddingProvider
+
+__all__ = ["BaseEmbeddingProvider"]

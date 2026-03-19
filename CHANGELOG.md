@@ -19,9 +19,31 @@
 
 ## [0.1.0] - 2026-03-19
 
+### 1.3: Provider 抽象层 ✅
+
+- **时间**: 2026-03-19 10:16
+- **状态**: 完成
+- **内容**:
+  - 创建 Provider 基类模块 `src/providers/base.py`:
+    - `ProviderCategory` 枚举 (EMBEDDING, RERANK, LLM)
+    - `BaseProvider` 抽象基类
+    - 自定义异常类 (`UnsupportedProviderError`, `ProviderInitializationError`, `ProviderNotFoundError`)
+  - 创建 Provider 注册表 `src/providers/registry.py`:
+    - 装饰器注册模式 `@registry.register()`
+    - 单例模式实现
+  - 创建 Provider 工厂 `src/providers/factory.py`:
+    - 配置驱动实例化
+    - 单例缓存 (相同配置复用实例)
+  - 创建各分类 Provider 基类:
+    - `BaseEmbeddingProvider` (`src/providers/embedding/base.py`)
+    - `BaseRerankProvider` + `RerankResult` (`src/providers/rerank/base.py`)
+    - `BaseLLMProvider` (`src/providers/llm/base.py`)
+  - 异步方法默认实现 (asyncio.to_thread 包装同步方法)
+- **测试**: TC-1.3.1 ~ TC-1.3.4 全部通过 (29 个测试用例)
+
 ### 1.2: MCP Server 基础实现 ✅
 
-- **时间**: 2026-03-19
+- **时间**: 2026-03-19 09:55
 - **状态**: 完成
 - **内容**:
   - 创建配置模块 `src/utils/config.py` (Config dataclass, YAML 加载, 热重载)

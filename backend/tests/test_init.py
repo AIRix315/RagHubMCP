@@ -92,8 +92,8 @@ class TestProjectStructure:
         required_dirs = [
             "src",
             "src/api",
-            "src/mcp",
-            "src/mcp/tools",
+            "src/mcp_server",
+            "src/mcp_server/tools",
             "src/providers",
             "src/providers/embedding",
             "src/providers/rerank",
