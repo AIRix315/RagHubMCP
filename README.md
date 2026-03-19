@@ -2,6 +2,10 @@
 
 **通用代码 RAG 中枢** - MCP Server + FlashRank Rerank + 效果对比仪表盘
 
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![Node](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ---
 
 ## 项目定位
@@ -12,6 +16,108 @@
 
 ---
 
+## 快速安装
+
+### 方式一：一键脚本（推荐）
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/your-username/RagHubMCP.git
+cd RagHubMCP
+
+# 2. 初始化配置
+python scripts/config/init-config.py
+
+# 3. 环境检查
+python scripts/check/check-env.py
+
+# 4. 一键安装
+python scripts/install/install.py
+```
+
+### 方式二：Docker 部署
+
+```bash
+# 克隆并启动
+git clone https://github.com/your-username/RagHubMCP.git
+cd RagHubMCP/scripts/docker
+docker-compose up -d
+
+# 访问服务
+# 前端: http://localhost:3315
+# 后端: http://localhost:8818
+```
+
+### 方式三：手动安装
+
+**后端**:
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -e ".[dev]"
+python -m src.main
+```
+
+**前端**:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 访问地址
+
+| 服务 | 地址 |
+|------|------|
+| Web 控制台 | http://localhost:3315 |
+| API 文档 | http://localhost:8818/docs |
+| MCP Server | 配置后可在 IDE 中直接调用 |
+
+---
+
+## MCP 集成
+
+生成 MCP 配置文件，支持多种 IDE：
+
+```bash
+# 查看支持的 IDE
+python scripts/config/generate-mcp-config.py --list
+
+# 生成 Claude Desktop 配置
+python scripts/config/generate-mcp-config.py --ide claude_desktop --print
+
+# 写入配置文件
+python scripts/config/generate-mcp-config.py --ide cursor --write
+```
+
+**支持的 IDE**: Claude Desktop, Cursor, Windsurf, VS Code, OpenCode, CherryStudio
+
+---
+
+## 功能特性
+
+### 核心功能
+
+- **向量检索** - Chroma/Qdrant 向量数据库支持
+- **Rerank 重排** - FlashRank 高效重排，提升检索精度
+- **混合搜索** - BM25 + 向量检索融合
+- **效果对比** - 多配置对比测试，找到最优方案
+
+### MCP 工具
+
+| 工具 | 描述 |
+|------|------|
+| `chroma_query_with_rerank` | 向量检索 + Rerank 组合 |
+| `benchmark_search_config` | 多配置性能对比 |
+| `rerank_documents` | 独立文档重排 |
+| `hybrid_search` | 混合搜索 |
+| `index_directory` | 目录索引 |
+
+---
+
 ## 技术栈
 
 | 层级 | 技术选型 |
@@ -19,52 +125,10 @@
 | 后端语言 | Python 3.11+ |
 | 后端框架 | FastAPI |
 | 协议层 | MCP |
-| 向量数据库 | Chroma |
+| 向量数据库 | Chroma / Qdrant |
 | Rerank | FlashRank |
 | 前端框架 | Vue 3 + TypeScript |
 | UI 组件 | shadcn-vue |
-
----
-
-## 快速开始
-
-### 环境要求
-
-- Python 3.11+
-- Node.js 18+
-- Ollama (可选，用于本地模型)
-
-### 后端启动
-
-```bash
-cd backend
-
-# 创建虚拟环境
-python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Linux/Mac
-
-# 安装依赖
-pip install -e ".[dev]"
-
-# 复制配置文件
-copy .env.example .env
-
-# 启动服务
-python -m src.main
-```
-
-### 前端启动
-
-```bash
-cd frontend
-
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-```
 
 ---
 
@@ -72,32 +136,75 @@ npm run dev
 
 ```
 RagHubMCP/
-├── backend/          # 后端服务
-│   ├── src/          # 源代码
-│   ├── tests/        # 测试
-│   └── config.yaml   # 配置
-├── frontend/         # Web 控制台
-├── docker/           # Docker 配置
-├── Docs/             # 文档
-├── TODO.md           # 开发计划
-├── CHANGELOG.md      # 更新日志
-└── RULE.md           # 执行准则
+├── backend/              # 后端服务
+│   ├── src/              # 源代码
+│   │   ├── mcp_server/   # MCP 工具
+│   │   ├── providers/    # Provider 实现
+│   │   ├── services/     # 业务服务
+│   │   └── api/          # REST API
+│   ├── tests/            # 测试 (512+ tests)
+│   └── config.yaml       # 配置文件
+├── frontend/             # Web 控制台
+│   └── src/
+│       ├── views/        # 页面组件
+│       ├── stores/       # 状态管理
+│       └── composables/  # 组合式函数
+├── scripts/              # 部署脚本
+│   ├── config/           # 配置管理
+│   ├── check/            # 环境检查
+│   ├── setup/            # 组件安装
+│   ├── install/          # 一键安装
+│   └── docker/           # Docker 配置
+├── schemas/              # JSON Schema
+└── Docs/                 # 文档
 ```
 
-详细结构见: [Docs/04-Project-Structure_20260319.md](Docs/04-Project-Structure_20260319.md)
+---
+
+## 部署脚本
+
+每个脚本可独立运行：
+
+```bash
+# 配置初始化
+python scripts/config/init-config.py --help
+
+# 环境检查
+python scripts/check/check-env.py --json
+
+# 安装 Ollama
+python scripts/setup/setup-ollama.py --check
+
+# 安装 Qdrant
+python scripts/setup/setup-qdrant.py --start
+
+# 验证 Chroma
+python scripts/setup/setup-chroma.py
+
+# 生成 MCP 配置
+python scripts/config/generate-mcp-config.py --ide claude_desktop
+```
 
 ---
 
 ## 文档
 
+- [安装部署指南](Docs/07-RaghubMCP-Install.md)
+- [AI 自主部署指南](scripts/AI_DEPLOYMENT_GUIDE.md)
 - [可行性分析](Docs/01-RagHubMCP_20260319.md)
 - [技术选型](Docs/02-RagHubMCP-Tech_20260319.md)
-- [MVP 范围](Docs/03-RagHubMCP-MVP_20260319.md)
 - [开发计划](TODO.md)
+- [更新日志](CHANGELOG.md)
 
 ---
 
 ## 开发状态
+
+- **Phase 1**: MVP ✅ (214 tests)
+- **Phase 1.5**: 完善 ✅ (281 tests)
+- **Phase 2**: 功能增强 ✅ (474 tests)
+- **Phase 3**: 企业级功能 ✅ (512 tests)
+- **Phase 4**: 部署体验优化 ✅ (49 scripts tests)
 
 详见 [CHANGELOG.md](CHANGELOG.md)
 
