@@ -24,6 +24,7 @@ from .migrate import (
     CollectionMigrationResult,
     migrate_chroma_to_qdrant,
 )
+from .singleton import singleton, reset_singleton
 
 # Backward compatibility alias
 Config = AppConfig

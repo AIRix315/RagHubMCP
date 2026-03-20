@@ -227,19 +227,19 @@
 
 **前置条件**: Module 2 完成
 
-- [ ] 审查现有 `backend/src/providers/vectorstore/base.py`
-- [ ] 统一接口方法：
+- [x] 审查现有 `backend/src/providers/vectorstore/base.py`
+- [x] 统一接口方法：
   ```python
   class VectorDBProvider(ABC):
       async def search(self, query_embedding, top_k) -> list[Doc]
       async def add(self, docs: list[Doc]) -> None
       async def delete(self, ids: list[str]) -> None
   ```
-- [ ] 审查现有 `ChromaProvider`、`QdrantProvider` 实现
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 审查现有 `ChromaProvider`、`QdrantProvider` 实现
+- [x] 编写测试用例
+- [x] Git 提交
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-21 已完成 - ChromaProvider 重构为直接封装 ChromaDB，移除对 ChromaService 依赖
 
 ---
 
@@ -247,8 +247,8 @@
 
 **前置条件**: 3.1 完成
 
-- [ ] 修改 `Retriever` 使用 `VectorDBProvider` 接口
-- [ ] 移除对 `ChromaService` 的直接依赖
+- [x] 修改 `Retriever` 使用 `VectorDBProvider` 接口
+- [x] 移除对 `ChromaService` 的直接依赖
   ```python
   # ❌ 不允许
   from chroma_service import ...
@@ -256,11 +256,11 @@
   # ✅ 必须
   vector_db.search(...)
   ```
-- [ ] 验证 Chroma → Qdrant 切换无需改业务代码
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 验证 Chroma → Qdrant 切换无需改业务代码
+- [x] 编写测试用例
+- [x] Git 提交
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-21 已完成 - VectorRetriever 改为使用 ProviderFactory，api/search.py 移除直接依赖
 
 ---
 
@@ -311,17 +311,17 @@
 
 **前置条件**: 4.1 完成
 
-- [ ] 创建 `backend/src/pipeline/builders/default_builder.py`
-- [ ] 实现功能：
-  - [ ] 去重（简单 hash）
-  - [ ] 排序（按 score）
-  - [ ] 截断（topK）
-  - [ ] 合并（连续内容）
-- [ ] 接入 Pipeline
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 创建 `backend/src/pipeline/context_builder.py`
+- [x] 实现功能：
+  - [x] 去重（简单 hash）
+  - [x] 排序（按 score）
+  - [x] 截断（topK）
+  - [x] 合并（连续内容）- merge_consecutive 已实现
+- [x] 接入 Pipeline
+- [x] 编写测试用例
+- [x] Git 提交
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-21 05:40 已完成
 
 ---
 

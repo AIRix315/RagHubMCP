@@ -89,15 +89,21 @@ class DefaultContextBuilder(ContextBuilder):
             limit: Maximum number of documents.
             options: Optional builder options:
                 - remove_duplicates: Remove duplicate content (default: True)
+                - merge_consecutive: Merge consecutive content from same source (default: False)
                 
         Returns:
             Deduplicated, sorted, and truncated documents.
         """
         options = options or {}
         remove_duplicates = options.get("remove_duplicates", True)
+        merge_consecutive = options.get("merge_consecutive", False)
         
         if not documents:
             return []
+        
+        # Merge consecutive content first
+        if merge_consecutive:
+            documents = self._merge_consecutive(documents)
         
         # Deduplicate if requested
         if remove_duplicates:
@@ -132,6 +138,87 @@ class DefaultContextBuilder(ContextBuilder):
                 seen[content_hash] = doc
         
         return list(seen.values())
+    
+    def _merge_consecutive(self, documents: list[Document]) -> list[Document]:
+        """Merge consecutive documents from the same source.
+        
+        Documents are considered consecutive if they have the same source
+        and their positions indicate they were originally split.
+        
+        Args:
+            documents: List of documents (should be in original order).
+            
+        Returns:
+            List with consecutive documents merged.
+        """
+        if not documents:
+            return []
+        
+        merged: list[Document] = []
+        current_group: list[Document] = []
+        current_source: str | None = None
+        
+        for doc in documents:
+            source = doc.metadata.get("source") if doc.metadata else None
+            
+            if current_source == source:
+                # Same source, add to current group
+                current_group.append(doc)
+            else:
+                # Different source, flush current group if exists
+                if current_group:
+                    merged.append(self._merge_group(current_group))
+                current_group = [doc]
+                current_source = source
+        
+        # Flush final group
+        if current_group:
+            merged.append(self._merge_group(current_group))
+        
+        return merged
+    
+    def _merge_group(self, documents: list[Document]) -> Document:
+        """Merge a group of documents into a single document.
+        
+        Args:
+            documents: List of documents to merge (same source).
+            
+        Returns:
+            A single merged document.
+        """
+        if len(documents) == 1:
+            return documents[0]
+        
+        # Merge text content (preserve order)
+        merged_text = "\n".join(doc.text for doc in documents)
+        
+        # Use metadata from first document
+        merged_metadata = dict(documents[0].metadata) if documents[0].metadata else {}
+        
+        # Update start/end if available
+        if documents[0].metadata and "start" in documents[0].metadata:
+            start = documents[0].metadata.get("start", 0)
+        else:
+            start = 0
+            
+        if documents[-1].metadata and "end" in documents[-1].metadata:
+            end = documents[-1].metadata.get("end", 0)
+        else:
+            end = 0
+            
+        merged_metadata["start"] = start
+        merged_metadata["end"] = end
+        merged_metadata["chunks_merged"] = len(documents)
+        
+        return Document(
+            id=documents[0].id,
+            text=merged_text,
+            score=documents[0].score,  # Use highest score
+            metadata=merged_metadata,
+            vector_score=documents[0].vector_score,
+            bm25_score=documents[0].bm25_score,
+            rerank_score=documents[0].rerank_score,
+        )
 
 
 class MultiQueryContextBuilder(ContextBuilder):

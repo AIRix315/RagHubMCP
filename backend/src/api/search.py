@@ -16,7 +16,6 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from src.services import get_chroma_service
 from src.utils.config import get_config
 from src.utils.errors import NotFoundError, SearchError, ValidationError
 
@@ -30,6 +29,16 @@ from .pipeline_adapter import rag_result_to_search_response
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/search", tags=["search"])
+
+
+def _get_chroma_service() -> Any:
+    """Get ChromaService for backward compatibility.
+    
+    Deprecated: Only for backward compatibility with collection management endpoints.
+    New code should use ProviderFactory.
+    """
+    from src.providers.vectorstore.chroma import ChromaProvider
+    return ChromaProvider()
 
 
 @router.post(
@@ -163,18 +172,25 @@ async def list_collections() -> dict[str, Any]:
     Returns:
         List of collection info.
     """
-    chroma_service = get_chroma_service()
-    collections = chroma_service.list_collections()
+    chroma_service = _get_chroma_service()
+    collection_names = chroma_service.list_collections()
 
     result = []
-    for coll in collections:
-        result.append(
-            {
-                "name": coll.name,
+    for name in collection_names:
+        # Get collection details
+        try:
+            coll = chroma_service._get_client().get_collection(name=name)
+            result.append({
+                "name": name,
                 "count": coll.count(),
                 "metadata": coll.metadata or {},
-            }
-        )
+            })
+        except Exception:
+            result.append({
+                "name": name,
+                "count": 0,
+                "metadata": {},
+            })
 
     return {
         "collections": result,
@@ -203,7 +219,7 @@ async def delete_collection(name: str) -> dict[str, Any]:
     Raises:
         HTTPException: If collection not found.
     """
-    chroma_service = get_chroma_service()
+    chroma_service = _get_chroma_service()
 
     try:
         chroma_service.delete_collection(name)

@@ -7,6 +7,77 @@
 
 ---
 
+## [V2.0.2] - 2026-03-21
+
+### 任务编号: V2架构合规修复（二）
+
+- **时间**: 2026-03-21 05:40
+- **内容**: 清理代码重复 + 重构 Provider 层 + 统一调用接口
+
+### 新增功能
+
+1. **Singleton 装饰器** (`backend/src/utils/singleton.py`)
+   - `@singleton` 装饰器解决 7 处 singleton 模式重复
+   - `reset_singleton()` 函数重置单例实例
+   - 符合 RULE-2: 模块接口化
+
+2. **分数工具模块** (`backend/src/utils/scoring.py`)
+   - `reciprocal_rank_fusion()` - RRF 算法
+   - `normalize_scores()` - 分数归一化
+   - `distance_to_score()` - 距离转分数
+
+3. **merge_consecutive 功能** (`backend/src/pipeline/context_builder.py`)
+   - 合并连续内容来自同一源
+   - 保留合并后的 metadata
+   - 支持与去重功能组合使用
+
+### 架构改进
+
+| 规则 | 状态 | 说明 |
+|------|------|------|
+| RULE-2 | ✅ | Singleton 装饰器统一单例模式 |
+| RULE-3 | ✅ | ChromaProvider 直接封装 ChromaDB，移除对 ChromaService 依赖 |
+| RULE-3 | ✅ | VectorRetriever 改用 ProviderFactory |
+| RULE-3 | ✅ | api/search.py 移除直接依赖 ChromaService |
+| V2 设计 | ✅ | Context Builder merge_consecutive 已实现 |
+
+### 测试结果
+
+- **238 passed** - 核心测试全部通过
+- **新增测试**: `test_context_builder_merge.py`, `test_vector_retriever.py`, `test_singleton.py`
+
+### 测试结果
+
+- **421 passed** - 所有核心测试通过
+- **新增测试**:
+  - `test_context_builder_merge.py` - merge_consecutive 功能测试
+  - `test_vector_retriever.py` - VectorRetriever 使用 ProviderFactory 测试
+  - `test_singleton.py` - @singleton 装饰器测试
+  - `test_chroma_provider.py` - ChromaProvider 直接封装 ChromaDB 测试（替换旧实现）
+
+### 文件变更
+
+**新增**:
+- `backend/src/utils/singleton.py` - Singleton 装饰器
+- `backend/src/utils/scoring.py` - 分数工具函数
+- `backend/tests/test_pipeline/test_context_builder_merge.py`
+- `backend/tests/test_pipeline/test_vector_retriever.py`
+- `backend/tests/test_utils/test_singleton.py`
+- `backend/tests/test_providers/test_vectorstore/test_chroma_provider.py`
+
+**删除**:
+- `backend/tests/test_pipeline/test_retriever.py` (旧实现)
+- `backend/tests/test_providers/test_vectorstore/test_chroma.py` (旧实现)
+
+**修改**:
+- `backend/src/providers/vectorstore/chroma.py` - 直接封装 ChromaDB
+- `backend/src/pipeline/retriever.py` - 使用 ProviderFactory
+- `backend/src/pipeline/context_builder.py` - 实现 merge_consecutive
+- `backend/src/api/search.py` - 移除直接依赖 ChromaService
+- `backend/src/utils/__init__.py` - 导出新模块
+
+---
+
 ## [V2.0.1] - 2026-03-21
 
 ### 任务编号: V2架构合规修复

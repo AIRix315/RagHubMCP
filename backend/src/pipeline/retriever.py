@@ -159,7 +159,8 @@ class HybridRetriever(Retriever):
 class VectorRetriever(Retriever):
     """Vector-only retriever using semantic similarity.
     
-    This retriever uses vector similarity search only.
+    This retriever uses vector similarity search only via the
+    BaseVectorStoreProvider interface.
     """
     
     def __init__(self, collection: str = "default") -> None:
@@ -193,33 +194,38 @@ class VectorRetriever(Retriever):
         top_k = options.get("topK", 10)
         where = options.get("where")
         
-        from src.services.chroma_service import get_chroma_service
+        # Use VectorDBProvider interface (RULE-3 compliance)
+        # Uses default provider from config - configuration driven
+        from src.providers.factory import factory
         
-        service = get_chroma_service()
+        vectorstore = factory.get_vectorstore_provider()
         
-        results = service.query(
-            collection_name=collection,
+        result = vectorstore.query(
+            collection=collection,
             query_text=query,
             n_results=top_k,
             where=where,
         )
         
         documents = []
-        ids = results.get("ids", [])
-        texts = results.get("documents", [])
-        metadatas = results.get("metadatas", [])
-        distances = results.get("distances", [])
-        
-        for i, (doc_id, text) in enumerate(zip(ids, texts)):
-            # Convert distance to score (lower distance = higher similarity)
-            distance = distances[i] if i < len(distances) else 0.0
-            score = 1.0 / (1.0 + distance) if distance else 0.0
+        for search_result in result.results:
+            # Convert distance-based score from ChromaDB
+            # ChromaDB returns distance (lower = better), we convert to score (higher = better)
+            distance = search_result.score
+            # Handle None or negative distance as default 0.0
+            if distance is not None and distance >= 0:
+                score = 1.0 / (1.0 + distance)
+            else:
+                score = 0.0
+            
+            # Handle None metadata
+            metadata = search_result.metadata if search_result.metadata is not None else {}
             
             doc = Document(
-                id=doc_id,
-                text=text,
+                id=search_result.id,
+                text=search_result.document,
                 score=score,
-                metadata=metadatas[i] if i < len(metadatas) else {},
+                metadata=metadata,
                 vector_score=score,
             )
             documents.append(doc)
