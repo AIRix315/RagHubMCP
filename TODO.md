@@ -79,9 +79,22 @@
 
 ---
 
-## Phase V2.1: Pipeline Core（最高优先级）
+# Phase 1: 重构核心
 
-### V2.1.1 定义 Pipeline 接口
+**目标**: 在 V1 基础上重构为统一 Pipeline 架构
+
+**包含模块**:
+- Module 1: Pipeline Core（统一执行入口）
+- Module 2: Rerank Integration（质量核心）
+- Module 3: Provider 抽象（解耦）
+
+---
+
+## Module 1: Pipeline Core
+
+**目标**: 统一所有 RAG 流程入口
+
+### 1.1 定义 Pipeline 接口
 
 **前置条件**: 无
 
@@ -94,30 +107,22 @@
           pass
   ```
 - [ ] 创建 `backend/src/pipeline/result.py` — 定义 RAGResult 数据类
-  ```python
-  @dataclass
-  class RAGResult:
-      contexts: list[Context]
-      metadata: dict
-      latency_ms: float
-  ```
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
+**验证**:
 ```
-TC-V2.1.1.1: RAGPipeline 抽象类不可直接实例化
-TC-V2.1.1.2: RAGResult 数据类正确初始化
-TC-V2.1.1.3: RAGResult contexts 可迭代
+✅ 输入 query → 返回 docs
+✅ 结果与 V1 search 一致（初期允许无 rerank）
 ```
 
 **完成记录**: 待完成
 
 ---
 
-### V2.1.2 实现 DefaultPipeline
+### 1.2 实现 DefaultPipeline
 
-**前置条件**: V2.1.1 完成
+**前置条件**: 1.1 完成
 
 - [ ] 创建 `backend/src/pipeline/default.py` — 实现 DefaultRAGPipeline
   ```python
@@ -137,22 +142,13 @@ TC-V2.1.1.3: RAGResult contexts 可迭代
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.1.2.1: DefaultPipeline 可实例化
-TC-V2.1.2.2: run() 返回 RAGResult
-TC-V2.1.2.3: 结果与 V1 search 一致（初期无 rerank）
-TC-V2.1.2.4: topK 参数生效
-TC-V2.1.2.5: 空查询返回空结果
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.1.3 Pipeline 工厂
+### 1.3 Pipeline 工厂
 
-**前置条件**: V2.1.2 完成
+**前置条件**: 1.2 完成
 
 - [ ] 创建 `backend/src/pipeline/factory.py` — PipelineFactory
 - [ ] 支持配置驱动创建 Pipeline
@@ -160,20 +156,13 @@ TC-V2.1.2.5: 空查询返回空结果
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.1.3.1: 工厂创建 DefaultPipeline
-TC-V2.1.3.2: 配置变更后重新创建
-TC-V2.1.3.3: 单例模式正确
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.1.4 Phase V2.1 验收
+### Module 1 验收
 
-**前置条件**: V2.1.1 - V2.1.3 完成
+**前置条件**: 1.1 - 1.3 完成
 
 - [ ] 运行全部测试
 - [ ] 更新 CHANGELOG.md
@@ -181,22 +170,21 @@ TC-V2.1.3.3: 单例模式正确
 
 **验收标准**:
 ```
-AC-V2.1.1: 所有 TC-V2.1.x.x 测试通过
-AC-V2.1.2: 输入 query → 返回 docs
-AC-V2.1.3: 结果与 V1 search 一致
+✅ 输入 query → 返回 docs
+✅ 结果与 V1 search 一致
 ```
 
 **完成记录**: 待完成
 
 ---
 
-## Phase V2.2: Rerank Integration（质量核心）
+## Module 2: Rerank Integration
 
-**目标**: 引入"最终排序层"  
+**目标**: 引入"最终排序层"
 
-### V2.2.1 定义 Reranker 接口
+### 2.1 定义 Reranker 接口
 
-**前置条件**: V2.1 完成
+**前置条件**: Module 1 完成
 
 - [ ] 创建 `backend/src/pipeline/reranker.py` — Reranker 抽象接口
   ```python
@@ -209,90 +197,68 @@ AC-V2.1.3: 结果与 V1 search 一致
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.2.1.1: Reranker 抽象类不可直接实例化
-TC-V2.2.1.2: rerank 返回排序后的 docs
-TC-V2.2.1.3: score 在有效范围
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.2.2 接入 Pipeline
+### 2.2 实现基础版本
 
-**前置条件**: V2.2.1 完成
+**前置条件**: 2.1 完成
 
-- [ ] 修改 `DefaultRAGPipeline.run()` 调用 reranker
-- [ ] 添加 rerank 配置项
-- [ ] 支持 fallback（rerank 失败时返回原始结果）
+- [ ] FlashRank（本地）集成
+- [ ] API rerank（Cohere/Jina）支持（可选）
+- [ ] fallback 机制（rerank 失败时返回原始结果）
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.2.2.1: rerank 后结果顺序改变
-TC-V2.2.2.2: rerank_top_k 参数生效
-TC-V2.2.2.3: rerank 失败时 fallback
-TC-V2.2.2.4: 空文档列表返回空结果
-```
+**完成记录**: 待完成
+
+---
+
+### 2.3 接入 Pipeline
+
+**前置条件**: 2.2 完成
+
+- [ ] 修改 `DefaultRAGPipeline.run()` 调用 reranker
+- [ ] 添加 rerank 配置项
+- [ ] 编写测试用例
+- [ ] Git 提交
 
 **完成记录**: 待完成
 
 ---
 
-### V2.2.3 对比测试（必须执行）
+### Module 2 验收（必须做对比）
 
-**前置条件**: V2.2.2 完成
+**前置条件**: 2.1 - 2.3 完成
 
-- [ ] 创建 `backend/tests/test_pipeline/test_comparison.py`
-- [ ] 构建测试问题集（至少 20 个问题）
+- [ ] 运行全部测试
 - [ ] 对比 V1（无 rerank）vs V2（+rerank）
 - [ ] 记录 Top3 命中率
 - [ ] 生成对比报告
-- [ ] Git 提交
-
-**测试用例**:
-```
-TC-V2.2.3.1: Top3 命中率提升 ≥ 20%
-TC-V2.2.3.2: 错误召回明显下降
-TC-V2.2.3.3: 延迟可接受（< 500ms）
-```
-
-**完成记录**: 待完成
-
----
-
-### V2.2.4 Phase V2.2 验收
-
-**前置条件**: V2.2.1 - V2.2.3 完成
-
-- [ ] 运行全部测试
 - [ ] 更新 CHANGELOG.md
 - [ ] Git 提交
 
-**验收标准**:
+**验证标准**:
 ```
-AC-V2.2.1: 所有 TC-V2.2.x.x 测试通过
-AC-V2.2.2: Top3 命中率提升 ≥ 20%
-AC-V2.2.3: 错误召回明显下降
+✅ Top3 是否更相关
+✅ 错误结果是否下降
+✅ Top3 命中率提升 ≥ 20%
 ```
 
 **完成记录**: 待完成
 
 ---
 
-## Phase V2.3: Provider 抽象（解耦）
+## Module 3: Provider 抽象
 
-**目标**: 彻底解耦模型和数据库  
-**预计时间**: 2 天
+**目标**: 彻底解耦模型和数据库
 
-### V2.3.1 定义 VectorDBProvider 接口
+### 3.1 定义接口
 
-**前置条件**: V2.2 完成
+**前置条件**: Module 2 完成
 
-- [ ] 创建 `backend/src/providers/vectorstore/base.py`（已存在，需审查）
+- [ ] 审查现有 `backend/src/providers/vectorstore/base.py`
 - [ ] 统一接口方法：
   ```python
   class VectorDBProvider(ABC):
@@ -304,65 +270,66 @@ AC-V2.2.3: 错误召回明显下降
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.3.1.1: VectorDBProvider 接口完整
-TC-V2.3.1.2: ChromaProvider 实现正确
-TC-V2.3.1.3: QdrantProvider 实现正确
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.3.2 重构 Pipeline 使用 Provider
+### 3.2 重构 Pipeline 使用 Provider
 
-**前置条件**: V2.3.1 完成
+**前置条件**: 3.1 完成
 
 - [ ] 修改 `Retriever` 使用 `VectorDBProvider` 接口
 - [ ] 移除对 `ChromaService` 的直接依赖
+  ```python
+  # ❌ 不允许
+  from chroma_service import ...
+  
+  # ✅ 必须
+  vector_db.search(...)
+  ```
 - [ ] 验证 Chroma → Qdrant 切换无需改业务代码
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.3.2.1: 替换 Chroma → Qdrant 不改业务代码
-TC-V2.3.2.2: embedding 模型切换无影响
-TC-V2.3.2.3: Provider 工厂正确创建实例
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.3.3 Phase V2.3 验收
+### Module 3 验收
 
-**前置条件**: V2.3.1 - V2.3.2 完成
+**前置条件**: 3.1 - 3.2 完成
 
 - [ ] 运行全部测试
 - [ ] 更新 CHANGELOG.md
 - [ ] Git 提交
 
-**验收标准**:
+**验证标准**:
 ```
-AC-V2.3.1: 所有 TC-V2.3.x.x 测试通过
-AC-V2.3.2: Chroma ↔ Qdrant 切换无业务代码改动
-AC-V2.3.3: embedding 模型切换无影响
+✅ 替换 Chroma → Qdrant 不改业务代码
+✅ embedding 模型切换无影响
 ```
 
 **完成记录**: 待完成
 
 ---
 
-## Phase V2.4: Context Builder（质量优化）
+# Phase 2: 质量提升
 
-**目标**: 构建"最优上下文"  
-**预计时间**: 1-2 天
+**目标**: 提升 RAG 结果质量，降低用户复杂度
 
-### V2.4.1 定义 ContextBuilder 接口
+**包含模块**:
+- Module 4: Context Builder（质量优化）
+- Module 5: Profile 配置系统
 
-**前置条件**: V2.3 完成
+---
+
+## Module 4: Context Builder
+
+**目标**: 构建"最优上下文"
+
+### 4.1 定义 ContextBuilder 接口
+
+**前置条件**: Phase 1 完成
 
 - [ ] 创建 `backend/src/pipeline/context_builder.py`
   ```python
@@ -373,19 +340,13 @@ AC-V2.3.3: embedding 模型切换无影响
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.4.1.1: ContextBuilder 抽象类不可直接实例化
-TC-V2.4.1.2: build 返回指定数量的 contexts
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.4.2 实现 DefaultContextBuilder
+### 4.2 实现 DefaultContextBuilder
 
-**前置条件**: V2.4.1 完成
+**前置条件**: 4.1 完成
 
 - [ ] 创建 `backend/src/pipeline/builders/default_builder.py`
 - [ ] 实现功能：
@@ -397,46 +358,93 @@ TC-V2.4.1.2: build 返回指定数量的 contexts
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.4.2.1: 去重功能正确
-TC-V2.4.2.2: 按 score 降序排列
-TC-V2.4.2.3: limit 参数生效
-TC-V2.4.2.4: 上下文无重复
-TC-V2.4.2.5: 相关性更集中
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.4.3 Phase V2.4 验收
+### Module 4 验收
 
-**前置条件**: V2.4.1 - V2.4.2 完成
+**前置条件**: 4.1 - 4.2 完成
 
 - [ ] 运行全部测试
 - [ ] 更新 CHANGELOG.md
 - [ ] Git 提交
 
-**验收标准**:
+**验证标准**:
 ```
-AC-V2.4.1: 所有 TC-V2.4.x.x 测试通过
-AC-V2.4.2: 上下文无重复
-AC-V2.4.3: 相关性更集中
+✅ 上下文无重复
+✅ 相关性更集中
+✅ 长文不过长
 ```
 
 **完成记录**: 待完成
 
 ---
 
-## Phase V2.5: MCP 接口收敛
+## Module 5: Profile 配置系统
 
-**目标**: 只暴露"最终能力"  
-**预计时间**: 1 天
+**目标**: 降低用户复杂度
 
-### V2.5.1 收敛 MCP 接口
+### 5.1 定义 Profile
 
-**前置条件**: V2.4 完成
+**前置条件**: Module 4 完成
+
+- [ ] 创建 `backend/src/pipeline/profiles.py`
+- [ ] 定义三种 profile：
+  ```python
+  PROFILES = {
+      "fast": {"rerank": False, "topK": 3},
+      "balanced": {"rerank": True, "topK": 5},
+      "accurate": {"rerank": True, "topK": 10, "multi_query": True}
+  }
+  ```
+- [ ] 编写测试用例
+- [ ] Git 提交
+
+**完成记录**: 待完成
+
+---
+
+### 5.2 接入 Pipeline
+
+**前置条件**: 5.1 完成
+
+- [ ] 修改 `Pipeline.run()` 支持 profile 参数
+- [ ] 更新配置系统支持 profile 选择
+- [ ] 编写测试用例
+- [ ] Git 提交
+
+**完成记录**: 待完成
+
+---
+
+### Module 5 验收
+
+**前置条件**: 5.1 - 5.2 完成
+
+- [ ] 运行全部测试
+- [ ] 更新 CHANGELOG.md
+- [ ] Git 提交
+
+**验证标准**:
+```
+✅ 用户只需选 profile
+✅ 不需要调参数
+```
+
+**完成记录**: 待完成
+
+---
+
+# Phase 3: MCP 接口收敛
+
+**目标**: 只暴露"最终能力"
+
+---
+
+## 6.1 收敛 MCP 接口
+
+**前置条件**: Phase 2 完成
 
 - [ ] 创建 `backend/src/mcp_server/tools/v2/` 目录
 - [ ] 实现 `query` 工具（调用 Pipeline）
@@ -453,27 +461,13 @@ AC-V2.4.3: 相关性更集中
       ...
   ```
 - [ ] 标记旧工具为 deprecated（保留兼容）
-- [ ] 编写测试用例
-- [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.5.1.1: query 工具返回结果
-TC-V2.5.1.2: ingest 工具返回成功
-TC-V2.5.1.3: strategy 参数生效
-TC-V2.5.1.4: Cursor / CherryStudio 可直接用
-```
+| 保留 ✅ | 删除 ❌ |
+|--------|--------|
+| `query` | `search` |
+| `ingest` | `rerank` |
+| | `embed` |
 
-**完成记录**: 待完成
-
----
-
-### V2.5.2 更新 MCP 配置生成器
-
-**前置条件**: V2.5.1 完成
-
-- [ ] 更新 `scripts/config/generate-mcp-config.py`
-- [ ] 添加 V2 工具说明
 - [ ] 编写测试用例
 - [ ] Git 提交
 
@@ -481,106 +475,174 @@ TC-V2.5.1.4: Cursor / CherryStudio 可直接用
 
 ---
 
-### V2.5.3 Phase V2.5 验收
+## 6.2 MCP 调用 Pipeline
 
-**前置条件**: V2.5.1 - V2.5.2 完成
+**前置条件**: 6.1 完成
+
+- [ ] 确保所有 MCP 调用都经过 `pipeline.run(query)`
+- [ ] 更新 MCP 配置生成器
+- [ ] 编写测试用例
+- [ ] Git 提交
+
+**完成记录**: 待完成
+
+---
+
+## Phase 3 验收
+
+**前置条件**: 6.1 - 6.2 完成
 
 - [ ] 运行全部测试
 - [ ] 手动测试 MCP 集成（Cursor/CherryStudio）
 - [ ] 更新 CHANGELOG.md
 - [ ] Git 提交
 
-**验收标准**:
+**验证标准**:
 ```
-AC-V2.5.1: 所有 TC-V2.5.x.x 测试通过
-AC-V2.5.2: MCP 调用只需一个 query
-AC-V2.5.3: 用户无需理解 RAG
+✅ Cursor / CherryStudio 可直接用
+✅ 用户无需理解 RAG
+✅ MCP 调用只需一个 query
 ```
 
 **完成记录**: 待完成
 
 ---
 
-## Phase V2.6: Profile 配置系统
+# Phase 4: 验证体系（必须执行）
 
-**目标**: 降低用户复杂度  
-**预计时间**: 1 天
+**目标**: 建立完整的质量验证机制
 
-### V2.6.1 定义 Profile
+---
 
-**前置条件**: V2.5 完成
+## 7.1 构建测试集
 
-- [ ] 创建 `backend/src/pipeline/profiles.py`
-- [ ] 定义三种 profile：
-  ```python
-  PROFILES = {
-      "fast": {"rerank": False, "topK": 3},
-      "balanced": {"rerank": True, "topK": 5},
-      "accurate": {"rerank": True, "topK": 10, "multi_query": True}
-  }
-  ```
+**前置条件**: Phase 3 完成
+
+- [ ] 创建 `backend/tests/evaluation/test_questions.json`
+- [ ] 至少 20 个问题：
+  - 精确问题（明确的技术问题）
+  - 模糊问题（开放性问题）
+  - 长文问题（需要上下文理解）
+- [ ] 标注每个问题的期望答案
+- [ ] Git 提交
+
+**完成记录**: 待完成
+
+---
+
+## 7.2 对比维度
+
+**前置条件**: 7.1 完成
+
+- [ ] 实现评估指标计算：
+
+| 指标 | 说明 |
+|------|------|
+| TopK命中率 | 正确 chunk 是否在前 3 |
+| 相关性 | 是否明显更准 |
+| 噪声 | 无关内容是否减少 |
+
+- [ ] 创建 `backend/tests/evaluation/metrics.py`
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
-```
-TC-V2.6.1.1: fast profile 正确加载
-TC-V2.6.1.2: balanced profile 正确加载
-TC-V2.6.1.3: accurate profile 正确加载
-TC-V2.6.1.4: 无效 profile 报错
-```
-
 **完成记录**: 待完成
 
 ---
 
-### V2.6.2 接入 Pipeline
+## 7.3 对比方式
 
-**前置条件**: V2.6.1 完成
+**前置条件**: 7.2 完成
 
-- [ ] 修改 `Pipeline.run()` 支持 profile 参数
-- [ ] 更新 `query` 工具支持 profile 选择
+- [ ] 实现 V1（无 rerank）vs V2（+rerank + pipeline）对比脚本
+- [ ] 创建 `backend/tests/evaluation/compare.py`
+- [ ] 生成对比报告（Markdown 格式）
 - [ ] 编写测试用例
 - [ ] Git 提交
 
-**测试用例**:
+**对比方式**:
 ```
-TC-V2.6.2.1: profile 参数生效
-TC-V2.6.2.2: 不同 profile 结果不同
+V1（无rerank）
+VS
+V2（+rerank + pipeline）
 ```
 
 **完成记录**: 待完成
 
 ---
 
-### V2.6.3 Phase V2.6 验收
+## Phase 4 验收
 
-**前置条件**: V2.6.1 - V2.6.2 完成
+**前置条件**: 7.1 - 7.3 完成
 
-- [ ] 运行全部测试
+- [ ] 运行全部评估测试
+- [ ] 生成最终对比报告
 - [ ] 更新 CHANGELOG.md
 - [ ] Git 提交
 
-**验收标准**:
+**最低通过标准**:
 ```
-AC-V2.6.1: 所有 TC-V2.6.x.x 测试通过
-AC-V2.6.2: 用户只需选 profile
-AC-V2.6.3: 不需要调参数
+✅ Top3 命中率提升 ≥ 20%
+✅ 错误召回明显下降
 ```
 
 **完成记录**: 待完成
 
 ---
 
-## Phase V2.7: 最终验收
+# Phase 5: 可选增强（V2 后期）
 
-**前置条件**: V2.1 - V2.6 全部完成
+**目标**: 进一步提升能力（非必须）
 
-### 验收清单
+---
+
+## 8.1 Query Rewrite（可选）
+
+**前置条件**: Phase 4 完成
+
+- [ ] 研究 Query Rewrite 技术
+- [ ] 实现基础版本（可选接入）
+- [ ] 评估效果
+- [ ] Git 提交
+
+**完成记录**: 待完成
+
+---
+
+## 8.2 Multi-query（可选）
+
+**前置条件**: Phase 4 完成
+
+- [ ] 实现 Multi-query 生成
+- [ ] 集成到 accurate profile
+- [ ] 评估效果
+- [ ] Git 提交
+
+**完成记录**: 待完成
+
+---
+
+## 8.3 简单 Eval（可选）
+
+**前置条件**: Phase 4 完成
+
+- [ ] 设计简单评估机制
+- [ ] 实现自动评估脚本
+- [ ] 集成到 CI/CD
+- [ ] Git 提交
+
+**完成记录**: 待完成
+
+---
+
+# 最终验收
+
+**前置条件**: Phase 1-4 完成（Phase 5 可选）
+
+## 验收清单
 
 - [ ] 运行全量测试
-- [ ] 构建 20+ 测试问题集
-- [ ] 对比 V1 vs V2 结果质量
+- [ ] 运行全量评估
 - [ ] 验证 MCP 集成（Cursor/CherryStudio）
 - [ ] 验证 Provider 切换（Chroma ↔ Qdrant）
 - [ ] 验证 Profile 切换
@@ -588,14 +650,24 @@ AC-V2.6.3: 不需要调参数
 - [ ] 更新 README.md
 - [ ] Git 提交
 
-**最终验收标准**:
+## 最终验收标准
+
 ```
-AC-V2.7.1: MCP 调用只需一个 query ✅
-AC-V2.7.2: 结果明显优于 V1 ✅
-AC-V2.7.3: 可切换模型/数据库 ✅
-AC-V2.7.4: 代码结构清晰（Pipeline 中心） ✅
-AC-V2.7.5: Top3 命中率提升 ≥ 20% ✅
+✅ MCP 调用只需一个 query
+✅ 结果明显优于 V1
+✅ 可切换模型/数据库
+✅ 代码结构清晰（Pipeline 中心）
+✅ Top3 命中率提升 ≥ 20%
 ```
+
+---
+
+## V2 成功标准
+
+- 用户无需理解 RAG 即可使用
+- 不同模型组合可稳定工作
+- 检索质量明显优于 V1
+- MCP 调用稳定
 
 ---
 
@@ -638,6 +710,34 @@ AC-V2.7.5: Top3 命中率提升 ≥ 20% ✅
 │  │ Provider     │ │  Provider    │ │  Provider   │  │
 │  └──────────────┘ └──────────────┘ └─────────────┘  │
 └─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 演进路线
+
+```
+Phase 1: 重构核心
+    ├── Module 1: Pipeline Core
+    ├── Module 2: Rerank Integration
+    └── Module 3: Provider 抽象
+
+Phase 2: 质量提升
+    ├── Module 4: Context Builder
+    └── Module 5: Profile 系统
+
+Phase 3: MCP 收敛
+    └── 收敛为 query + ingest 两个工具
+
+Phase 4: 验证体系（必须执行）
+    ├── 构建测试集（20+ 问题）
+    ├── 对比维度定义
+    └── V1 vs V2 对比
+
+Phase 5: 可选增强（V2 后期）
+    ├── Query Rewrite（可选）
+    ├── Multi-query（可选）
+    └── 简单 Eval（可选）
 ```
 
 ---
