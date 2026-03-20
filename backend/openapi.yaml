@@ -1,0 +1,674 @@
+openapi: 3.0.3
+info:
+  title: RagHubMCP API
+  description: Universal Code RAG Hub - REST API + MCP Server
+  version: 0.1.0
+  contact:
+    name: RagHubMCP
+servers:
+  - url: http://localhost:8818
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      operationId: health_check
+      tags:
+        - health
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: RagHubMCP
+                  version:
+                    type: string
+                    example: 0.1.0
+
+  /api:
+    get:
+      operationId: api_root
+      tags:
+        - root
+      summary: API root endpoint
+      responses:
+        '200':
+          description: API information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  version:
+                    type: string
+                  endpoints:
+                    type: array
+                    items:
+                      type: string
+
+  /api/config:
+    get:
+      operationId: get_config
+      tags:
+        - config
+      summary: Get current configuration
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppConfig'
+    put:
+      operationId: update_config
+      tags:
+        - config
+      summary: Update configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigUpdateRequest'
+      responses:
+        '200':
+          description: Configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppConfig'
+
+  /api/index:
+    post:
+      operationId: start_index
+      tags:
+        - index
+      summary: Start indexing task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndexRequest'
+      responses:
+        '200':
+          description: Indexing started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexResponse'
+
+  /api/index/status/{task_id}:
+    get:
+      operationId: get_index_status
+      tags:
+        - index
+      summary: Get indexing task status
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexTaskStatus'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/search:
+    post:
+      operationId: search
+      tags:
+        - search
+      summary: Perform search query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /api/search/collections:
+    get:
+      operationId: list_collections
+      tags:
+        - search
+      summary: List all collections
+      responses:
+        '200':
+          description: List of collections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionsListResponse'
+
+  /api/benchmark:
+    post:
+      operationId: run_benchmark
+      tags:
+        - benchmark
+      summary: Run benchmark comparison
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BenchmarkRequest'
+      responses:
+        '200':
+          description: Benchmark results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BenchmarkResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type
+        message:
+          type: string
+          description: Human-readable error message
+        detail:
+          type: object
+          nullable: true
+          description: Additional error details
+
+    SuccessResponse:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          default: success
+        message:
+          type: string
+
+    AppConfig:
+      type: object
+      properties:
+        server:
+          $ref: '#/components/schemas/ServerConfig'
+        chroma:
+          $ref: '#/components/schemas/ChromaConfig'
+        providers:
+          $ref: '#/components/schemas/ProvidersConfig'
+        indexer:
+          $ref: '#/components/schemas/IndexerConfig'
+        watcher:
+          $ref: '#/components/schemas/WatcherConfig'
+        logging:
+          $ref: '#/components/schemas/LoggingConfig'
+        hybrid:
+          $ref: '#/components/schemas/HybridConfig'
+        cors:
+          $ref: '#/components/schemas/CORSConfig'
+
+    ServerConfig:
+      type: object
+      properties:
+        host:
+          type: string
+          default: "0.0.0.0"
+        port:
+          type: integer
+          default: 8818
+        debug:
+          type: boolean
+          default: true
+
+    ChromaConfig:
+      type: object
+      properties:
+        persist_dir:
+          type: string
+          default: "./data/chroma"
+        host:
+          type: string
+          nullable: true
+        port:
+          type: integer
+          nullable: true
+
+    ProvidersConfig:
+      type: object
+      properties:
+        embedding:
+          $ref: '#/components/schemas/ProviderCategory'
+        rerank:
+          $ref: '#/components/schemas/ProviderCategory'
+        llm:
+          $ref: '#/components/schemas/ProviderCategory'
+        vectorstore:
+          $ref: '#/components/schemas/ProviderCategory'
+
+    ProviderCategory:
+      type: object
+      properties:
+        default:
+          type: string
+        instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderInstance'
+
+    ProviderInstance:
+      type: object
+      required:
+        - name
+        - type
+        - model
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        model:
+          type: string
+        base_url:
+          type: string
+          nullable: true
+        dimension:
+          type: integer
+          nullable: true
+
+    IndexerConfig:
+      type: object
+      properties:
+        chunk_size:
+          type: integer
+          default: 500
+        chunk_overlap:
+          type: integer
+          default: 50
+        max_file_size:
+          type: integer
+          default: 1048576
+        file_types:
+          type: array
+          items:
+            type: string
+        exclude_dirs:
+          type: array
+          items:
+            type: string
+
+    WatcherConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        debounce_seconds:
+          type: number
+          default: 1.0
+
+    LoggingConfig:
+      type: object
+      properties:
+        level:
+          type: string
+          default: INFO
+        format:
+          type: string
+        file:
+          type: string
+          nullable: true
+
+    HybridConfig:
+      type: object
+      properties:
+        alpha:
+          type: number
+          default: 0.5
+        beta:
+          type: number
+          default: 0.5
+        rrf_k:
+          type: integer
+          default: 60
+        bm25_persist_dir:
+          type: string
+          default: "./data/bm25"
+
+    CORSConfig:
+      type: object
+      properties:
+        origins:
+          type: array
+          items:
+            type: string
+          default:
+            - "http://localhost:3315"
+            - "http://127.0.0.1:3315"
+        allow_credentials:
+          type: boolean
+          default: true
+        allow_methods:
+          type: array
+          items:
+            type: string
+          default: ["*"]
+        allow_headers:
+          type: array
+          items:
+            type: string
+          default: ["*"]
+
+    ConfigUpdateRequest:
+      type: object
+      properties:
+        server:
+          $ref: '#/components/schemas/ServerConfig'
+        chroma:
+          $ref: '#/components/schemas/ChromaConfig'
+        providers:
+          $ref: '#/components/schemas/ProvidersConfig'
+        indexer:
+          $ref: '#/components/schemas/IndexerConfig'
+        logging:
+          $ref: '#/components/schemas/LoggingConfig'
+        hybrid:
+          $ref: '#/components/schemas/HybridConfig'
+        watcher:
+          $ref: '#/components/schemas/WatcherConfig'
+
+    IndexRequest:
+      type: object
+      required:
+        - path
+      properties:
+        path:
+          type: string
+          description: Directory or file path to index
+        collection_name:
+          type: string
+          default: "default"
+        embedding_provider:
+          type: string
+          nullable: true
+        chunk_size:
+          type: integer
+          nullable: true
+        chunk_overlap:
+          type: integer
+          nullable: true
+        recursive:
+          type: boolean
+          default: true
+
+    IndexTaskStatus:
+      type: object
+      required:
+        - task_id
+        - status
+        - created_at
+      properties:
+        task_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        progress:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0
+        message:
+          type: string
+        total_files:
+          type: integer
+        processed_files:
+          type: integer
+        total_chunks:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
+    TaskStatus:
+      type: string
+      enum:
+        - pending
+        - running
+        - completed
+        - failed
+
+    IndexResponse:
+      type: object
+      required:
+        - task_id
+        - status_url
+      properties:
+        task_id:
+          type: string
+        message:
+          type: string
+          default: "Indexing task started"
+        status_url:
+          type: string
+
+    SearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+        collection_name:
+          type: string
+          default: "default"
+        top_k:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 5
+        embedding_provider:
+          type: string
+          nullable: true
+        rerank_provider:
+          type: string
+          nullable: true
+        use_rerank:
+          type: boolean
+          default: true
+
+    SearchResult:
+      type: object
+      required:
+        - id
+        - text
+        - score
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        score:
+          type: number
+        metadata:
+          type: object
+          additionalProperties: true
+        rerank_score:
+          type: number
+          nullable: true
+
+    SearchResponse:
+      type: object
+      required:
+        - query
+        - results
+        - total
+        - collection
+        - embedding_provider
+      properties:
+        query:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        total:
+          type: integer
+        collection:
+          type: string
+        embedding_provider:
+          type: string
+        rerank_provider:
+          type: string
+          nullable: true
+
+    BenchmarkRequest:
+      type: object
+      required:
+        - query
+        - configs
+      properties:
+        query:
+          type: string
+        collection_name:
+          type: string
+          default: "default"
+        configs:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BenchmarkConfig'
+
+    BenchmarkConfig:
+      type: object
+      required:
+        - name
+        - embedding_provider
+      properties:
+        name:
+          type: string
+        embedding_provider:
+          type: string
+        rerank_provider:
+          type: string
+          nullable: true
+        top_k:
+          type: integer
+          default: 5
+
+    BenchmarkResult:
+      type: object
+      required:
+        - config_name
+        - results
+        - latency_ms
+        - embedding_provider
+      properties:
+        config_name:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        latency_ms:
+          type: number
+        embedding_provider:
+          type: string
+        rerank_provider:
+          type: string
+          nullable: true
+
+    BenchmarkResponse:
+      type: object
+      required:
+        - query
+        - collection
+        - results
+        - total_latency_ms
+      properties:
+        query:
+          type: string
+        collection:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenchmarkResult'
+        total_latency_ms:
+          type: number
+
+    CollectionInfo:
+      type: object
+      required:
+        - name
+        - count
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties: true
+
+    CollectionsListResponse:
+      type: object
+      required:
+        - collections
+        - total
+      properties:
+        collections:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionInfo'
+        total:
+          type: integer
+
+    CollectionDeleteResponse:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+          default: "Collection deleted successfully"
