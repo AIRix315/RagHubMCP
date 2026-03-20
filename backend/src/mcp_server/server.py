@@ -69,7 +69,12 @@ def register_tools() -> None:
     from .tools.rerank import register_rerank_tools
     from .tools.search import register_search_tools
     from .tools.hybrid import register_hybrid_tools
+    from .tools.v2 import register_v2_tools
     
+    # Register V2 tools first (preferred)
+    register_v2_tools(mcp)
+    
+    # Register V1 tools for backward compatibility
     register_base_tools(mcp)
     register_benchmark_tools(mcp)
     register_rerank_tools(mcp)

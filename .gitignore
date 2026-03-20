@@ -77,3 +77,6 @@ Thumbs.db
 # Project specific
 *.pyc
 .chroma/
+
+# FlashRank model cache
+temp_test_cache/

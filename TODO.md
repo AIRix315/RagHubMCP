@@ -98,17 +98,10 @@
 
 **前置条件**: 无
 
-- [ ] 创建 `backend/src/pipeline/__init__.py`
-- [ ] 创建 `backend/src/pipeline/base.py` — 定义 RAGPipeline 抽象基类
-  ```python
-  class RAGPipeline(ABC):
-      @abstractmethod
-      async def run(self, query: str, options: dict) -> RAGResult:
-          pass
-  ```
-- [ ] 创建 `backend/src/pipeline/result.py` — 定义 RAGResult 数据类
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 创建 `backend/src/pipeline/__init__.py`
+- [x] 创建 `backend/src/pipeline/base.py` — 定义 RAGPipeline 抽象基类
+- [x] 创建 `backend/src/pipeline/result.py` — 定义 RAGResult 数据类
+- [x] 编写测试用例
 
 **验证**:
 ```
@@ -116,7 +109,7 @@
 ✅ 结果与 V1 search 一致（初期允许无 rerank）
 ```
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -124,25 +117,12 @@
 
 **前置条件**: 1.1 完成
 
-- [ ] 创建 `backend/src/pipeline/default.py` — 实现 DefaultRAGPipeline
-  ```python
-  class DefaultRAGPipeline(RAGPipeline):
-      async def run(self, query, options):
-          # 1. retrieval（调用现有 HybridSearch）
-          docs = await self.retriever.retrieve(query)
-          # 2. rerank（暂时可为空）
-          if self.reranker:
-              docs = await self.reranker.rerank(query, docs)
-          # 3. context build（初版直接截断）
-          docs = docs[:options.get("topK", 5)]
-          return docs
-  ```
-- [ ] 创建 `backend/src/pipeline/retriever.py` — Retriever 接口
-- [ ] 集成现有 `HybridSearchService` 作为默认 Retriever
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 创建 `backend/src/pipeline/default.py` — 实现 DefaultRAGPipeline
+- [x] 创建 `backend/src/pipeline/retriever.py` — Retriever 接口
+- [x] 集成现有 `HybridSearchService` 作为默认 Retriever
+- [x] 编写测试用例
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -150,13 +130,12 @@
 
 **前置条件**: 1.2 完成
 
-- [ ] 创建 `backend/src/pipeline/factory.py` — PipelineFactory
-- [ ] 支持配置驱动创建 Pipeline
-- [ ] 支持热重载
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 创建 `backend/src/pipeline/factory.py` — PipelineFactory
+- [x] 支持配置驱动创建 Pipeline
+- [x] 支持热重载
+- [x] 编写测试用例
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -186,18 +165,11 @@
 
 **前置条件**: Module 1 完成
 
-- [ ] 创建 `backend/src/pipeline/reranker.py` — Reranker 抽象接口
-  ```python
-  class Reranker(ABC):
-      @abstractmethod
-      async def rerank(self, query: str, docs: list[Doc]) -> list[Doc]:
-          pass
-  ```
-- [ ] 统一现有 `FlashRankRerankProvider` 接口
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 创建 `backend/src/pipeline/reranker.py` — Reranker 抽象接口
+- [x] 统一现有 `FlashRankRerankProvider` 接口
+- [x] 编写测试用例
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -205,13 +177,11 @@
 
 **前置条件**: 2.1 完成
 
-- [ ] FlashRank（本地）集成
-- [ ] API rerank（Cohere/Jina）支持（可选）
-- [ ] fallback 机制（rerank 失败时返回原始结果）
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] FlashRank（本地）集成
+- [x] fallback 机制（rerank 失败时返回原始结果）
+- [x] 编写测试用例
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -219,12 +189,11 @@
 
 **前置条件**: 2.2 完成
 
-- [ ] 修改 `DefaultRAGPipeline.run()` 调用 reranker
-- [ ] 添加 rerank 配置项
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 修改 `DefaultRAGPipeline.run()` 调用 reranker
+- [x] 添加 rerank 配置项
+- [x] 编写测试用例
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -331,16 +300,10 @@
 
 **前置条件**: Phase 1 完成
 
-- [ ] 创建 `backend/src/pipeline/context_builder.py`
-  ```python
-  class ContextBuilder(ABC):
-      def build(self, docs: list[Doc], limit: int) -> list[Context]:
-          pass
-  ```
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 创建 `backend/src/pipeline/context_builder.py`
+- [x] 编写测试用例
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -353,7 +316,7 @@
   - [ ] 去重（简单 hash）
   - [ ] 排序（按 score）
   - [ ] 截断（topK）
-  - [ ] 合并（连续内容，可选）
+  - [ ] 合并（连续内容）
 - [ ] 接入 Pipeline
 - [ ] 编写测试用例
 - [ ] Git 提交
@@ -389,15 +352,10 @@
 
 **前置条件**: Module 4 完成
 
-- [ ] 创建 `backend/src/pipeline/profiles.py`
-- [ ] 定义三种 profile：
-  ```python
-  PROFILES = {
-      "fast": {"rerank": False, "topK": 3},
-      "balanced": {"rerank": True, "topK": 5},
-      "accurate": {"rerank": True, "topK": 10, "multi_query": True}
-  }
-  ```
+- [x] 在 `backend/src/pipeline/factory.py` 中定义三种 profile
+- [x] 编写测试用例
+
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 - [ ] 编写测试用例
 - [ ] Git 提交
 
@@ -446,21 +404,10 @@
 
 **前置条件**: Phase 2 完成
 
-- [ ] 创建 `backend/src/mcp_server/tools/v2/` 目录
-- [ ] 实现 `query` 工具（调用 Pipeline）
-  ```python
-  @mcp.tool()
-  async def query(query: str, strategy: str = "balanced") -> str:
-      result = await pipeline.run(query, options[strategy])
-      return result
-  ```
-- [ ] 实现 `ingest` 工具
-  ```python
-  @mcp.tool()
-  async def ingest(documents: list[dict]) -> str:
-      ...
-  ```
-- [ ] 标记旧工具为 deprecated（保留兼容）
+- [x] 创建 `backend/src/mcp_server/tools/v2/` 目录
+- [x] 实现 `query` 工具（调用 Pipeline）
+- [x] 实现 `ingest` 工具
+- [x] 标记旧工具为 deprecated（保留兼容）
 
 | 保留 ✅ | 删除 ❌ |
 |--------|--------|
@@ -468,10 +415,9 @@
 | `ingest` | `rerank` |
 | | `embed` |
 
-- [ ] 编写测试用例
-- [ ] Git 提交
+- [x] 编写测试用例
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -518,15 +464,14 @@
 
 **前置条件**: Phase 3 完成
 
-- [ ] 创建 `backend/tests/evaluation/test_questions.json`
-- [ ] 至少 20 个问题：
+- [x] 创建 `backend/tests/evaluation/test_questions.json`
+- [x] 至少 20 个问题：
   - 精确问题（明确的技术问题）
   - 模糊问题（开放性问题）
   - 长文问题（需要上下文理解）
-- [ ] 标注每个问题的期望答案
-- [ ] Git 提交
+- [x] 标注每个问题的期望答案
 
-**完成记录**: 待完成
+**完成记录**: ✅ 2026-03-20 23:57 已完成
 
 ---
 
@@ -590,13 +535,13 @@ V2（+rerank + pipeline）
 
 ---
 
-# Phase 5: 可选增强（V2 后期）
+# Phase 5: 增强（V2 后期）
 
 **目标**: 进一步提升能力（非必须）
 
 ---
 
-## 8.1 Query Rewrite（可选）
+## 8.1 Query Rewrite
 
 **前置条件**: Phase 4 完成
 
@@ -609,7 +554,7 @@ V2（+rerank + pipeline）
 
 ---
 
-## 8.2 Multi-query（可选）
+## 8.2 Multi-query
 
 **前置条件**: Phase 4 完成
 
@@ -622,7 +567,7 @@ V2（+rerank + pipeline）
 
 ---
 
-## 8.3 简单 Eval（可选）
+## 8.3 简单 Eval
 
 **前置条件**: Phase 4 完成
 
@@ -637,7 +582,7 @@ V2（+rerank + pipeline）
 
 # 最终验收
 
-**前置条件**: Phase 1-4 完成（Phase 5 可选）
+**前置条件**: Phase 1-4 完成
 
 ## 验收清单
 
@@ -734,10 +679,10 @@ Phase 4: 验证体系（必须执行）
     ├── 对比维度定义
     └── V1 vs V2 对比
 
-Phase 5: 可选增强（V2 后期）
-    ├── Query Rewrite（可选）
-    ├── Multi-query（可选）
-    └── 简单 Eval（可选）
+Phase 5: 增强（V2 后期）
+    ├── Query Rewrite
+    ├── Multi-query
+    └── 简单 Eval
 ```
 
 ---

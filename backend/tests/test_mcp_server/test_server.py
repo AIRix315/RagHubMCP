@@ -43,7 +43,8 @@ class TestConfigModule:
         config = load_config(str(config_path))
         
         assert config.server.host == "0.0.0.0"
-        assert config.server.port == 8000
+        # Default port is 8818 (can be configured in config.yaml)
+        assert config.server.port == 8818
         assert config.chroma.persist_dir == "./data/chroma"
 
     def test_get_config_returns_loaded_config(self):

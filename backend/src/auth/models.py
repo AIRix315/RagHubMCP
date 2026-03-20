@@ -7,9 +7,14 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
+
+
+def _utc_now() -> datetime:
+    """Get current UTC datetime."""
+    return datetime.now(UTC)
 
 
 class Role(str, Enum):
@@ -68,7 +73,7 @@ class Tenant:
     slug: str
     plan: str = "free"
     is_active: bool = True
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
     metadata: dict[str, Any] = field(default_factory=dict)
     
     @classmethod
@@ -126,8 +131,8 @@ class User:
     role: Role = Role.USER
     is_active: bool = True
     is_superuser: bool = False
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     metadata: dict[str, Any] = field(default_factory=dict)
     
     @classmethod
@@ -221,7 +226,7 @@ class TokenPayload:
     tenant_id: str
     role: str
     exp: datetime
-    iat: datetime = field(default_factory=datetime.utcnow)
+    iat: datetime = field(default_factory=_utc_now)
     
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JWT encoding."""
