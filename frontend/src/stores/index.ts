@@ -3,9 +3,9 @@ import { defineStore } from 'pinia'
 import type { IndexTaskStatus } from '@/types'
 import { startIndex, getIndexStatus } from '@/api'
 import { useWebSocket, type ProgressData } from '@/composables/useWebSocket'
+import { getErrorMessage } from '@/api/errors'
 
 export const useIndexStore = defineStore('index', () => {
-  const tasks = ref<IndexTaskStatus[]>([])
   const currentTask = ref<IndexTaskStatus | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -90,7 +90,7 @@ export const useIndexStore = defineStore('index', () => {
         startPolling(response.task_id)
       }
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to start indexing'
+      error.value = getErrorMessage(e)
     } finally {
       loading.value = false
     }
@@ -114,7 +114,7 @@ export const useIndexStore = defineStore('index', () => {
         }
       } catch (e) {
         console.error('Polling error:', e)
-        error.value = e instanceof Error ? e.message : 'Failed to get status'
+        error.value = getErrorMessage(e)
       }
     }
     
@@ -137,7 +137,7 @@ export const useIndexStore = defineStore('index', () => {
       currentTask.value = status
       return status
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to get status'
+      error.value = getErrorMessage(e)
       throw e
     }
   }
@@ -165,7 +165,6 @@ export const useIndexStore = defineStore('index', () => {
   })
 
   return {
-    tasks,
     currentTask,
     loading,
     error,

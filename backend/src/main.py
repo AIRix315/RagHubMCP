@@ -77,14 +77,17 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Configure CORS
+    # Configure CORS from config
+    config = get_config()
+    
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # In production, restrict this
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=config.cors.origins,
+        allow_credentials=config.cors.allow_credentials,
+        allow_methods=config.cors.allow_methods,
+        allow_headers=config.cors.allow_headers,
     )
+    logger.info(f"CORS configured with origins: {config.cors.origins}")
 
     # Add exception handler for consistent error responses
     @app.exception_handler(Exception)

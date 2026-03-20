@@ -13,8 +13,7 @@ import yaml
 from fastapi import APIRouter, HTTPException
 
 from src.utils.config import (
-    Config,
-    config_to_dict,
+    AppConfig,
     get_config,
     reload_config,
 )
@@ -31,72 +30,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/config", tags=["config"])
 
 
-def _config_to_model(config: Config) -> ConfigModel:
-    """Convert Config dataclass to ConfigModel.
-    
-    Args:
-        config: Config dataclass instance.
-        
-    Returns:
-        ConfigModel Pydantic model.
-    """
-    return ConfigModel(
-        server={
-            "host": config.server.host,
-            "port": config.server.port,
-            "debug": config.server.debug,
-        },
-        chroma={
-            "persist_dir": config.chroma.persist_dir,
-            "host": config.chroma.host,
-            "port": config.chroma.port,
-        },
-        providers={
-            "embedding": {
-                "default": config.providers.embedding.default,
-                "instances": config.providers.embedding.instances,
-            },
-            "rerank": {
-                "default": config.providers.rerank.default,
-                "instances": config.providers.rerank.instances,
-            },
-            "llm": {
-                "default": config.providers.llm.default,
-                "instances": config.providers.llm.instances,
-            },
-        },
-        indexer={
-            "chunk_size": config.indexer.chunk_size,
-            "chunk_overlap": config.indexer.chunk_overlap,
-            "max_file_size": config.indexer.max_file_size,
-            "file_types": config.indexer.file_types,
-            "exclude_dirs": config.indexer.exclude_dirs,
-        },
-        logging={
-            "level": config.logging.level,
-            "format": config.logging.format,
-            "file": config.logging.file,
-        },
-        hybrid={
-            "alpha": config.hybrid.alpha,
-            "beta": config.hybrid.beta,
-            "rrf_k": config.hybrid.rrf_k,
-            "bm25_persist_dir": config.hybrid.bm25_persist_dir,
-        } if hasattr(config, 'hybrid') and config.hybrid else None,
-        watcher={
-            "enabled": config.watcher.enabled,
-            "debounce_seconds": config.watcher.debounce_seconds,
-        } if hasattr(config, 'watcher') and config.watcher else None,
-    )
-
-
 def _merge_config(base: dict[str, Any], update: dict[str, Any] | None) -> dict[str, Any]:
     """Deep merge update into base dictionary.
-    
+
     Args:
         base: Base dictionary.
         update: Update dictionary (can be None).
-        
+
     Returns:
         Merged dictionary.
     """
@@ -122,16 +62,15 @@ def _merge_config(base: dict[str, Any], update: dict[str, Any] | None) -> dict[s
     summary="Get current configuration",
     description="Returns the current server configuration loaded from config.yaml",
 )
-async def get_current_config() -> ConfigModel:
+async def get_current_config() -> AppConfig:
     """Get the current server configuration.
-    
+
     TC-1.15.1: GET /api/config returns configuration
-    
+
     Returns:
-        Current configuration as ConfigModel.
+        Current configuration as AppConfig (ConfigModel alias).
     """
-    config = get_config()
-    return _config_to_model(config)
+    return get_config()
 
 
 @router.put(
@@ -146,22 +85,22 @@ async def get_current_config() -> ConfigModel:
 )
 async def update_config(request: ConfigUpdateRequest) -> SuccessResponse:
     """Update server configuration.
-    
+
     TC-1.15.2: PUT /api/config updates configuration
-    
+
     Args:
         request: Configuration update request.
-        
+
     Returns:
         Success response.
-        
+
     Raises:
         HTTPException: If configuration update fails.
     """
     try:
         # Get current config as dict
         config = get_config()
-        current_dict = config_to_dict(config)
+        current_dict = config.model_dump()
 
         # Merge updates
         update_data = request.model_dump(exclude_none=True)

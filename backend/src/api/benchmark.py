@@ -2,6 +2,10 @@
 
 This module provides endpoints for running benchmark comparisons
 between different embedding and reranking configurations.
+All search operations go through the RAG Pipeline.
+
+Reference:
+- Docs/11-V2-Desing.md (RULE-1: Pipeline是唯一执行入口)
 """
 
 from __future__ import annotations
@@ -14,6 +18,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from src.utils.config import get_config
+from src.pipeline import execute_search as pipeline_search
 
 from .schemas import (
     BenchmarkConfig,
@@ -23,7 +28,7 @@ from .schemas import (
     ErrorResponse,
     SearchResult,
 )
-from .search import perform_search
+from .pipeline_adapter import documents_to_search_results
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +41,8 @@ async def run_single_benchmark(
     config: BenchmarkConfig,
 ) -> BenchmarkResult:
     """Run a single benchmark configuration.
+    
+    Uses the RAG Pipeline for consistent search behavior.
 
     Args:
         query: Search query.
@@ -46,21 +53,27 @@ async def run_single_benchmark(
         Benchmark result.
     """
     start_time = time.time()
-
-    results, emb_name, rerank_name = await perform_search(
-        query=query,
-        collection_name=collection_name,
-        top_k=config.top_k,
-        embedding_provider_name=config.embedding_provider,
-        rerank_provider_name=config.rerank_provider,
-        use_rerank=config.rerank_provider is not None,
-    )
+    
+    # Build pipeline options
+    options = {
+        "collection": collection_name,
+        "topK": config.top_k,
+        "rerank": config.rerank_provider is not None,
+    }
+    
+    # Execute search through pipeline
+    result = await pipeline_search(query, options)
+    
+    # Get provider names
+    config_obj = get_config()
+    emb_name = config.embedding_provider or config_obj.providers.embedding.default
+    rerank_name = config.rerank_provider if config.rerank_provider else None
 
     latency = (time.time() - start_time) * 1000
 
     return BenchmarkResult(
         config_name=config.name,
-        results=results,
+        results=documents_to_search_results(result.documents),
         latency_ms=latency,
         embedding_provider=emb_name,
         rerank_provider=rerank_name,

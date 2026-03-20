@@ -1,6 +1,11 @@
 """Search REST API endpoints.
 
 This module provides endpoints for searching indexed documents.
+All search operations go through the RAG Pipeline.
+
+Reference:
+- Docs/11-V2-Desing.md (RULE-1: Pipeline是唯一执行入口)
+- Docs/12-V2-Blueprint.md (Module 1)
 """
 
 from __future__ import annotations
@@ -9,150 +14,22 @@ import logging
 import time
 from typing import Any
 
-import chromadb
 from fastapi import APIRouter, HTTPException
 
+from src.services import get_chroma_service
 from src.utils.config import get_config
+from src.utils.errors import NotFoundError, SearchError, ValidationError
 
 from .schemas import (
     ErrorResponse,
     SearchRequest,
     SearchResponse,
-    SearchResult,
 )
+from .pipeline_adapter import rag_result_to_search_response
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/search", tags=["search"])
-
-# Chroma client cache
-_chroma_client: chromadb.Client | None = None
-
-
-def get_chroma_client() -> chromadb.Client:
-    """Get or create Chroma client.
-
-    Returns:
-        Chroma client instance.
-    """
-    global _chroma_client
-
-    if _chroma_client is None:
-        config = get_config()
-
-        if config.chroma.host:
-            # Remote Chroma server
-            _chroma_client = chromadb.HttpClient(
-                host=config.chroma.host,
-                port=config.chroma.port or 8000,
-            )
-        else:
-            # Local persistent Chroma
-            _chroma_client = chromadb.PersistentClient(path=config.chroma.persist_dir)
-
-    return _chroma_client
-
-
-async def perform_search(
-    query: str,
-    collection_name: str,
-    top_k: int,
-    embedding_provider_name: str | None,
-    rerank_provider_name: str | None,
-    use_rerank: bool,
-) -> tuple[list[SearchResult], str, str | None]:
-    """Perform a search query.
-
-    Args:
-        query: Search query text.
-        collection_name: Collection to search.
-        top_k: Number of results.
-        embedding_provider_name: Optional embedding provider.
-        rerank_provider_name: Optional rerank provider.
-        use_rerank: Whether to use reranking.
-
-    Returns:
-        Tuple of (results, embedding_provider_used, rerank_provider_used).
-    """
-    config = get_config()
-
-    # Get embedding provider
-    from providers.factory import factory
-
-    emb_name = embedding_provider_name or config.providers.embedding.default
-    embedding_provider = factory.get_embedding_provider(emb_name)
-
-    # Generate query embedding
-    query_embedding = embedding_provider.embed(query)
-
-    # Get Chroma collection
-    client = get_chroma_client()
-    try:
-        collection = client.get_collection(collection_name)
-    except Exception as e:
-        logger.warning(f"Collection {collection_name} not found: {e}")
-        return [], emb_name, None
-
-    # Query Chroma
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"],
-    )
-
-    # Parse results
-    search_results: list[SearchResult] = []
-
-    if results["ids"] and results["ids"][0]:
-        for i, doc_id in enumerate(results["ids"][0]):
-            text = results["documents"][0][i] if results["documents"] else ""
-            metadata = results["metadatas"][0][i] if results["metadatas"] else {}
-            distance = results["distances"][0][i] if results["distances"] else 0.0
-
-            # Convert distance to similarity score (assuming cosine distance)
-            score = 1.0 - distance
-
-            search_results.append(
-                SearchResult(
-                    id=doc_id,
-                    text=text,
-                    score=score,
-                    metadata=metadata,
-                )
-            )
-
-    # Apply reranking if requested
-    rerank_name = None
-    if use_rerank and search_results:
-        rerank_name = rerank_provider_name or config.providers.rerank.default
-
-        try:
-            rerank_provider = factory.get_rerank_provider(rerank_name)
-
-            documents = [r.text for r in search_results]
-            rerank_results = rerank_provider.rerank(query, documents, top_k)
-
-            # Reorder and update scores
-            reordered: list[SearchResult] = []
-            for rr in rerank_results:
-                original = search_results[rr.index]
-                reordered.append(
-                    SearchResult(
-                        id=original.id,
-                        text=original.text,
-                        score=original.score,
-                        metadata=original.metadata,
-                        rerank_score=rr.score,
-                    )
-                )
-
-            search_results = reordered
-
-        except Exception as e:
-            logger.warning(f"Reranking failed: {e}")
-            rerank_name = None
-
-    return search_results, emb_name, rerank_name
 
 
 @router.post(
@@ -166,11 +43,16 @@ async def perform_search(
     summary="Execute search",
     description="Search indexed documents with optional reranking",
 )
-async def execute_search(request: SearchRequest) -> SearchResponse:
+async def execute_search_endpoint(request: SearchRequest) -> SearchResponse:
     """Execute a search query.
-
+    
     TC-1.15.5: POST /api/search executes search
-
+    
+    All search operations go through the RAG Pipeline:
+    1. Retrieval (Hybrid: vector + BM25)
+    2. Reranking (FlashRank)
+    3. Context Building
+    
     Args:
         request: Search request parameters.
 
@@ -180,34 +62,78 @@ async def execute_search(request: SearchRequest) -> SearchResponse:
     Raises:
         HTTPException: If search fails.
     """
+    # Validate request
+    if not request.query or not request.query.strip():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "invalid_request",
+                "message": "Query cannot be empty",
+                "detail": None,
+            },
+        )
+    
+    if request.top_k < 1 or request.top_k > 100:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "invalid_request",
+                "message": "top_k must be between 1 and 100",
+                "detail": {"top_k": request.top_k},
+            },
+        )
+    
     try:
         start_time = time.time()
-
-        results, emb_name, rerank_name = await perform_search(
-            query=request.query,
-            collection_name=request.collection_name,
-            top_k=request.top_k,
-            embedding_provider_name=request.embedding_provider,
-            rerank_provider_name=request.rerank_provider,
-            use_rerank=request.use_rerank,
-        )
-
-        latency = (time.time() - start_time) * 1000
-
-        logger.info(
-            f"Search completed: query='{request.query[:50]}...', "
-            f"results={len(results)}, latency={latency:.2f}ms"
-        )
-
-        return SearchResponse(
-            query=request.query,
-            results=results,
-            total=len(results),
+        
+        # Import pipeline (lazy to avoid circular imports)
+        from src.pipeline import execute_search as pipeline_search
+        
+        config = get_config()
+        
+        # Build pipeline options
+        options = {
+            "collection": request.collection_name,
+            "topK": request.top_k,
+            "rerank": request.use_rerank,
+        }
+        
+        # Execute search through pipeline
+        result = await pipeline_search(request.query, options)
+        
+        # Get provider names for response
+        emb_name = config.providers.embedding.default
+        rerank_name = None
+        if request.use_rerank:
+            rerank_name = request.rerank_provider or config.providers.rerank.default
+        
+        # Convert to API response
+        response = rag_result_to_search_response(
+            result=result,
             collection=request.collection_name,
             embedding_provider=emb_name,
             rerank_provider=rerank_name,
         )
+        
+        latency = (time.time() - start_time) * 1000
+        logger.info(
+            f"Search completed: query='{request.query[:50]}...', "
+            f"results={len(response.results)}, latency={latency:.2f}ms"
+        )
+        
+        return response
 
+    except ValueError as e:
+        # Collection not found or invalid parameters
+        logger.warning(f"Search validation error: {e}")
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "collection_not_found",
+                "message": str(e),
+                "detail": {"collection": request.collection_name},
+            },
+        )
     except Exception as e:
         logger.error(f"Search failed: {e}")
         raise HTTPException(
@@ -215,6 +141,7 @@ async def execute_search(request: SearchRequest) -> SearchResponse:
             detail={
                 "error": "search_failed",
                 "message": f"Search failed: {str(e)}",
+                "detail": None,
             },
         )
 
@@ -236,8 +163,8 @@ async def list_collections() -> dict[str, Any]:
     Returns:
         List of collection info.
     """
-    client = get_chroma_client()
-    collections = client.list_collections()
+    chroma_service = get_chroma_service()
+    collections = chroma_service.list_collections()
 
     result = []
     for coll in collections:
@@ -276,20 +203,33 @@ async def delete_collection(name: str) -> dict[str, Any]:
     Raises:
         HTTPException: If collection not found.
     """
-    client = get_chroma_client()
+    chroma_service = get_chroma_service()
 
     try:
-        client.delete_collection(name)
+        chroma_service.delete_collection(name)
         logger.info(f"Collection deleted: {name}")
         return {
             "name": name,
             "message": "Collection deleted successfully",
         }
-    except Exception:
+    except ValueError as e:
+        # Collection not found
+        logger.warning(f"Collection not found: {name}")
         raise HTTPException(
             status_code=404,
             detail={
                 "error": "collection_not_found",
                 "message": f"Collection not found: {name}",
+                "detail": None,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to delete collection: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "delete_failed",
+                "message": f"Failed to delete collection: {str(e)}",
+                "detail": None,
             },
         )

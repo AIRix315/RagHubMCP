@@ -134,8 +134,13 @@ class HybridSearchService:
     - Configurable weights for vector and BM25
     - Optional score normalization
     
+    This service uses the Provider interface for vector storage (RULE-3),
+    allowing any VectorStoreProvider to be used (Chroma, Qdrant, etc.)
+    
     Example:
-        >>> service = HybridSearchService(alpha=0.6, beta=0.4)
+        >>> from providers.factory import factory
+        >>> vectorstore = factory.get_vectorstore_provider()
+        >>> service = HybridSearchService(alpha=0.6, beta=0.4, vectorstore_provider=vectorstore)
         >>> results = service.search("my_collection", "search query", n_results=10)
     """
     
@@ -145,6 +150,7 @@ class HybridSearchService:
         beta: float = 0.5,
         rrf_k: int = 60,
         normalize: bool = True,
+        vectorstore_provider: Any | None = None,
     ) -> None:
         """Initialize HybridSearchService.
         
@@ -153,6 +159,8 @@ class HybridSearchService:
             beta: Weight for BM25 search results (default: 0.5).
             rrf_k: RRF constant (default: 60).
             normalize: Whether to normalize scores before fusion (default: True).
+            vectorstore_provider: Optional VectorStoreProvider instance.
+                                 If None, uses default from factory.
         """
         if not (0 <= alpha <= 1 and 0 <= beta <= 1):
             raise ValueError("alpha and beta must be between 0 and 1")
@@ -161,6 +169,18 @@ class HybridSearchService:
         self.beta = beta
         self.rrf_k = rrf_k
         self.normalize = normalize
+        self._vectorstore_provider = vectorstore_provider
+    
+    def _get_vectorstore_provider(self) -> Any:
+        """Get the VectorStore provider (lazy initialization).
+        
+        Returns:
+            VectorStoreProvider instance from factory or cached instance.
+        """
+        if self._vectorstore_provider is None:
+            from providers.factory import factory
+            self._vectorstore_provider = factory.get_vectorstore_provider()
+        return self._vectorstore_provider
     
     def search(
         self,
@@ -179,23 +199,35 @@ class HybridSearchService:
             
         Returns:
             List of HybridSearchResult objects, sorted by combined score.
+            
+        Raises:
+            ValueError: If collection does not exist.
+            RuntimeError: If both vector and BM25 search fail.
         """
-        from services.chroma_service import get_chroma_service
         from services.bm25_service import get_bm25_service
         
-        # Get services
-        chroma_service = get_chroma_service()
+        # Get providers (using Provider interface, RULE-3)
+        vectorstore = self._get_vectorstore_provider()
         bm25_service = get_bm25_service()
         
-        # Perform vector search
+        # Perform vector search (may raise ValueError if collection not found)
         vector_results = self._vector_search(
-            chroma_service, collection_name, query, n_results * 2, where
+            vectorstore, collection_name, query, n_results * 2, where
         )
         
-        # Perform BM25 search
+        # Perform BM25 search (gracefully degrades if not available)
         bm25_results = self._bm25_search(
             bm25_service, collection_name, query, n_results * 2
         )
+        
+        # Check if we have any results
+        if not vector_results and not bm25_results:
+            # Both searches returned empty - this could be:
+            # 1. Collection exists but is empty
+            # 2. BM25 index doesn't exist and vector search found nothing
+            # Return empty results (not an error - collection might just be empty)
+            logger.info(f"No results found for '{collection_name}' with query: {query[:50]}...")
+            return []
         
         # Apply RRF fusion
         fused_results = self._fuse_results(vector_results, bm25_results)
@@ -203,7 +235,7 @@ class HybridSearchService:
         # Build final results with document details
         return self._build_results(
             fused_results[:n_results],
-            chroma_service,
+            vectorstore,
             collection_name,
             vector_results,
             bm25_results,
@@ -211,16 +243,16 @@ class HybridSearchService:
     
     def _vector_search(
         self,
-        chroma_service,
+        vectorstore_provider,
         collection_name: str,
         query: str,
         k: int,
         where: dict[str, Any] | None,
     ) -> list[tuple[str, float]]:
-        """Perform vector similarity search.
+        """Perform vector similarity search using Provider interface.
         
         Args:
-            chroma_service: ChromaService instance.
+            vectorstore_provider: VectorStoreProvider instance.
             collection_name: Collection to search.
             query: Query text.
             k: Number of results.
@@ -228,25 +260,32 @@ class HybridSearchService:
             
         Returns:
             List of (doc_id, distance) tuples.
+            
+        Raises:
+            ValueError: If collection does not exist.
+            Exception: For other errors (logged but returns empty for graceful degradation).
         """
         try:
-            results = chroma_service.query(
-                collection_name=collection_name,
+            # Use Provider interface (RULE-3)
+            results = vectorstore_provider.query(
+                collection=collection_name,
                 query_text=query,
                 n_results=k,
                 where=where,
             )
             
-            # Convert distances to scores (lower distance = higher similarity)
-            # ChromaDB uses cosine distance by default, so we invert
-            ids = results.get("ids", [])
-            distances = results.get("distances", [])
+            # Convert QueryResult to (doc_id, score) pairs
+            # Provider returns SearchResult with score (lower = more similar for distance-based)
+            return [(r.id, r.score) for r in results.results]
             
-            # Return (doc_id, distance) pairs
-            return list(zip(ids, distances))
-            
+        except ValueError as e:
+            # Collection not found - re-raise for caller to handle
+            logger.error(f"Collection '{collection_name}' not found: {e}")
+            raise
         except Exception as e:
-            logger.warning(f"Vector search failed: {e}")
+            # Other errors - log and return empty for graceful degradation
+            # This allows BM25-only search if vector search fails
+            logger.warning(f"Vector search failed for '{collection_name}': {e}")
             return []
     
     def _bm25_search(
@@ -266,11 +305,14 @@ class HybridSearchService:
             
         Returns:
             List of (doc_id, score) tuples.
+            Returns empty list if BM25 index not available (graceful degradation).
         """
         try:
             return bm25_service.query(collection_name, query, k)
         except Exception as e:
-            logger.warning(f"BM25 search failed: {e}")
+            # BM25 index may not exist for all collections
+            # This is expected - log as debug and return empty for vector-only search
+            logger.debug(f"BM25 search not available for '{collection_name}': {e}")
             return []
     
     def _fuse_results(
@@ -311,16 +353,16 @@ class HybridSearchService:
     def _build_results(
         self,
         fused_results: list[tuple[str, float]],
-        chroma_service,
+        vectorstore_provider,
         collection_name: str,
         vector_results: list[tuple[str, float]],
         bm25_results: list[tuple[str, float]],
     ) -> list[HybridSearchResult]:
-        """Build final HybridSearchResult objects.
+        """Build final HybridSearchResult objects using Provider interface.
         
         Args:
             fused_results: Fused (doc_id, score) results.
-            chroma_service: ChromaService for fetching document details.
+            vectorstore_provider: VectorStoreProvider for fetching document details.
             collection_name: Collection name.
             vector_results: Original vector results.
             bm25_results: Original BM25 results.
@@ -335,22 +377,19 @@ class HybridSearchService:
         # Get all doc IDs to fetch
         doc_ids = [doc_id for doc_id, _ in fused_results]
         
-        # Fetch document details from ChromaDB
+        # Fetch document details using Provider interface (RULE-3)
         try:
-            collection = chroma_service.get_collection(collection_name)
-            # Get documents by IDs
-            doc_results = collection.get(ids=doc_ids, include=["documents", "metadatas"])
+            search_results = vectorstore_provider.get(
+                collection=collection_name,
+                ids=doc_ids,
+            )
             
             # Build lookup for documents and metadata
             docs_map = {}
             metas_map = {}
-            if doc_results:
-                ids = doc_results.get("ids", [])
-                docs = doc_results.get("documents", [])
-                metas = doc_results.get("metadatas", [])
-                for i, doc_id in enumerate(ids):
-                    docs_map[doc_id] = docs[i] if i < len(docs) else ""
-                    metas_map[doc_id] = metas[i] if i < len(metas) else {}
+            for r in search_results:
+                docs_map[r.id] = r.document
+                metas_map[r.id] = r.metadata
         except Exception as e:
             logger.warning(f"Failed to fetch document details: {e}")
             docs_map = {}

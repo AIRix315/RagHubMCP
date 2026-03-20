@@ -47,12 +47,26 @@ export interface LoggingConfig {
   file: string | null
 }
 
+export interface HybridConfig {
+  alpha: number
+  beta: number
+  rrf_k: number
+  bm25_persist_dir: string
+}
+
+export interface WatcherConfig {
+  enabled: boolean
+  debounce_seconds: number
+}
+
 export interface ConfigModel {
   server: ServerConfig
   chroma: ChromaConfig
   providers: ProvidersConfig
   indexer: IndexerConfig
   logging: LoggingConfig
+  hybrid?: HybridConfig | null
+  watcher?: WatcherConfig | null
 }
 
 export interface ConfigUpdateRequest {
@@ -61,4 +75,6 @@ export interface ConfigUpdateRequest {
   providers?: ProvidersConfig
   indexer?: IndexerConfig
   logging?: LoggingConfig
+  hybrid?: HybridConfig | null
+  watcher?: WatcherConfig | null
 }

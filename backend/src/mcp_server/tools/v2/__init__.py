@@ -210,6 +210,8 @@ def register_v2_tools(mcp: "FastMCP") -> None:
             ...     collection="code_docs"
             ... )
         """
+        import uuid
+        
         # Validate inputs
         if not documents or not isinstance(documents, list):
             error_result = {
@@ -221,39 +223,95 @@ def register_v2_tools(mcp: "FastMCP") -> None:
         if not collection or not isinstance(collection, str):
             collection = "default"
         
+        if chunk_size <= 0:
+            chunk_size = 500
+        
         try:
-            # Import indexer
-            from indexer.indexer import Indexer
+            # Get providers through factory (follows RULE-3)
+            from providers.factory import factory
+            from chunkers import SimpleChunker
             
-            # Create indexer
-            indexer = Indexer()
+            vectorstore = factory.get_vectorstore_provider()
+            
+            # Create chunker for text splitting
+            chunker = SimpleChunker(chunk_size=chunk_size, overlap=min(50, chunk_size // 10))
+            
+            # Ensure collection exists
+            if not vectorstore.collection_exists(collection):
+                vectorstore.create_collection(collection)
             
             # Process documents
             documents_indexed = 0
             chunks_created = 0
+            errors = []
             
-            for doc in documents:
-                text = doc.get("text", "")
-                if not text:
+            for doc_idx, doc in enumerate(documents):
+                if not isinstance(doc, dict):
+                    errors.append(f"Document at index {doc_idx} is not a dictionary")
                     continue
                 
-                doc_id = doc.get("id")
-                metadata = doc.get("metadata", {})
+                text = doc.get("text", "")
+                if not text or not isinstance(text, str):
+                    errors.append(f"Document at index {doc_idx} has no valid 'text' field")
+                    continue
                 
-                # Add to collection
-                # Note: This is a simplified version - actual implementation
-                # would use the full indexer pipeline
-                documents_indexed += 1
+                # Get or generate document ID
+                doc_id = doc.get("id")
+                if not doc_id:
+                    doc_id = str(uuid.uuid4())
+                
+                # Get metadata
+                metadata = doc.get("metadata", {})
+                if not isinstance(metadata, dict):
+                    metadata = {}
+                metadata["doc_id"] = doc_id
+                
+                # Chunk the document
+                chunks = chunker.chunk(text, metadata)
+                
+                if not chunks:
+                    errors.append(f"Document {doc_id} produced no chunks")
+                    continue
+                
+                # Prepare data for indexing
+                chunk_texts = [chunk.text for chunk in chunks]
+                chunk_ids = [f"{doc_id}:chunk:{i}" for i in range(len(chunks))]
+                chunk_metadatas = []
+                for i, chunk in enumerate(chunks):
+                    meta = dict(chunk.metadata)
+                    meta["chunk_index"] = i
+                    meta["chunk_count"] = len(chunks)
+                    chunk_metadatas.append(meta)
+                
+                # Index to vector store
+                try:
+                    vectorstore.add(
+                        collection=collection,
+                        documents=chunk_texts,
+                        ids=chunk_ids,
+                        metadatas=chunk_metadatas,
+                    )
+                    documents_indexed += 1
+                    chunks_created += len(chunks)
+                except Exception as e:
+                    errors.append(f"Failed to index document {doc_id}: {str(e)}")
             
+            # Build response
             output = {
-                "status": "success",
+                "status": "success" if documents_indexed > 0 else "partial" if chunks_created > 0 else "failed",
                 "collection": collection,
                 "documents_indexed": documents_indexed,
                 "chunks_created": chunks_created,
+                "total_documents": len(documents),
             }
             
+            if errors:
+                output["errors"] = errors
+                output["error_count"] = len(errors)
+            
             logger.info(
-                f"Ingested {documents_indexed} documents to '{collection}'"
+                f"Ingested {documents_indexed}/{len(documents)} documents "
+                f"({chunks_created} chunks) to '{collection}'"
             )
             return json.dumps(output, indent=2)
             
@@ -268,21 +326,3 @@ def register_v2_tools(mcp: "FastMCP") -> None:
     
     _tools_registered = True
     logger.debug("V2 tools registered")
-
-
-# Backward compatibility aliases
-# These map old tool names to new pipeline-based tools
-def register_deprecated_tools(mcp: "FastMCP") -> None:
-    """Register deprecated tools for backward compatibility.
-    
-    These tools are marked as deprecated but still available.
-    New code should use query() and ingest() instead.
-    """
-    from .search import register_search_tools
-    from .rerank import register_rerank_tools
-    
-    # Register the old tools (they become deprecated)
-    register_search_tools(mcp)
-    register_rerank_tools(mcp)
-    
-    logger.info("Deprecated MCP tools registered (for compatibility)")

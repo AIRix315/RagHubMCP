@@ -327,6 +327,266 @@ class TestChromaProviderQuery:
                 assert "query_text" in str(exc_info.value)
         finally:
             gc.collect()
+    
+    def test_query_with_query_text_returns_results(self):
+        """Test query with query_text returns results via mock service."""
+        from providers.vectorstore.chroma import ChromaProvider
+        from providers.vectorstore.base import QueryResult, SearchResult
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            provider = ChromaProvider(persist_dir=tmpdir)
+            
+            # Mock the service to avoid embedding dimension issues
+            mock_service = MagicMock()
+            mock_service.query.return_value = {
+                "ids": ["id1", "id2"],
+                "documents": ["doc1", "doc2"],
+                "metadatas": [{"a": 1}, {"b": 2}],
+                "distances": [0.1, 0.2],
+            }
+            
+            with patch.object(provider, '_get_service', return_value=mock_service):
+                results = provider.query(
+                    collection="test_collection",
+                    query_text="test query",
+                    n_results=2,
+                )
+                
+                assert isinstance(results, QueryResult)
+                assert len(results.results) == 2
+                assert results.results[0].id == "id1"
+                assert results.results[0].document == "doc1"
+                assert results.results[0].score == 0.1
+        finally:
+            gc.collect()
+    
+    def test_query_with_where_filter(self):
+        """Test query with metadata filter."""
+        from providers.vectorstore.chroma import ChromaProvider
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            provider = ChromaProvider(persist_dir=tmpdir)
+            
+            mock_service = MagicMock()
+            mock_service.query.return_value = {
+                "ids": ["id1"],
+                "documents": ["doc1"],
+                "metadatas": [{"type": "A"}],
+                "distances": [0.1],
+            }
+            
+            with patch.object(provider, '_get_service', return_value=mock_service):
+                results = provider.query(
+                    collection="test_collection",
+                    query_text="test",
+                    where={"type": "A"},
+                    n_results=10,
+                )
+                
+                assert isinstance(results.results, list)
+                # Verify where filter was passed
+                call_kwargs = mock_service.query.call_args[1]
+                assert call_kwargs["where"] == {"type": "A"}
+        finally:
+            gc.collect()
+    
+    def test_query_with_where_document_filter(self):
+        """Test query with document content filter."""
+        from providers.vectorstore.chroma import ChromaProvider
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            provider = ChromaProvider(persist_dir=tmpdir)
+            
+            mock_service = MagicMock()
+            mock_service.query.return_value = {
+                "ids": ["id1"],
+                "documents": ["python code"],
+                "metadatas": [{}],
+                "distances": [0.1],
+            }
+            
+            with patch.object(provider, '_get_service', return_value=mock_service):
+                results = provider.query(
+                    collection="test_collection",
+                    query_text="code",
+                    where_document={"$contains": "python"},
+                    n_results=10,
+                )
+                
+                assert isinstance(results.results, list)
+                call_kwargs = mock_service.query.call_args[1]
+                assert call_kwargs["where_document"] == {"$contains": "python"}
+        finally:
+            gc.collect()
+    
+    def test_query_handles_missing_optional_fields(self):
+        """Test query handles missing metadatas and distances."""
+        from providers.vectorstore.chroma import ChromaProvider
+        from providers.vectorstore.base import QueryResult
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            provider = ChromaProvider(persist_dir=tmpdir)
+            
+            mock_service = MagicMock()
+            # Return minimal result without optional fields
+            mock_service.query.return_value = {
+                "ids": ["id1"],
+                "documents": ["doc1"],
+            }
+            
+            with patch.object(provider, '_get_service', return_value=mock_service):
+                results = provider.query(
+                    collection="test_collection",
+                    query_text="test",
+                    n_results=1,
+                )
+                
+                assert isinstance(results, QueryResult)
+                assert len(results.results) == 1
+                # Should have empty metadata and zero score
+                assert results.results[0].metadata == {}
+                assert results.results[0].score == 0.0
+        finally:
+            gc.collect()
+    
+    def test_query_returns_search_results_with_scores(self):
+        """Test that query returns SearchResult objects with all fields."""
+        from providers.vectorstore.chroma import ChromaProvider
+        from providers.vectorstore.base import SearchResult, QueryResult
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            provider = ChromaProvider(persist_dir=tmpdir)
+            
+            mock_service = MagicMock()
+            mock_service.query.return_value = {
+                "ids": ["id1"],
+                "documents": ["test document"],
+                "metadatas": [{"key": "value"}],
+                "distances": [0.5],
+            }
+            
+            with patch.object(provider, '_get_service', return_value=mock_service):
+                results = provider.query(
+                    collection="test_collection",
+                    query_text="test",
+                    n_results=1,
+                )
+                
+                assert isinstance(results, QueryResult)
+                assert len(results.results) == 1
+                assert isinstance(results.results[0], SearchResult)
+                assert results.results[0].id == "id1"
+                assert results.results[0].document == "test document"
+                assert results.results[0].metadata == {"key": "value"}
+                assert results.results[0].score == 0.5
+        finally:
+            gc.collect()
+
+
+class TestChromaProviderUpdateWithMetadata:
+    """Tests for update operations with metadata."""
+    
+    def test_update_with_metadatas(self):
+        """Test updating documents with metadatas."""
+        from providers.vectorstore.chroma import ChromaProvider
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            mock_embedding = create_mock_embedding_function()
+            
+            with patch('src.services.chroma_service._get_embedding_function', return_value=mock_embedding):
+                provider = ChromaProvider(persist_dir=tmpdir)
+                provider.create_collection("update_meta_test")
+                
+                provider.add(
+                    collection="update_meta_test",
+                    documents=["original"],
+                    ids=["id1"],
+                    metadatas=[{"version": 1}],
+                )
+                
+                # Update with new metadata
+                mock_emb = mock_embedding(["updated"])[0]
+                provider.update(
+                    collection="update_meta_test",
+                    ids=["id1"],
+                    documents=["updated"],
+                    metadatas=[{"version": 2, "updated": True}],
+                    embeddings=[mock_emb],
+                )
+                
+                results = provider.get(collection="update_meta_test", ids=["id1"])
+                assert results[0].document == "updated"
+        finally:
+            gc.collect()
+    
+    def test_update_metadatas_only(self):
+        """Test updating only metadatas without documents."""
+        from providers.vectorstore.chroma import ChromaProvider
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            mock_embedding = create_mock_embedding_function()
+            
+            with patch('src.services.chroma_service._get_embedding_function', return_value=mock_embedding):
+                provider = ChromaProvider(persist_dir=tmpdir)
+                provider.create_collection("update_meta_only_test")
+                
+                provider.add(
+                    collection="update_meta_only_test",
+                    documents=["test doc"],
+                    ids=["id1"],
+                    metadatas=[{"old": True}],
+                )
+                
+                # Update only metadata
+                provider.update(
+                    collection="update_meta_only_test",
+                    ids=["id1"],
+                    metadatas=[{"new": True}],
+                )
+                
+                results = provider.get(collection="update_meta_only_test", ids=["id1"])
+                assert len(results) == 1
+        finally:
+            gc.collect()
+    
+    def test_update_with_all_parameters(self):
+        """Test updating with documents, metadatas, and embeddings."""
+        from providers.vectorstore.chroma import ChromaProvider
+        
+        tmpdir = tempfile.mkdtemp()
+        try:
+            mock_embedding = create_mock_embedding_function()
+            
+            with patch('src.services.chroma_service._get_embedding_function', return_value=mock_embedding):
+                provider = ChromaProvider(persist_dir=tmpdir)
+                provider.create_collection("update_all_test")
+                
+                provider.add(
+                    collection="update_all_test",
+                    documents=["original"],
+                    ids=["id1"],
+                )
+                
+                mock_emb = mock_embedding(["fully updated"])[0]
+                provider.update(
+                    collection="update_all_test",
+                    ids=["id1"],
+                    documents=["fully updated"],
+                    metadatas=[{"full": "update"}],
+                    embeddings=[mock_emb],
+                )
+                
+                results = provider.get(collection="update_all_test", ids=["id1"])
+                assert results[0].document == "fully updated"
+        finally:
+            gc.collect()
 
 
 class TestChromaProviderReset:

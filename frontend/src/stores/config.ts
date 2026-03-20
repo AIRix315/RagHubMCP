@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { ConfigModel, ConfigUpdateRequest } from '@/types'
 import { getConfig as fetchConfig, updateConfig as saveConfig } from '@/api'
+import { getErrorMessage } from '@/api/errors'
 
 export const useConfigStore = defineStore('config', () => {
   const config = ref<ConfigModel | null>(null)
@@ -14,7 +15,7 @@ export const useConfigStore = defineStore('config', () => {
     try {
       config.value = await fetchConfig()
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to load config'
+      error.value = getErrorMessage(e)
     } finally {
       loading.value = false
     }
@@ -28,7 +29,7 @@ export const useConfigStore = defineStore('config', () => {
       // Reload config after save
       await loadConfig()
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to save config'
+      error.value = getErrorMessage(e)
     } finally {
       loading.value = false
     }

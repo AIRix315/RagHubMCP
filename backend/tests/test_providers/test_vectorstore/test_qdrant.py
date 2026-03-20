@@ -317,3 +317,525 @@ class TestQdrantProviderWithoutClient:
         if registry.is_registered(ProviderCategory.VECTORSTORE, "qdrant"):
             from providers.vectorstore.qdrant import QdrantProvider
             assert QdrantProvider.NAME == "qdrant"
+
+
+class TestQdrantProviderClientModes:
+    """Tests for different client initialization modes."""
+    
+    def test_from_config_cloud_mode(self):
+        """Test from_config for cloud mode."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        config = {
+            "mode": "cloud",
+            "url": "https://test-cluster.cloud.qdrant.io:6333",
+            "api_key": "test-api-key",
+            "embedding_dimension": 768,
+        }
+        
+        provider = QdrantProvider.from_config(config)
+        
+        assert provider._mode == "cloud"
+        assert provider._url == "https://test-cluster.cloud.qdrant.io:6333"
+        assert provider._api_key == "test-api-key"
+    
+    def test_from_config_with_grpc(self):
+        """Test from_config with gRPC preference."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        config = {
+            "mode": "remote",
+            "host": "localhost",
+            "port": 6334,
+            "prefer_grpc": True,
+            "embedding_dimension": 768,
+        }
+        
+        provider = QdrantProvider.from_config(config)
+        
+        assert provider._prefer_grpc is True
+    
+    def test_cloud_mode_initialization(self):
+        """Test cloud mode initialization parameters."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(
+            mode="cloud",
+            url="https://test.cloud.qdrant.io:6333",
+            api_key="test-key",
+        )
+        
+        assert provider._mode == "cloud"
+        assert provider._url == "https://test.cloud.qdrant.io:6333"
+        assert provider._api_key == "test-key"
+    
+    def test_remote_mode_initialization(self):
+        """Test remote mode initialization parameters."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(
+            mode="remote",
+            host="remote-host",
+            port=6333,
+        )
+        
+        assert provider._mode == "remote"
+        assert provider._host == "remote-host"
+        assert provider._port == 6333
+
+
+class TestQdrantProviderFilterBuilding:
+    """Tests for filter building methods."""
+    
+    @pytest.fixture
+    def memory_provider(self):
+        """Create a provider with in-memory storage."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(mode="memory", embedding_dimension=4)
+        return provider
+    
+    def test_build_filter_exact_match(self, memory_provider):
+        """Test _build_filter with exact match condition."""
+        filter_dict = {"category": "books"}
+        result = memory_provider._build_filter(filter_dict)
+        
+        # Should return a Filter object with must conditions
+        assert result is not None
+    
+    def test_build_filter_range_gt(self, memory_provider):
+        """Test _build_filter with greater than range."""
+        filter_dict = {"price": {"$gt": 10}}
+        result = memory_provider._build_filter(filter_dict)
+        
+        assert result is not None
+    
+    def test_build_filter_range_gte(self, memory_provider):
+        """Test _build_filter with greater than or equal range."""
+        filter_dict = {"price": {"$gte": 10}}
+        result = memory_provider._build_filter(filter_dict)
+        
+        assert result is not None
+    
+    def test_build_filter_range_lt(self, memory_provider):
+        """Test _build_filter with less than range."""
+        filter_dict = {"price": {"$lt": 100}}
+        result = memory_provider._build_filter(filter_dict)
+        
+        assert result is not None
+    
+    def test_build_filter_range_lte(self, memory_provider):
+        """Test _build_filter with less than or equal range."""
+        filter_dict = {"price": {"$lte": 100}}
+        result = memory_provider._build_filter(filter_dict)
+        
+        assert result is not None
+    
+    def test_build_filter_contains(self, memory_provider):
+        """Test _build_filter with contains condition."""
+        filter_dict = {"content": {"$contains": "search term"}}
+        result = memory_provider._build_filter(filter_dict)
+        
+        assert result is not None
+    
+    def test_build_filter_multiple_conditions(self, memory_provider):
+        """Test _build_filter with multiple conditions."""
+        filter_dict = {
+            "category": "books",
+            "year": {"$gt": 2020}
+        }
+        result = memory_provider._build_filter(filter_dict)
+        
+        assert result is not None
+    
+    def test_build_filter_empty_dict(self, memory_provider):
+        """Test _build_filter with empty dict returns None."""
+        result = memory_provider._build_filter({})
+        
+        assert result is None
+    
+    def test_build_document_filter_contains(self, memory_provider):
+        """Test _build_document_filter with contains condition."""
+        filter_dict = {"$contains": "search text"}
+        result = memory_provider._build_document_filter(filter_dict)
+        
+        assert result is not None
+    
+    def test_build_document_filter_empty(self, memory_provider):
+        """Test _build_document_filter without contains returns None."""
+        filter_dict = {"$regex": "pattern"}
+        result = memory_provider._build_document_filter(filter_dict)
+        
+        assert result is None
+
+
+class TestQdrantProviderAddOperations:
+    """Tests for add operations with edge cases."""
+    
+    @pytest.fixture
+    def provider_with_mock_embedding(self):
+        """Create a provider with mocked embedding provider."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(mode="memory", embedding_dimension=4)
+        
+        mock_embedding = MagicMock()
+        mock_embedding.embed_documents = MagicMock(
+            return_value=[[0.1, 0.2, 0.3, 0.4] for _ in range(10)]
+        )
+        provider._embedding_provider = mock_embedding
+        
+        return provider
+    
+    def test_add_empty_documents_list(self, provider_with_mock_embedding):
+        """Test adding empty documents list returns early."""
+        result = provider_with_mock_embedding.add(
+            collection="test",
+            documents=[],
+            ids=[],
+        )
+        
+        # Should return None without error
+        assert result is None
+    
+    def test_add_documents_with_metadatas(self, provider_with_mock_embedding):
+        """Test adding documents with metadata."""
+        provider_with_mock_embedding.create_collection("meta_test")
+        
+        embeddings = [[0.1, 0.2, 0.3, 0.4]]
+        
+        provider_with_mock_embedding.add(
+            collection="meta_test",
+            documents=["doc1"],
+            ids=["00000000-0000-0000-0000-000000000001"],
+            metadatas=[{"author": "test", "year": 2024}],
+            embeddings=embeddings,
+        )
+        
+        assert provider_with_mock_embedding.count("meta_test") == 1
+    
+    def test_add_documents_auto_create_collection(self, provider_with_mock_embedding):
+        """Test that add creates collection if not exists."""
+        # Don't create collection first
+        
+        embeddings = [[0.1, 0.2, 0.3, 0.4]]
+        
+        provider_with_mock_embedding.add(
+            collection="auto_created",
+            documents=["doc1"],
+            ids=["00000000-0000-0000-0000-000000000001"],
+            embeddings=embeddings,
+        )
+        
+        # Collection should be created automatically
+        assert provider_with_mock_embedding.collection_exists("auto_created")
+
+
+class TestQdrantProviderGetOperations:
+    """Tests for get operations with different parameters."""
+    
+    @pytest.fixture
+    def provider_with_data(self):
+        """Create a provider with test data."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(mode="memory", embedding_dimension=4)
+        
+        mock_embedding = MagicMock()
+        mock_embedding.embed_documents = MagicMock(
+            return_value=[[0.1, 0.2, 0.3, 0.4] for _ in range(10)]
+        )
+        provider._embedding_provider = mock_embedding
+        
+        provider.create_collection("get_ops_test")
+        
+        embeddings = [
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.6, 0.7, 0.8],
+            [0.9, 1.0, 1.1, 1.2],
+        ]
+        
+        provider.add(
+            collection="get_ops_test",
+            documents=["doc1", "doc2", "doc3"],
+            ids=[
+                "00000000-0000-0000-0000-000000000001",
+                "00000000-0000-0000-0000-000000000002",
+                "00000000-0000-0000-0000-000000000003"
+            ],
+            metadatas=[
+                {"category": "A"},
+                {"category": "B"},
+                {"category": "A"}
+            ],
+            embeddings=embeddings,
+        )
+        
+        return provider
+    
+    def test_get_without_ids_uses_scroll(self, provider_with_data):
+        """Test get without IDs uses scroll operation."""
+        results = provider_with_data.get(
+            collection="get_ops_test",
+            limit=10,
+        )
+        
+        assert len(results) == 3
+    
+    def test_get_with_limit_and_offset(self, provider_with_data):
+        """Test get with limit and offset."""
+        results = provider_with_data.get(
+            collection="get_ops_test",
+            limit=2,
+            offset=0,
+        )
+        
+        assert len(results) == 2
+    
+    def test_get_with_where_filter(self, provider_with_data):
+        """Test get with metadata filter."""
+        results = provider_with_data.get(
+            collection="get_ops_test",
+            where={"category": "A"},
+            limit=10,
+        )
+        
+        # Should filter results by category
+        assert isinstance(results, list)
+
+
+class TestQdrantProviderDeleteOperations:
+    """Tests for delete operations with different parameters."""
+    
+    @pytest.fixture
+    def provider_with_data(self):
+        """Create a provider with test data."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(mode="memory", embedding_dimension=4)
+        
+        mock_embedding = MagicMock()
+        mock_embedding.embed_documents = MagicMock(
+            return_value=[[0.1, 0.2, 0.3, 0.4] for _ in range(10)]
+        )
+        provider._embedding_provider = mock_embedding
+        
+        provider.create_collection("delete_ops_test")
+        
+        embeddings = [
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.6, 0.7, 0.8],
+            [0.9, 1.0, 1.1, 1.2],
+        ]
+        
+        provider.add(
+            collection="delete_ops_test",
+            documents=["doc1", "doc2", "doc3"],
+            ids=[
+                "00000000-0000-0000-0000-000000000001",
+                "00000000-0000-0000-0000-000000000002",
+                "00000000-0000-0000-0000-000000000003"
+            ],
+            metadatas=[
+                {"category": "A"},
+                {"category": "B"},
+                {"category": "A"}
+            ],
+            embeddings=embeddings,
+        )
+        
+        return provider
+    
+    def test_delete_with_where_filter(self, provider_with_data):
+        """Test delete with metadata filter."""
+        deleted = provider_with_data.delete(
+            collection="delete_ops_test",
+            where={"category": "B"},
+        )
+        
+        assert isinstance(deleted, int)
+    
+    def test_delete_without_ids_or_where_returns_zero(self, provider_with_data):
+        """Test delete without IDs or where returns 0."""
+        deleted = provider_with_data.delete(
+            collection="delete_ops_test",
+        )
+        
+        assert deleted == 0
+
+
+class TestQdrantProviderUpdateOperations:
+    """Tests for update operations."""
+    
+    @pytest.fixture
+    def provider_with_data(self):
+        """Create a provider with test data."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(mode="memory", embedding_dimension=4)
+        
+        mock_embedding = MagicMock()
+        mock_embedding.embed_documents = MagicMock(
+            return_value=[[0.1, 0.2, 0.3, 0.4] for _ in range(10)]
+        )
+        provider._embedding_provider = mock_embedding
+        
+        provider.create_collection("update_test")
+        
+        embeddings = [[0.1, 0.2, 0.3, 0.4]]
+        
+        provider.add(
+            collection="update_test",
+            documents=["original doc"],
+            ids=["00000000-0000-0000-0000-000000000001"],
+            metadatas=[{"version": 1}],
+            embeddings=embeddings,
+        )
+        
+        return provider
+    
+    def test_update_document_only(self, provider_with_data):
+        """Test updating document text only."""
+        provider_with_data.update(
+            collection="update_test",
+            ids=["00000000-0000-0000-0000-000000000001"],
+            documents=["updated doc"],
+        )
+        
+        # Verify update was called without error
+        results = provider_with_data.get(
+            collection="update_test",
+            ids=["00000000-0000-0000-0000-000000000001"],
+        )
+        assert len(results) == 1
+    
+    def test_update_metadata_only(self, provider_with_data):
+        """Test updating metadata with embeddings."""
+        # Qdrant requires vector for PointStruct, so we provide embeddings
+        new_embeddings = [[0.5, 0.6, 0.7, 0.8]]
+        
+        provider_with_data.update(
+            collection="update_test",
+            ids=["00000000-0000-0000-0000-000000000001"],
+            metadatas=[{"version": 2, "updated": True}],
+            embeddings=new_embeddings,
+        )
+        
+        results = provider_with_data.get(
+            collection="update_test",
+            ids=["00000000-0000-0000-0000-000000000001"],
+        )
+        assert len(results) == 1
+    
+    def test_update_with_embeddings(self, provider_with_data):
+        """Test updating with new embeddings."""
+        new_embeddings = [[0.5, 0.6, 0.7, 0.8]]
+        
+        provider_with_data.update(
+            collection="update_test",
+            ids=["00000000-0000-0000-0000-000000000001"],
+            embeddings=new_embeddings,
+        )
+        
+        # Should complete without error
+        results = provider_with_data.get(
+            collection="update_test",
+            ids=["00000000-0000-0000-0000-000000000001"],
+        )
+        assert len(results) == 1
+    
+    def test_update_document_auto_embed(self, provider_with_data):
+        """Test updating document triggers auto-embedding."""
+        provider_with_data.update(
+            collection="update_test",
+            ids=["00000000-0000-0000-0000-000000000001"],
+            documents=["new doc text"],
+        )
+        
+        # Auto-embedding should be called
+        provider_with_data._embedding_provider.embed_documents.assert_called()
+    
+    def test_update_multiple_documents(self, provider_with_data):
+        """Test updating multiple documents at once."""
+        # First add another document
+        embeddings = [[0.9, 1.0, 1.1, 1.2]]
+        provider_with_data.add(
+            collection="update_test",
+            documents=["second doc"],
+            ids=["00000000-0000-0000-0000-000000000002"],
+            embeddings=embeddings,
+        )
+        
+        provider_with_data.update(
+            collection="update_test",
+            ids=[
+                "00000000-0000-0000-0000-000000000001",
+                "00000000-0000-0000-0000-000000000002"
+            ],
+            documents=["updated1", "updated2"],
+        )
+        
+        results = provider_with_data.get(collection="update_test", limit=10)
+        assert len(results) == 2
+
+
+class TestQdrantProviderQueryWithFilters:
+    """Tests for query operations with filters."""
+    
+    @pytest.fixture
+    def provider_with_data(self):
+        """Create a provider with test data."""
+        from providers.vectorstore.qdrant import QdrantProvider
+        
+        provider = QdrantProvider(mode="memory", embedding_dimension=4)
+        
+        mock_embedding = MagicMock()
+        mock_embedding.embed_documents = MagicMock(
+            return_value=[[0.1, 0.2, 0.3, 0.4] for _ in range(10)]
+        )
+        mock_embedding.embed_query = MagicMock(
+            return_value=[0.1, 0.2, 0.3, 0.4]
+        )
+        provider._embedding_provider = mock_embedding
+        
+        provider.create_collection("filter_query_test")
+        
+        embeddings = [
+            [0.1, 0.2, 0.3, 0.4],
+            [0.5, 0.6, 0.7, 0.8],
+        ]
+        
+        provider.add(
+            collection="filter_query_test",
+            documents=["doc1", "doc2"],
+            ids=[
+                "00000000-0000-0000-0000-000000000001",
+                "00000000-0000-0000-0000-000000000002"
+            ],
+            metadatas=[{"type": "A"}, {"type": "B"}],
+            embeddings=embeddings,
+        )
+        
+        return provider
+    
+    def test_query_with_where_filter(self, provider_with_data):
+        """Test query with metadata filter."""
+        results = provider_with_data.query(
+            collection="filter_query_test",
+            query_embedding=[0.1, 0.2, 0.3, 0.4],
+            where={"type": "A"},
+            n_results=10,
+        )
+        
+        assert isinstance(results.results, list)
+    
+    def test_query_with_where_document_filter(self, provider_with_data):
+        """Test query with document content filter."""
+        results = provider_with_data.query(
+            collection="filter_query_test",
+            query_embedding=[0.1, 0.2, 0.3, 0.4],
+            where_document={"$contains": "doc"},
+            n_results=10,
+        )
+        
+        assert isinstance(results.results, list)

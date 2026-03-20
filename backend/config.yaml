@@ -2,6 +2,15 @@ chroma:
   host: null
   persist_dir: ./data/chroma
   port: null
+cors:
+  allow_credentials: true
+  allow_headers:
+  - '*'
+  allow_methods:
+  - '*'
+  origins:
+  - http://localhost:3315
+  - http://127.0.0.1:3315
 hybrid:
   alpha: 0.5
   beta: 0.5

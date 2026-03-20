@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { CollectionsListResponse, CollectionInfo } from '@/types'
 import { listCollections, deleteCollection } from '@/api'
+import { getErrorMessage } from '@/api/errors'
 
 export const useCollectionStore = defineStore('collection', () => {
   const collections = ref<CollectionInfo[]>([])
@@ -29,7 +30,7 @@ export const useCollectionStore = defineStore('collection', () => {
       collections.value = response.collections
       lastUpdated.value = new Date()
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to load collections'
+      error.value = getErrorMessage(e)
     } finally {
       loading.value = false
     }
@@ -42,7 +43,7 @@ export const useCollectionStore = defineStore('collection', () => {
       await deleteCollection(name)
       await loadCollections()
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to delete collection'
+      error.value = getErrorMessage(e)
     } finally {
       loading.value = false
     }

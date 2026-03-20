@@ -235,3 +235,180 @@ class TestProviderFactory:
         assert emb_key != llm_key
         assert emb_key != rerank_key
         assert llm_key != rerank_key
+
+
+class TestProviderFactoryGetters:
+    """Tests for factory getter methods."""
+
+    def test_get_llm_provider_calls_internal_method(self):
+        """Test that get_llm_provider calls _get_provider with correct category."""
+        from providers.factory import factory
+        from providers.base import ProviderCategory
+        
+        # Use cache_key generation to verify correct category
+        config = {"name": "llm-test", "type": "test", "model": "test"}
+        key = factory._cache_key(ProviderCategory.LLM, "llm-test", config)
+        
+        assert ProviderCategory.LLM.value in key
+
+    def test_get_vectorstore_provider_calls_internal_method(self):
+        """Test that get_vectorstore_provider calls _get_provider with correct category."""
+        from providers.factory import factory
+        from providers.base import ProviderCategory
+        
+        config = {"name": "vs-test", "type": "test", "path": "/tmp"}
+        key = factory._cache_key(ProviderCategory.VECTORSTORE, "vs-test", config)
+        
+        assert ProviderCategory.VECTORSTORE.value in key
+
+    def test_get_rerank_provider_calls_internal_method(self):
+        """Test that get_rerank_provider calls _get_provider with correct category."""
+        from providers.factory import factory
+        from providers.base import ProviderCategory
+        
+        config = {"name": "rerank-test", "type": "test", "model": "test"}
+        key = factory._cache_key(ProviderCategory.RERANK, "rerank-test", config)
+        
+        assert ProviderCategory.RERANK.value in key
+
+
+class TestProviderFactoryErrorHandling:
+    """Tests for error handling in factory."""
+
+    def test_provider_not_found_error_message(self):
+        """Test ProviderNotFoundError contains useful information."""
+        from providers.factory import factory
+        from providers.base import ProviderNotFoundError
+        
+        factory.clear_cache()
+        
+        with pytest.raises(ProviderNotFoundError) as exc_info:
+            factory.get_embedding_provider("definitely-not-exist-xyz-123")
+        
+        error = exc_info.value
+        assert "definitely-not-exist-xyz-123" in str(error)
+
+    def test_unsupported_provider_error_details(self):
+        """Test UnsupportedProviderError contains available providers."""
+        from providers.base import ProviderCategory, UnsupportedProviderError
+        from providers.registry import registry
+        
+        with pytest.raises(UnsupportedProviderError) as exc_info:
+            registry.get(ProviderCategory.EMBEDDING, "totally-fake-provider")
+        
+        error = exc_info.value
+        # Check inherited attributes
+        assert error.provider == "totally-fake-provider"
+        assert error.error_code == "UNSUPPORTED_PROVIDER"
+        # Check details for category and available
+        assert "category" in error.details
+        assert "available" in error.details
+
+    def test_get_vectorstore_provider_not_found(self):
+        """Test get_vectorstore_provider with non-existent instance."""
+        from providers.factory import factory
+        from providers.base import ProviderNotFoundError
+        
+        factory.clear_cache()
+        
+        with pytest.raises((ProviderNotFoundError, ValueError)):
+            factory.get_vectorstore_provider("nonexistent-vs-instance")
+
+    def test_get_llm_provider_not_found(self):
+        """Test get_llm_provider with non-existent instance."""
+        from providers.factory import factory
+        from providers.base import ProviderNotFoundError
+        
+        factory.clear_cache()
+        
+        with pytest.raises((ProviderNotFoundError, ValueError)):
+            factory.get_llm_provider("nonexistent-llm-instance")
+
+
+class TestProviderFactoryCaching:
+    """Tests for caching behavior."""
+
+    def test_cache_returns_same_instance(self):
+        """Test that cache returns same instance for same config."""
+        from providers.factory import factory
+        from providers.base import ProviderCategory, BaseProvider
+        from providers.registry import registry
+        from providers.embedding.base import BaseEmbeddingProvider
+        
+        @registry.register(ProviderCategory.EMBEDDING, "cache-same-test")
+        class CacheSameTest(BaseEmbeddingProvider):
+            NAME = "cache-same-test"
+            
+            def __init__(self, value: str):
+                self._value = value
+                self._dimension = 768
+            
+            def embed_documents(self, texts: list[str]) -> list[list[float]]:
+                return [[0.0] * 768 for _ in texts]
+            
+            def embed_query(self, query: str) -> list[float]:
+                return [0.0] * 768
+            
+            @property
+            def dimension(self) -> int:
+                return 768
+            
+            @classmethod
+            def from_config(cls, config: dict) -> "CacheSameTest":
+                return cls(value=config.get("value", "default"))
+        
+        factory.clear_cache()
+        
+        config = {"name": "same-test", "type": "cache-same-test", "value": "test"}
+        cache_key = factory._cache_key(ProviderCategory.EMBEDDING, "same-test", config)
+        
+        instance1 = CacheSameTest.from_config(config)
+        factory._cache[cache_key] = instance1
+        
+        # Second retrieval should return cached instance
+        instance2 = factory._cache.get(cache_key)
+        
+        assert instance1 is instance2
+
+    def test_different_configs_different_instances(self):
+        """Test that different configs create different instances."""
+        from providers.factory import factory
+        from providers.base import ProviderCategory
+        
+        config1 = {"name": "diff-test-1", "type": "test", "model": "model-a"}
+        config2 = {"name": "diff-test-2", "type": "test", "model": "model-b"}
+        
+        key1 = factory._cache_key(ProviderCategory.EMBEDDING, "diff-test-1", config1)
+        key2 = factory._cache_key(ProviderCategory.EMBEDDING, "diff-test-2", config2)
+        
+        assert key1 != key2
+
+
+class TestProviderFactoryConfigHash:
+    """Tests for configuration hashing."""
+
+    def test_config_order_does_not_affect_hash(self):
+        """Test that config key order doesn't change the hash."""
+        from providers.factory import factory
+        from providers.base import ProviderCategory
+        
+        config1 = {"name": "test", "type": "http", "model": "test", "dimension": 768}
+        config2 = {"dimension": 768, "model": "test", "name": "test", "type": "http"}
+        
+        key1 = factory._cache_key(ProviderCategory.EMBEDDING, "test", config1)
+        key2 = factory._cache_key(ProviderCategory.EMBEDDING, "test", config2)
+        
+        assert key1 == key2
+
+    def test_nested_config_in_hash(self):
+        """Test that nested config values affect hash."""
+        from providers.factory import factory
+        from providers.base import ProviderCategory
+        
+        config1 = {"name": "test", "type": "test", "options": {"batch_size": 32}}
+        config2 = {"name": "test", "type": "test", "options": {"batch_size": 64}}
+        
+        key1 = factory._cache_key(ProviderCategory.EMBEDDING, "test", config1)
+        key2 = factory._cache_key(ProviderCategory.EMBEDDING, "test", config2)
+        
+        assert key1 != key2

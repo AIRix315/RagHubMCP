@@ -449,3 +449,261 @@ class TestMigrationIntegration:
         # Should handle gracefully
         assert result.success is False  # Collection doesn't exist
         assert len(result.errors) > 0
+
+
+class TestMigrateErrorPaths:
+    """Tests for error paths and edge cases to improve coverage."""
+    
+    def test_migrate_list_collections_exception(self) -> None:
+        """Test migration when list_collections raises an exception (lines 160-164)."""
+        source = MagicMock()
+        source.list_collections.side_effect = RuntimeError("Connection failed")
+        target = MagicMock()
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator.migrate(collections=None)  # Will trigger list_collections
+        
+        assert result.success is False
+        assert len(result.errors) == 1
+        assert "Failed to list source collections" in result.errors[0]
+        assert result.duration_seconds > 0
+    
+    def test_migrate_with_verify_progress_callback(self) -> None:
+        """Test migration with verify=True and progress callback (line 198)."""
+        source = MockVectorStoreProvider({
+            "docs": [
+                {"id": "d1", "document": "Doc 1", "metadata": {}, "embedding": [0.1]},
+            ],
+        })
+        target = MockVectorStoreProvider()
+        
+        progress_calls = []
+        
+        def progress_callback(current: int, total: int, message: str) -> None:
+            progress_calls.append((current, total, message))
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator.migrate(progress_callback=progress_callback, verify=True)
+        
+        assert result.success is True
+        # Check that verification progress was called
+        verify_calls = [c for c in progress_calls if "Verifying" in c[2]]
+        assert len(verify_calls) > 0
+    
+    def test_migrate_verification_with_errors_and_warnings(self) -> None:
+        """Test migration when verification returns errors and warnings (lines 205-206)."""
+        source = MockVectorStoreProvider({
+            "docs": [
+                {"id": "d1", "document": "Doc 1", "metadata": {}, "embedding": [0.1]},
+            ],
+        })
+        target = MockVectorStoreProvider()
+        
+        # Mock _verify_integrity to return errors/warnings
+        migrator = VectorStoreMigrator(source, target)
+        
+        with patch.object(
+            migrator, "_verify_integrity",
+            return_value={
+                "success": False,
+                "errors": ["Count mismatch for 'docs': source=1, target=0"],
+                "warnings": ["Could not verify embeddings"],
+            }
+        ):
+            result = migrator.migrate(verify=True)
+        
+        assert result.success is False  # Has errors
+        assert "Count mismatch" in result.errors[-1]
+        assert "Could not verify embeddings" in result.warnings
+    
+    def test_migrate_batch_empty_ids(self) -> None:
+        """Test migration when batch returns empty IDs (line 262)."""
+        source = MockVectorStoreProvider({
+            "docs": [
+                {"id": "d1", "document": "Doc 1", "metadata": {}, "embedding": [0.1]},
+            ],
+        })
+        target = MockVectorStoreProvider()
+        
+        migrator = VectorStoreMigrator(source, target)
+        
+        # Mock _read_batch to return empty IDs on first call
+        with patch.object(
+            migrator, "_read_batch",
+            return_value={"ids": [], "documents": [], "metadatas": [], "embeddings": []}
+        ):
+            result = migrator.migrate(verify=False)
+        
+        assert result.success is True
+        assert result.documents_migrated == 0  # No documents migrated due to empty batch
+    
+    def test_migrate_collection_exception(self) -> None:
+        """Test migration when collection migration raises an exception (lines 284-287)."""
+        source = MockVectorStoreProvider({
+            "docs": [
+                {"id": "d1", "document": "Doc 1", "metadata": {}, "embedding": [0.1]},
+            ],
+        })
+        target = MagicMock()
+        target.collection_exists.return_value = False
+        target.create_collection.side_effect = RuntimeError("Failed to create collection")
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator.migrate(verify=False)
+        
+        assert result.success is False
+        assert len(result.errors) > 0
+        assert "Failed to create collection" in result.errors[0]
+    
+    def test_read_chroma_batch_success(self) -> None:
+        """Test _read_chroma_batch method (lines 309, 343-359)."""
+        source = MagicMock()
+        source.NAME = "chroma"
+        
+        # Mock the Chroma service chain
+        mock_service = MagicMock()
+        mock_collection = MagicMock()
+        mock_collection.get.return_value = {
+            "ids": ["id1", "id2"],
+            "documents": ["doc1", "doc2"],
+            "metadatas": [{"key": "val1"}, {"key": "val2"}],
+            "embeddings": [[0.1, 0.2], [0.3, 0.4]],
+        }
+        mock_service.get_collection.return_value = mock_collection
+        source._get_service.return_value = mock_service
+        
+        target = MagicMock()
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator._read_chroma_batch("test_collection", 0, 10)
+        
+        assert result["ids"] == ["id1", "id2"]
+        assert result["documents"] == ["doc1", "doc2"]
+        assert result["embeddings"] == [[0.1, 0.2], [0.3, 0.4]]
+        mock_collection.get.assert_called_once_with(
+            limit=10, offset=0, include=["documents", "metadatas", "embeddings"]
+        )
+    
+    def test_read_chroma_batch_no_get_service(self) -> None:
+        """Test _read_chroma_batch when source lacks _get_service (lines 343-345)."""
+        source = MagicMock()
+        source.NAME = "chroma"
+        # Remove _get_service attribute
+        delattr(source, "_get_service")
+        
+        target = MagicMock()
+        
+        migrator = VectorStoreMigrator(source, target)
+        
+        with pytest.raises(RuntimeError, match="Source provider does not support _get_service"):
+            migrator._read_chroma_batch("test_collection", 0, 10)
+    
+    def test_read_chroma_batch_no_get_collection(self) -> None:
+        """Test _read_chroma_batch when service lacks get_collection (lines 347-349)."""
+        source = MagicMock()
+        source.NAME = "chroma"
+        
+        # Mock service without get_collection
+        mock_service = MagicMock()
+        delattr(mock_service, "get_collection")
+        source._get_service.return_value = mock_service
+        
+        target = MagicMock()
+        
+        migrator = VectorStoreMigrator(source, target)
+        
+        with pytest.raises(RuntimeError, match="Service does not support get_collection"):
+            migrator._read_chroma_batch("test_collection", 0, 10)
+    
+    def test_read_batch_non_chroma_provider(self) -> None:
+        """Test _read_batch with non-Chroma provider (lines 310-323)."""
+        source = MagicMock()
+        source.NAME = "qdrant"  # Not chroma
+        
+        # Mock SearchResult objects
+        from providers.vectorstore import SearchResult
+        source.get.return_value = [
+            SearchResult(id="id1", document="doc1", metadata={"k": "v1"}),
+            SearchResult(id="id2", document="doc2", metadata={"k": "v2"}),
+        ]
+        
+        target = MagicMock()
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator._read_batch("test_collection", 0, 10)
+        
+        assert result["ids"] == ["id1", "id2"]
+        assert result["documents"] == ["doc1", "doc2"]
+        assert result["embeddings"] is None  # No embeddings for non-Chroma
+        source.get.assert_called_once_with(
+            collection="test_collection", limit=10, offset=0
+        )
+    
+    def test_verification_count_mismatch(self) -> None:
+        """Test _verify_integrity with count mismatch (line 384)."""
+        source = MockVectorStoreProvider({
+            "docs": [
+                {"id": "d1", "document": "Doc 1", "metadata": {}, "embedding": [0.1]},
+                {"id": "d2", "document": "Doc 2", "metadata": {}, "embedding": [0.2]},
+            ],
+        })
+        # Target has fewer documents - will cause mismatch
+        target = MockVectorStoreProvider({
+            "docs": [
+                {"id": "d1", "document": "Doc 1", "metadata": {}, "embedding": [0.1]},
+            ],
+        })
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator._verify_integrity(["docs"])
+        
+        assert result["success"] is False
+        assert len(result["errors"]) == 1
+        assert "Count mismatch" in result["errors"][0]
+        assert "source=2" in result["errors"][0]
+        assert "target=1" in result["errors"][0]
+    
+    def test_verification_exception(self) -> None:
+        """Test _verify_integrity when count raises exception (lines 393-394)."""
+        source = MagicMock()
+        source.count.side_effect = RuntimeError("Database error")
+        target = MagicMock()
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator._verify_integrity(["docs"])
+        
+        assert result["success"] is True  # No count mismatches recorded as errors
+        assert len(result["warnings"]) == 1
+        assert "Could not verify" in result["warnings"][0]
+        assert "Database error" in result["warnings"][0]
+    
+    def test_migrate_chroma_provider_path(self) -> None:
+        """Test migration with Chroma provider to exercise _read_chroma_batch."""
+        source = MagicMock()
+        source.NAME = "chroma"
+        source.list_collections.return_value = ["docs"]
+        source.collection_exists.return_value = True
+        source.count.return_value = 2
+        
+        # Mock the Chroma service chain
+        mock_service = MagicMock()
+        mock_collection = MagicMock()
+        mock_collection.get.return_value = {
+            "ids": ["id1", "id2"],
+            "documents": ["doc1", "doc2"],
+            "metadatas": [{"k": "v1"}, {"k": "v2"}],
+            "embeddings": [[0.1, 0.2], [0.3, 0.4]],
+        }
+        mock_service.get_collection.return_value = mock_collection
+        source._get_service.return_value = mock_service
+        
+        target = MagicMock()
+        target.collection_exists.return_value = False
+        target.count.return_value = 2
+        
+        migrator = VectorStoreMigrator(source, target)
+        result = migrator.migrate(verify=False)
+        
+        assert result.success is True
+        assert result.documents_migrated == 2
+        target.add.assert_called()

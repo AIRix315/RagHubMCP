@@ -1,6 +1,7 @@
 """Pydantic models for REST API request/response schemas.
 
 This module defines all the data models used by the REST API endpoints.
+Configuration models are imported from utils/config.py to avoid duplication.
 """
 
 from __future__ import annotations
@@ -10,6 +11,18 @@ from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+# Import configuration models from utils/config.py (single source of truth)
+from src.utils.config import (
+    AppConfig,
+    ChromaConfig,
+    HybridConfig,
+    IndexerConfig,
+    LoggingConfig,
+    ProvidersConfig,
+    ServerConfig,
+    WatcherConfig,
+)
 
 
 # =============================================================================
@@ -36,28 +49,23 @@ class SuccessResponse(BaseModel):
 
 
 # =============================================================================
-# Config API Models
+# Config API Models (re-export from utils/config.py)
 # =============================================================================
 
-
-class ServerConfigModel(BaseModel):
-    """Server configuration."""
-
-    host: str = Field(default="0.0.0.0")
-    port: int = Field(default=8000)
-    debug: bool = Field(default=True)
-
-
-class ChromaConfigModel(BaseModel):
-    """Chroma configuration."""
-
-    persist_dir: str = Field(default="./data/chroma")
-    host: str | None = Field(default=None)
-    port: int | None = Field(default=None)
+# Re-export for backward compatibility
+# These are the same models used internally, ensuring consistency
+ServerConfigModel = ServerConfig
+ChromaConfigModel = ChromaConfig
+IndexerConfigModel = IndexerConfig
+LoggingConfigModel = LoggingConfig
+HybridConfigModel = HybridConfig
+WatcherConfigModel = WatcherConfig
+ProvidersConfigModel = ProvidersConfig
+ConfigModel = AppConfig
 
 
 class ProviderInstanceModel(BaseModel):
-    """Provider instance configuration."""
+    """Provider instance configuration (for API documentation)."""
 
     name: str
     type: str
@@ -67,66 +75,10 @@ class ProviderInstanceModel(BaseModel):
 
 
 class ProviderCategoryModel(BaseModel):
-    """Provider category configuration."""
+    """Provider category configuration (for API documentation)."""
 
     default: str
     instances: list[dict[str, Any]] = Field(default_factory=list)
-
-
-class ProvidersConfigModel(BaseModel):
-    """All provider configurations."""
-
-    embedding: ProviderCategoryModel
-    rerank: ProviderCategoryModel
-    llm: ProviderCategoryModel
-
-
-class IndexerConfigModel(BaseModel):
-    """Indexer configuration."""
-
-    chunk_size: int = Field(default=500)
-    chunk_overlap: int = Field(default=50)
-    max_file_size: int = Field(default=1048576)
-    file_types: list[str] = Field(default_factory=lambda: [".py", ".ts", ".js", ".md", ".vue"])
-    exclude_dirs: list[str] = Field(
-        default_factory=lambda: ["node_modules", ".git", "__pycache__", "venv"]
-    )
-
-
-class LoggingConfigModel(BaseModel):
-    """Logging configuration."""
-
-    level: str = Field(default="INFO")
-    format: str = Field(default="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    file: str | None = Field(default=None)
-
-
-class HybridConfigModel(BaseModel):
-    """Hybrid search configuration."""
-
-    alpha: float = Field(default=0.5, ge=0.0, le=1.0)
-    beta: float = Field(default=0.5, ge=0.0, le=1.0)
-    rrf_k: int = Field(default=60, ge=1)
-    bm25_persist_dir: str = Field(default="./data/bm25")
-
-
-class WatcherConfigModel(BaseModel):
-    """File watcher configuration."""
-
-    enabled: bool = Field(default=True)
-    debounce_seconds: float = Field(default=1.0, ge=0.0)
-
-
-class ConfigModel(BaseModel):
-    """Full configuration model."""
-
-    server: ServerConfigModel
-    chroma: ChromaConfigModel
-    providers: ProvidersConfigModel
-    indexer: IndexerConfigModel
-    logging: LoggingConfigModel
-    hybrid: HybridConfigModel | None = Field(default=None)
-    watcher: WatcherConfigModel | None = Field(default=None)
 
 
 class ConfigUpdateRequest(BaseModel):
@@ -135,13 +87,13 @@ class ConfigUpdateRequest(BaseModel):
     Only include the fields you want to update.
     """
 
-    server: ServerConfigModel | None = None
-    chroma: ChromaConfigModel | None = None
-    providers: ProvidersConfigModel | None = None
-    indexer: IndexerConfigModel | None = None
-    logging: LoggingConfigModel | None = None
-    hybrid: HybridConfigModel | None = None
-    watcher: WatcherConfigModel | None = None
+    server: ServerConfig | None = None
+    chroma: ChromaConfig | None = None
+    providers: ProvidersConfig | None = None
+    indexer: IndexerConfig | None = None
+    logging: LoggingConfig | None = None
+    hybrid: HybridConfig | None = None
+    watcher: WatcherConfig | None = None
 
 
 # =============================================================================
