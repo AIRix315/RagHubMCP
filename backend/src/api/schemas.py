@@ -53,14 +53,6 @@ class SuccessResponse(BaseModel):
 # =============================================================================
 
 # Re-export for backward compatibility
-# These are the same models used internally, ensuring consistency
-ServerConfigModel = ServerConfig
-ChromaConfigModel = ChromaConfig
-IndexerConfigModel = IndexerConfig
-LoggingConfigModel = LoggingConfig
-HybridConfigModel = HybridConfig
-WatcherConfigModel = WatcherConfig
-ProvidersConfigModel = ProvidersConfig
 ConfigModel = AppConfig
 
 

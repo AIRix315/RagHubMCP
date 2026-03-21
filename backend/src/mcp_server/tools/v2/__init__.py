@@ -140,9 +140,9 @@ def register_v2_tools(mcp: "FastMCP") -> None:
             options = {
                 "collection": collection,
                 "topK": top_k,
-                "rerank": profile_config.get("rerank", True),
+                "rerank": profile_config.rerank,
                 "profile": strategy,
-                "merge_consecutive": profile_config.get("merge_consecutive", False),
+                "merge_consecutive": False,  # Not in PipelineProfileConfig
             }
             
             result = await pipeline.run(query, options)
@@ -165,8 +165,8 @@ def register_v2_tools(mcp: "FastMCP") -> None:
                 "strategy": strategy,
                 "profile": {
                     "name": strategy,
-                    "rerank": profile_config.get("rerank", True),
-                    "retrieval_multiplier": profile_config.get("retrieval_multiplier", 2.0),
+                    "rerank": profile_config.rerank,
+                    "retrieval_multiplier": profile_config.retrieval_multiplier,
                 },
             }
             
@@ -240,14 +240,18 @@ def register_v2_tools(mcp: "FastMCP") -> None:
         )
         
         # Validate inputs using unified validation methods
+        # Auto-default empty collection to "default"
+        if not collection:
+            collection = "default"
+        
         error = validate_documents_list(documents)
         if error:
-            return error_response(error, status="failed")
+            return error_response(error, status="failed", collection=collection)
         
         # Validate collection name strictly
         collection_error = validate_collection_name_strict(collection)
         if collection_error:
-            return error_response(collection_error, status="failed")
+            return error_response(collection_error, status="failed", collection=collection)
         
         # Validate chunk_size with range validation
         chunk_error = validate_int_range(chunk_size, "chunk_size", 50, 10000)

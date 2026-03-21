@@ -5,6 +5,7 @@ This module contains tests for all REST API endpoints.
 
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -23,11 +24,17 @@ def test_client():
     config_path = Path(__file__).parent.parent.parent / "config.yaml"
     load_config(str(config_path))
     
-    # Import app after config is loaded
-    from main import app
+    # Mock the vectorstore provider for testing
+    # Hub is a connector, not a pre-installed provider
+    mock_vectorstore = MagicMock()
+    mock_vectorstore.list_collections.return_value = []
     
-    with TestClient(app) as client:
-        yield client
+    with patch('src.api.search._get_vectorstore_provider', return_value=mock_vectorstore):
+        # Import app after config is loaded
+        from main import app
+        
+        with TestClient(app) as client:
+            yield client
 
 
 class TestHealthEndpoint:
