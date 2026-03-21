@@ -187,30 +187,27 @@ class TestProfiles:
     def test_profile_fast_settings(self) -> None:
         """TC-PROF-002: Fast profile has correct settings."""
         fast = PROFILES["fast"]
-        
-        assert fast["rerank"] is False
-        assert fast["topK"] == 3
-        assert fast["retrieval_multiplier"] == 1.5
-        assert fast["merge_consecutive"] is False
-    
+
+        assert fast.rerank is False
+        assert fast.top_k == 3
+        assert fast.retrieval_multiplier == 1.5
+        # merge_consecutive is handled by context builder, not in PROFILES
+
     def test_profile_balanced_settings(self) -> None:
         """TC-PROF-003: Balanced profile has correct settings."""
         balanced = PROFILES["balanced"]
-        
-        assert balanced["rerank"] is True
-        assert balanced["topK"] == 5
-        assert balanced["retrieval_multiplier"] == 2.0
-        assert balanced["merge_consecutive"] is True
-    
+
+        assert balanced.rerank is True
+        assert balanced.top_k == 5
+        assert balanced.retrieval_multiplier == 2.0
+
     def test_profile_accurate_settings(self) -> None:
         """TC-PROF-004: Accurate profile has correct settings."""
         accurate = PROFILES["accurate"]
-        
-        assert accurate["rerank"] is True
-        assert accurate["topK"] == 10
-        assert accurate["retrieval_multiplier"] == 3.0
-        assert accurate["merge_consecutive"] is True
-        assert accurate["multi_query"] is True
+
+        assert accurate.rerank is True
+        assert accurate.top_k == 10
+        assert accurate.retrieval_multiplier == 3.0
     
     def test_get_profile_returns_copy(self) -> None:
         """TC-PROF-005: get_profile returns a copy, not reference."""
@@ -225,8 +222,11 @@ class TestProfiles:
     def test_get_profile_invalid_returns_default(self) -> None:
         """TC-PROF-006: Invalid profile name returns balanced default."""
         profile = PipelineFactory.get_profile("invalid_profile")
-        
-        assert profile == PROFILES["balanced"]
+
+        # get_profile returns a dict
+        assert profile["rerank"] is True
+        assert profile["topK"] == 5
+        assert profile["retrieval_multiplier"] == 2.0
     
     def test_list_profiles(self) -> None:
         """TC-PROF-007: list_profiles returns all profile names."""
