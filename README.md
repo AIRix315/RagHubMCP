@@ -189,24 +189,7 @@ python scripts/config/generate-mcp-config.py --ide claude_desktop
 
 ## 文档
 
-- [安装部署指南](Docs/07-RaghubMCP-Install.md)
-- [AI 自主部署指南](scripts/AI_DEPLOYMENT_GUIDE.md)
-- [可行性分析](Docs/01-RagHubMCP_20260319.md)
-- [技术选型](Docs/02-RagHubMCP-Tech_20260319.md)
-- [开发计划](TODO.md)
-- [更新日志](CHANGELOG.md)
-
----
-
-## 开发状态
-
-- **Phase 1**: MVP ✅ (214 tests)
-- **Phase 1.5**: 完善 ✅ (281 tests)
-- **Phase 2**: 功能增强 ✅ (474 tests)
-- **Phase 3**: 企业级功能 ✅ (512 tests)
-- **Phase 4**: 部署体验优化 ✅ (49 scripts tests)
-
-详见 [CHANGELOG.md](CHANGELOG.md)
+详细安装部署指南请参考项目 Wiki。
 
 ---
 

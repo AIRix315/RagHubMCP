@@ -81,3 +81,10 @@ Thumbs.db
 
 # FlashRank model cache
 temp_test_cache/
+
+# Internal documentation (local only, not for GitHub)
+CHANGELOG.md
+TODO.md
+RULE.md
+Docs/
+scripts/AI_DEPLOYMENT_GUIDE.md
