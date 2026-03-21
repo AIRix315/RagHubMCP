@@ -128,7 +128,7 @@ class ConnectionManager:
                     except ValueError:
                         pass
 
-        logger.info(f"WebSocket disconnected")
+        logger.info("WebSocket disconnected")
 
     async def broadcast_progress(
         self,
@@ -201,9 +201,7 @@ class ConnectionManager:
         for websocket in connections:
             await self._send_to_websocket(websocket, message)
 
-    async def _send_to_websocket(
-        self, websocket: WebSocket, message: ProgressMessage
-    ) -> bool:
+    async def _send_to_websocket(self, websocket: WebSocket, message: ProgressMessage) -> bool:
         """Send message to a WebSocket connection.
 
         Args:

@@ -83,7 +83,7 @@ describe('ConfigStore', () => {
 
     const updateData = { server: { host: '127.0.0.1', port: 9000, debug: false } }
 
-    vi.mocked(api.updateConfig).mockResolvedValue({ success: true })
+    vi.mocked(api.updateConfig).mockResolvedValue({ status: 'success', message: 'Config updated' })
     vi.mocked(api.getConfig).mockResolvedValue(mockConfig)
 
     const store = useConfigStore()

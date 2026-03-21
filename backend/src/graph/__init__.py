@@ -6,8 +6,8 @@ This module provides:
 - GraphStore: Store and query code graphs (NetworkX + Neo4j)
 """
 
+from src.graph.call_graph_builder import CallEdge, CallGraphBuilder, CallNode
 from src.graph.dependency_analyzer import DependencyAnalyzer, DependencyInfo
-from src.graph.call_graph_builder import CallGraphBuilder, CallNode, CallEdge
 from src.graph.graph_store import GraphStore, NetworkXStore
 
 __all__ = [

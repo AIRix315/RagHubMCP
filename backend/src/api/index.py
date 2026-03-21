@@ -13,9 +13,9 @@ import asyncio
 import logging
 import os
 import uuid
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Sequence
 
 from fastapi import APIRouter, HTTPException
 
@@ -70,31 +70,31 @@ def validate_path_security(
     allowed_roots: Sequence[Path] | None = None,
 ) -> str | None:
     """Validate path for security (path traversal prevention).
-    
+
     This function prevents:
     1. Path traversal attacks (../../../etc/passwd)
     2. Access to system directories
     3. Symlink escape attacks
     4. Access outside allowed directories
-    
+
     Args:
         path: Path to validate.
-        allowed_roots: List of allowed root directories. If empty, 
+        allowed_roots: List of allowed root directories. If empty,
                       only basic validation is performed.
-    
+
     Returns:
         Error message if validation fails, None if path is valid.
-    
+
     Examples:
         >>> validate_path_security("/etc/passwd", [Path("/data")])
         "Path '/etc/passwd' is not in allowed directories"
-        
+
         >>> validate_path_security("/data/docs", [Path("/data")])
         None
     """
     if path is None or path == "":
         return "Path cannot be empty"
-    
+
     # Convert to Path and resolve
     try:
         path_obj = Path(path)
@@ -102,7 +102,7 @@ def validate_path_security(
         abs_path = path_obj.absolute()
     except (TypeError, ValueError) as e:
         return f"Invalid path format: {e}"
-    
+
     # Normalize path (resolve .. and .)
     try:
         # Use os.path.normpath for cross-platform normalization
@@ -110,44 +110,44 @@ def validate_path_security(
         normalized_path = Path(normalized_str)
     except (TypeError, ValueError):
         return "Failed to normalize path"
-    
+
     # Check for path traversal patterns
     path_str = str(normalized_path)
-    
+
     # Check for .. patterns (should be resolved, but double check)
     if ".." in path_str:
         # After normalization, .. should be resolved
         # If still present, it might be an attempt to escape
         return "Path contains forbidden traversal pattern '../'"
-    
+
     # Check for empty components
     parts = normalized_path.parts
     if not parts:
         return "Invalid empty path"
-    
+
     # Check forbidden path prefixes
     lower_path = path_str.lower()
-    
+
     # Check Unix forbidden paths
     for forbidden in FORBIDDEN_PATHS:
         if lower_path.startswith(forbidden.lower()) or path_str.startswith(forbidden):
             return f"Access to system directory '{path_str}' is forbidden"
-    
+
     # Check Windows forbidden paths
-    if os.name == 'nt':
+    if os.name == "nt":
         for forbidden in WINDOWS_FORBIDDEN:
             if forbidden.lower() in lower_path:
                 return f"Access to system directory '{path_str}' is forbidden"
-    
+
     # Validate against allowed_roots
     if allowed_roots:
         # Convert allowed_roots to absolute paths
         allowed_abs = [Path(root).absolute() for root in allowed_roots if root]
-        
+
         if not allowed_abs:
             # No allowed roots means no access (safest default)
             return "No allowed directories configured"
-        
+
         # Check if normalized path is under any allowed root
         # Use resolve() to handle symlinks safely
         try:
@@ -156,13 +156,13 @@ def validate_path_security(
             # Path doesn't exist or can't be resolved
             # Still check if it would be under allowed root
             resolved_path = normalized_path
-        
+
         for allowed in allowed_abs:
             try:
                 allowed_resolved = allowed.resolve()
             except (OSError, RuntimeError):
                 allowed_resolved = allowed
-            
+
             # Check if path is under allowed directory
             try:
                 # relative_to raises ValueError if not under the root
@@ -171,19 +171,19 @@ def validate_path_security(
                 return None
             except ValueError:
                 continue
-        
+
         # Path is not under any allowed root
         return f"Path '{path_str}' is not in allowed directories"
-    
+
     return None
 
 
 def get_task(task_id: str) -> IndexTaskStatus | None:
     """Get task status by ID.
-    
+
     Args:
         task_id: Task identifier.
-        
+
     Returns:
         Task status or None if not found.
     """
@@ -192,7 +192,7 @@ def get_task(task_id: str) -> IndexTaskStatus | None:
 
 def list_tasks() -> list[IndexTaskStatus]:
     """List all tasks.
-    
+
     Returns:
         List of all task statuses.
     """
@@ -208,7 +208,7 @@ async def run_index_task(
     chunk_overlap: int | None,
 ) -> None:
     """Background task to perform indexing.
-    
+
     Args:
         task_id: Unique task identifier.
         path: Directory or file path to index.
@@ -268,7 +268,7 @@ async def run_index_task(
             task.message = f"Processing {file_info.path.name}"
             task.processed_files = i + 1
             task.progress = (i + 1) / len(files)
-            
+
             # Broadcast progress every 10 files or at completion
             if (i + 1) % 10 == 0 or i == len(files) - 1:
                 await broadcast_progress()
@@ -318,31 +318,31 @@ async def run_index_task(
 )
 async def start_index(request: IndexRequest) -> IndexResponse:
     """Start an indexing task.
-    
+
     TC-1.15.3: POST /api/index starts indexing
-    
+
     Security:
         - Path must be within configured allowed_roots
         - Path traversal attempts are blocked
         - System directories are forbidden
-    
+
     Args:
         request: Index request parameters.
-        
+
     Returns:
         Task ID and status URL.
-        
+
     Raises:
         HTTPException: If path is invalid or not allowed.
     """
     # Get configuration for allowed paths
     config = get_config()
     allowed_roots = []
-    
+
     # Get allowed roots from config
-    if hasattr(config.indexer, 'allowed_roots') and config.indexer.allowed_roots:
+    if hasattr(config.indexer, "allowed_roots") and config.indexer.allowed_roots:
         allowed_roots = [Path(r) for r in config.indexer.allowed_roots]
-    
+
     # Validate path security
     validation_error = validate_path_security(request.path, allowed_roots)
     if validation_error:
@@ -351,9 +351,9 @@ async def start_index(request: IndexRequest) -> IndexResponse:
             detail={
                 "error": "path_not_allowed",
                 "message": validation_error,
-            }
+            },
         )
-    
+
     # Validate path exists
     path = Path(request.path)
     if not path.exists():
@@ -362,7 +362,7 @@ async def start_index(request: IndexRequest) -> IndexResponse:
             detail={
                 "error": "path_not_found",
                 "message": f"Path does not exist: {request.path}",
-            }
+            },
         )
 
     # Create task
@@ -408,15 +408,15 @@ async def start_index(request: IndexRequest) -> IndexResponse:
 )
 async def get_index_status(task_id: str) -> IndexTaskStatus:
     """Get indexing task status.
-    
+
     TC-1.15.4: GET /api/index/status queries status
-    
+
     Args:
         task_id: Task identifier.
-        
+
     Returns:
         Task status.
-        
+
     Raises:
         HTTPException: If task not found.
     """
@@ -427,7 +427,7 @@ async def get_index_status(task_id: str) -> IndexTaskStatus:
             detail={
                 "error": "task_not_found",
                 "message": f"Task not found: {task_id}",
-            }
+            },
         )
 
     return task
@@ -441,7 +441,7 @@ async def get_index_status(task_id: str) -> IndexTaskStatus:
 )
 async def list_index_tasks() -> list[IndexTaskStatus]:
     """List all indexing tasks.
-    
+
     Returns:
         List of all tasks.
     """

@@ -1,15 +1,15 @@
 """Tests for MCP tools error helpers."""
 
 import json
-import pytest
+
 from src.mcp_server.tools._errors import (
     error_response,
+    success_response,
     validate_collection_name,
-    validate_query,
     validate_documents,
     validate_positive_int,
+    validate_query,
     validate_range,
-    success_response,
 )
 
 
@@ -19,18 +19,14 @@ class TestErrorResponse:
     def test_error_response_basic(self):
         """Test basic error response."""
         result = error_response("Something went wrong")
-        
+
         parsed = json.loads(result)
         assert parsed["error"] == "Something went wrong"
 
     def test_error_response_with_kwargs(self):
         """Test error response with additional fields."""
-        result = error_response(
-            "Invalid input",
-            field="name",
-            value=""
-        )
-        
+        result = error_response("Invalid input", field="name", value="")
+
         parsed = json.loads(result)
         assert parsed["error"] == "Invalid input"
         assert parsed["field"] == "name"
@@ -39,7 +35,7 @@ class TestErrorResponse:
     def test_error_response_format(self):
         """Test error response is properly formatted."""
         result = error_response("test error")
-        
+
         # Should be valid JSON
         parsed = json.loads(result)
         assert isinstance(parsed, dict)
@@ -172,7 +168,7 @@ class TestSuccessResponse:
     def test_success_response_default(self):
         """Test default success response."""
         result = success_response()
-        
+
         parsed = json.loads(result)
         assert parsed["status"] == "success"
         assert "message" in parsed
@@ -180,19 +176,15 @@ class TestSuccessResponse:
     def test_success_response_custom_message(self):
         """Test success response with custom message."""
         result = success_response("Document added successfully")
-        
+
         parsed = json.loads(result)
         assert parsed["status"] == "success"
         assert parsed["message"] == "Document added successfully"
 
     def test_success_response_with_kwargs(self):
         """Test success response with additional fields."""
-        result = success_response(
-            "Query completed",
-            count=10,
-            collection="test"
-        )
-        
+        result = success_response("Query completed", count=10, collection="test")
+
         parsed = json.loads(result)
         assert parsed["status"] == "success"
         assert parsed["message"] == "Query completed"

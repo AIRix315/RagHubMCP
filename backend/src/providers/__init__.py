@@ -7,26 +7,26 @@ This module provides the provider abstraction layer including:
 
 Example:
     from providers import BaseEmbeddingProvider, registry, factory
-    
+
     # Register a custom provider
     @registry.register(ProviderCategory.EMBEDDING, "custom")
     class CustomEmbedding(BaseEmbeddingProvider):
         ...
-    
+
     # Get a provider instance from config
     embedding = factory.get_embedding_provider()
 """
 
 from .base import (
+    BaseProvider,
     ProviderCategory,
     ProviderError,
-    UnsupportedProviderError,
     ProviderInitializationError,
     ProviderNotFoundError,
-    BaseProvider,
+    UnsupportedProviderError,
 )
-from .registry import registry, ProviderRegistry
-from .factory import factory, ProviderFactory
+from .factory import ProviderFactory, factory
+from .registry import ProviderRegistry, registry
 
 __all__ = [
     # Enums

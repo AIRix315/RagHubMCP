@@ -14,12 +14,12 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from src.utils.config import PipelineProfileConfig
-from .base import RAGPipeline
-from .default import DefaultRAGPipeline
-from .retriever import Retriever, HybridRetriever, VectorRetriever
-from .reranker import Reranker, PipelineReranker, NoOpReranker
-from .context_builder import ContextBuilder, DefaultContextBuilder
 
+from .base import RAGPipeline
+from .context_builder import ContextBuilder, DefaultContextBuilder
+from .default import DefaultRAGPipeline
+from .reranker import NoOpReranker, PipelineReranker, Reranker
+from .retriever import HybridRetriever, Retriever, VectorRetriever
 
 # Profile type for type hints
 ProfileName = Literal["fast", "balanced", "accurate"]
@@ -65,23 +65,23 @@ PROFILES = {
 
 class PipelineFactory:
     """Factory for creating pipeline instances.
-    
+
     This factory creates pipeline instances based on configuration,
     supporting:
     - Profile-based configuration (fast/balanced/accurate)
     - Custom retriever/reranker options
     - Hot reloading of configurations
-    
+
     Example:
         >>> config = {"profile": "balanced"}
         >>> pipeline = PipelineFactory.create(config)
         >>> result = await pipeline.run("query", {"topK": 5})
     """
-    
+
     @staticmethod
     def create(config: dict[str, Any]) -> RAGPipeline:
         """Create a pipeline from configuration.
-        
+
         Args:
             config: Configuration dictionary:
                 - type: Pipeline type (default: "default")
@@ -89,31 +89,31 @@ class PipelineFactory:
                 - retriever: Retriever configuration
                 - rerank: Rerank configuration
                 - context_builder: Context builder configuration
-                
+
         Returns:
             Configured RAGPipeline instance.
         """
         pipeline_type = config.get("type", "default")
-        
+
         if pipeline_type == "default":
             return PipelineFactory._create_default_pipeline(config)
-        
+
         raise ValueError(f"Unknown pipeline type: {pipeline_type}")
-    
+
     @staticmethod
     def _create_default_pipeline(config: dict[str, Any]) -> DefaultRAGPipeline:
         """Create a default pipeline.
-        
+
         Args:
             config: Configuration dictionary.
-            
+
         Returns:
             DefaultRAGPipeline instance.
         """
         # Get profile or use default
         profile_name = config.get("profile", "balanced")
         profile_config = PROFILES.get(profile_name, PROFILES["balanced"])
-        
+
         # Create working config from profile defaults (use .model_dump() for Pydantic v2)
         profile_dict: dict[str, Any] = {
             "rerank": profile_config.rerank,
@@ -123,7 +123,7 @@ class PipelineFactory:
             "beta": profile_config.beta,
             "rrf_k": profile_config.rrf_k,
         }
-        
+
         # Merge custom config (custom values override profile defaults)
         if "rerank" in config:
             profile_dict["rerank"] = config["rerank"]
@@ -135,14 +135,14 @@ class PipelineFactory:
             profile_dict["alpha"] = config["alpha"]
         if "beta" in config:
             profile_dict["beta"] = config["beta"]
-        
+
         # Create retriever with profile settings
         retriever_config = config.get("retriever", {})
         retriever = PipelineFactory._create_retriever(
             retriever_config,
             profile_dict,
         )
-        
+
         # Create reranker
         reranker: Reranker | None = None
         if profile_dict.get("rerank", True):
@@ -151,14 +151,14 @@ class PipelineFactory:
                 reranker_config,
                 profile_dict,
             )
-        
+
         # Create context builder with profile settings
         builder_config = config.get("context_builder", {})
         context_builder = PipelineFactory._create_context_builder(
             builder_config,
             profile_dict,
         )
-        
+
         # Create pipeline
         pipeline = DefaultRAGPipeline(
             retriever=retriever,
@@ -167,28 +167,28 @@ class PipelineFactory:
             default_top_k=int(profile_dict.get("topK", 5)),
             default_rerank=bool(profile_dict.get("rerank", True)),
         )
-        
+
         # Store profile settings for retrieval multiplier
         pipeline._retrieval_multiplier = float(profile_dict.get("retrieval_multiplier", 2.0))
-        
+
         return pipeline
-    
+
     @staticmethod
     def _create_retriever(
         config: dict[str, Any],
         profile: dict[str, Any],
     ) -> Retriever:
         """Create a retriever from configuration.
-        
+
         Args:
             config: Retriever configuration.
             profile: Profile configuration.
-            
+
         Returns:
             Retriever instance.
         """
         retriever_type = config.get("type", "hybrid")
-        
+
         if retriever_type == "hybrid":
             return HybridRetriever(
                 alpha=config.get("alpha", profile.get("alpha", 0.5)),
@@ -199,25 +199,25 @@ class PipelineFactory:
             return VectorRetriever(
                 collection=config.get("collection", "default"),
             )
-        
+
         raise ValueError(f"Unknown retriever type: {retriever_type}")
-    
+
     @staticmethod
     def _create_reranker(
         config: dict[str, Any],
         profile: dict[str, Any],
     ) -> Reranker:
         """Create a reranker from configuration.
-        
+
         Args:
             config: Reranker configuration.
             profile: Profile configuration.
-            
+
         Returns:
             Reranker instance.
         """
         reranker_type = config.get("type", "flashrank")
-        
+
         if reranker_type == "flashrank":
             return PipelineReranker(
                 model=config.get("model", "ms-marco-TinyBERT-L-2-v2"),
@@ -225,42 +225,41 @@ class PipelineFactory:
             )
         elif reranker_type == "none" or reranker_type == "disabled":
             return NoOpReranker()
-        
+
         raise ValueError(f"Unknown reranker type: {reranker_type}")
-    
+
     @staticmethod
     def _create_context_builder(
         config: dict[str, Any],
         profile: dict[str, Any],
     ) -> ContextBuilder:
         """Create a context builder from configuration.
-        
+
         Args:
             config: Context builder configuration.
             profile: Profile configuration for default options.
-            
+
         Returns:
             ContextBuilder instance.
         """
         builder_type = config.get("type", "default")
-        
+
         if builder_type == "default":
             # Use profile settings for context builder
-            merge_consecutive = config.get(
-                "merge_consecutive",
-                profile.get("merge_consecutive", False)
+            _merge_consecutive = config.get(
+                "merge_consecutive", profile.get("merge_consecutive", False)
             )
             return DefaultContextBuilder()
-        
+
         raise ValueError(f"Unknown context builder type: {builder_type}")
-    
+
     @staticmethod
     def get_profile(name: str) -> dict[str, Any]:
         """Get profile configuration by name.
-        
+
         Args:
             name: Profile name (fast/balanced/accurate).
-            
+
         Returns:
             Profile configuration dictionary.
         """
@@ -274,26 +273,26 @@ class PipelineFactory:
             "beta": profile.beta,
             "rrf_k": profile.rrf_k,
         }
-    
+
     @staticmethod
     def list_profiles() -> list[str]:
         """List available profile names.
-        
+
         Returns:
             List of profile names.
         """
         return list(PROFILES.keys())
-    
+
     @staticmethod
     def get_retrieval_count(profile: str, top_k: int) -> int:
         """Calculate the number of documents to retrieve based on profile.
-        
+
         This replaces the hardcoded `top_k * 2` with a configurable multiplier.
-        
+
         Args:
             profile: Profile name (fast/balanced/accurate).
             top_k: Number of final results desired.
-            
+
         Returns:
             Number of documents to retrieve initially.
         """
@@ -304,12 +303,12 @@ class PipelineFactory:
 
 def get_pipeline(profile: str = "balanced") -> RAGPipeline:
     """Get a pipeline instance with the specified profile.
-    
+
     This is a convenience function for quick access to pipelines.
-    
+
     Args:
         profile: Profile name (fast/balanced/accurate).
-        
+
     Returns:
         RAGPipeline instance.
     """

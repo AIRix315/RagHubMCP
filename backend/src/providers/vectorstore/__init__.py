@@ -5,8 +5,8 @@ This module provides base classes and types for vector database providers.
 
 from .base import (
     BaseVectorStoreProvider,
-    SearchResult,
     QueryResult,
+    SearchResult,
 )
 from .chroma import ChromaProvider
 from .qdrant import QdrantProvider

@@ -23,7 +23,7 @@ from typing import Any
 
 from ..base import ProviderCategory
 from ..registry import registry
-from .base import BaseVectorStoreProvider, SearchResult, QueryResult
+from .base import BaseVectorStoreProvider, QueryResult, SearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -34,26 +34,26 @@ DEFAULT_EMBEDDING_DIMENSION = 768
 @registry.register(ProviderCategory.VECTORSTORE, "qdrant")
 class QdrantProvider(BaseVectorStoreProvider):
     """Qdrant vector store provider.
-    
+
     Provides vector storage using Qdrant with support for:
     - Local in-memory mode (for testing)
     - Local persistent storage
     - Remote Qdrant server
     - Qdrant Cloud with API key
-    
+
     Attributes:
         NAME: Provider type identifier ("qdrant")
-    
+
     Example:
         >>> # Local in-memory mode
         >>> provider = QdrantProvider(mode="memory")
-        >>> 
+        >>>
         >>> # Local persistent mode
         >>> provider = QdrantProvider(mode="local", path="./data/qdrant")
-        >>> 
+        >>>
         >>> # Remote server
         >>> provider = QdrantProvider(mode="remote", host="localhost", port=6333)
-        >>> 
+        >>>
         >>> # Qdrant Cloud
         >>> provider = QdrantProvider(
         ...     mode="cloud",
@@ -61,9 +61,9 @@ class QdrantProvider(BaseVectorStoreProvider):
         ...     api_key="your-api-key"
         ... )
     """
-    
+
     NAME = "qdrant"
-    
+
     def __init__(
         self,
         mode: str = "local",
@@ -76,7 +76,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         prefer_grpc: bool = False,
     ) -> None:
         """Initialize QdrantProvider.
-        
+
         Args:
             mode: Operating mode - "memory", "local", "remote", or "cloud"
             path: Storage path for local mode (default: "./data/qdrant")
@@ -97,12 +97,12 @@ class QdrantProvider(BaseVectorStoreProvider):
         self._prefer_grpc = prefer_grpc
         self._client: Any = None  # QdrantClient instance (lazy init)
         self._embedding_provider: Any = None  # Lazy init
-    
+
     def _get_client(self) -> Any:
         """Get or create QdrantClient instance (lazy initialization)."""
         if self._client is None:
             from qdrant_client import QdrantClient
-            
+
             if self._mode == "memory":
                 self._client = QdrantClient(":memory:")
             elif self._mode == "local":
@@ -129,43 +129,45 @@ class QdrantProvider(BaseVectorStoreProvider):
             else:
                 # Default to local mode
                 self._client = QdrantClient(path=self._path)
-            
+
             logger.info(f"Initialized Qdrant client in {self._mode} mode")
-        
+
         return self._client
-    
+
     def _get_embedding_provider(self) -> Any:
         """Get the embedding provider for auto-embedding."""
         if self._embedding_provider is None:
             from providers.factory import factory
+
             self._embedding_provider = factory.get_embedding_provider()
         return self._embedding_provider
-    
+
     def _get_collection_config(self) -> dict:
         """Get vector configuration for collection creation."""
         from qdrant_client import models
+
         return {
             "vectors_config": models.VectorParams(
                 size=self._embedding_dimension,
                 distance=models.Distance.COSINE,
             )
         }
-    
+
     def create_collection(
         self,
         name: str,
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """Create a new collection.
-        
+
         Args:
             name: Collection name
             metadata: Optional collection metadata
         """
         from qdrant_client import models
-        
+
         client = self._get_client()
-        
+
         if not client.collection_exists(name):
             client.create_collection(
                 collection_name=name,
@@ -175,28 +177,28 @@ class QdrantProvider(BaseVectorStoreProvider):
                 ),
             )
             logger.debug(f"Created Qdrant collection: {name}")
-    
+
     def delete_collection(self, name: str) -> None:
         """Delete a collection.
-        
+
         Args:
             name: Collection name to delete
         """
         client = self._get_client()
         client.delete_collection(collection_name=name)
         logger.debug(f"Deleted Qdrant collection: {name}")
-    
+
     def list_collections(self) -> list[str]:
         """List all collection names."""
         client = self._get_client()
         collections = client.get_collections()
         return [c.name for c in collections.collections]
-    
+
     def collection_exists(self, name: str) -> bool:
         """Check if a collection exists."""
         client = self._get_client()
         return client.collection_exists(name)
-    
+
     def add(
         self,
         collection: str,
@@ -206,7 +208,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         embeddings: list[list[float]] | None = None,
     ) -> None:
         """Add documents to a collection.
-        
+
         Args:
             collection: Target collection name
             documents: List of document texts
@@ -217,33 +219,35 @@ class QdrantProvider(BaseVectorStoreProvider):
         """
         if not documents:
             return
-        
+
         from qdrant_client import models
-        
+
         client = self._get_client()
-        
+
         # Create collection if not exists
         if not self.collection_exists(collection):
             self.create_collection(collection)
-        
+
         # Generate embeddings if not provided
         if embeddings is None:
             embedding_provider = self._get_embedding_provider()
             embeddings = embedding_provider.embed_documents(documents)
-        
+
         # Build points - Qdrant requires integer or UUID format IDs
         points = []
         for i, (doc_id, doc, emb) in enumerate(zip(ids, documents, embeddings)):
             payload = {"document": doc}
             if metadatas and i < len(metadatas):
                 payload.update(metadatas[i])
-            
-            points.append(models.PointStruct(
-                id=doc_id,  # Qdrant accepts int or UUID string
-                vector=emb,
-                payload=payload,
-            ))
-        
+
+            points.append(
+                models.PointStruct(
+                    id=doc_id,  # Qdrant accepts int or UUID string
+                    vector=emb,
+                    payload=payload,
+                )
+            )
+
         # Upsert points
         client.upsert(
             collection_name=collection,
@@ -251,7 +255,7 @@ class QdrantProvider(BaseVectorStoreProvider):
             wait=True,
         )
         logger.debug(f"Added {len(points)} documents to Qdrant collection '{collection}'")
-    
+
     def query(
         self,
         collection: str,
@@ -262,7 +266,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         where_document: dict[str, Any] | None = None,
     ) -> QueryResult:
         """Query documents using vector similarity.
-        
+
         Args:
             collection: Collection to query
             query_text: Query text (will be embedded if no query_embedding provided)
@@ -270,28 +274,27 @@ class QdrantProvider(BaseVectorStoreProvider):
             n_results: Maximum number of results
             where: Metadata filter (Qdrant filter syntax)
             where_document: Document content filter (converted to payload filter)
-        
+
         Returns:
             QueryResult containing matching documents
         """
-        from qdrant_client import models
-        
+
         client = self._get_client()
-        
+
         # Generate embedding if needed
         if query_embedding is None:
             if query_text is None:
                 raise ValueError("Either query_text or query_embedding must be provided")
             embedding_provider = self._get_embedding_provider()
             query_embedding = embedding_provider.embed_query(query_text)
-        
+
         # Build filter
         query_filter = None
         if where:
             query_filter = self._build_filter(where)
         elif where_document:
             query_filter = self._build_document_filter(where_document)
-        
+
         # Query
         results = client.query_points(
             collection_name=collection,
@@ -300,61 +303,69 @@ class QdrantProvider(BaseVectorStoreProvider):
             limit=n_results,
             with_payload=True,
         )
-        
+
         # Convert to SearchResult
         search_results = []
         for point in results.points:
             payload = point.payload or {}
-            search_results.append(SearchResult(
-                id=str(point.id),
-                document=payload.get("document", ""),
-                metadata={k: v for k, v in payload.items() if k != "document"},
-                score=point.score,
-            ))
-        
+            search_results.append(
+                SearchResult(
+                    id=str(point.id),
+                    document=payload.get("document", ""),
+                    metadata={k: v for k, v in payload.items() if k != "document"},
+                    score=point.score,
+                )
+            )
+
         return QueryResult(results=search_results)
-    
+
     def _build_filter(self, where: dict[str, Any]) -> Any:
         """Build Qdrant filter from metadata filter dict."""
         from qdrant_client import models
-        
+
         conditions = []
         for key, value in where.items():
             if isinstance(value, dict):
                 # Range filter
                 if "$gt" in value or "$gte" in value or "$lt" in value or "$lte" in value:
-                    conditions.append(models.FieldCondition(
-                        key=key,
-                        range=models.Range(
-                            gt=value.get("$gt"),
-                            gte=value.get("$gte"),
-                            lt=value.get("$lt"),
-                            lte=value.get("$lte"),
+                    conditions.append(
+                        models.FieldCondition(
+                            key=key,
+                            range=models.Range(
+                                gt=value.get("$gt"),
+                                gte=value.get("$gte"),
+                                lt=value.get("$lt"),
+                                lte=value.get("$lte"),
+                            ),
                         )
-                    ))
+                    )
                 elif "$contains" in value:
-                    conditions.append(models.FieldCondition(
-                        key=key,
-                        match=models.MatchText(text=value["$contains"]),
-                    ))
+                    conditions.append(
+                        models.FieldCondition(
+                            key=key,
+                            match=models.MatchText(text=value["$contains"]),
+                        )
+                    )
             else:
                 # Exact match
-                conditions.append(models.FieldCondition(
-                    key=key,
-                    match=models.MatchValue(value=value),
-                ))
-        
+                conditions.append(
+                    models.FieldCondition(
+                        key=key,
+                        match=models.MatchValue(value=value),
+                    )
+                )
+
         if len(conditions) == 0:
             return None
         elif len(conditions) == 1:
             return models.Filter(must=conditions)
         else:
             return models.Filter(must=conditions)
-    
+
     def _build_document_filter(self, where_document: dict[str, Any]) -> Any:
         """Build Qdrant filter for document content."""
         from qdrant_client import models
-        
+
         if "$contains" in where_document:
             return models.Filter(
                 must=[
@@ -365,7 +376,7 @@ class QdrantProvider(BaseVectorStoreProvider):
                 ]
             )
         return None
-    
+
     def get(
         self,
         collection: str,
@@ -375,19 +386,19 @@ class QdrantProvider(BaseVectorStoreProvider):
         offset: int | None = None,
     ) -> list[SearchResult]:
         """Retrieve documents from a collection.
-        
+
         Args:
             collection: Collection name
             ids: Optional list of document IDs to retrieve (int or UUID format)
             where: Optional metadata filter
             limit: Maximum number of documents
             offset: Number of documents to skip
-        
+
         Returns:
             List of search results
         """
         client = self._get_client()
-        
+
         if ids:
             # Retrieve by IDs - Qdrant accepts int or UUID
             points = client.retrieve(
@@ -395,22 +406,24 @@ class QdrantProvider(BaseVectorStoreProvider):
                 ids=ids,
                 with_payload=True,
             )
-            
+
             results = []
             for point in points:
                 payload = point.payload or {}
-                results.append(SearchResult(
-                    id=str(point.id),
-                    document=payload.get("document", ""),
-                    metadata={k: v for k, v in payload.items() if k != "document"},
-                ))
+                results.append(
+                    SearchResult(
+                        id=str(point.id),
+                        document=payload.get("document", ""),
+                        metadata={k: v for k, v in payload.items() if k != "document"},
+                    )
+                )
             return results
         else:
             # Scroll through collection
             query_filter = None
             if where:
                 query_filter = self._build_filter(where)
-            
+
             points, _ = client.scroll(
                 collection_name=collection,
                 scroll_filter=query_filter,
@@ -418,17 +431,19 @@ class QdrantProvider(BaseVectorStoreProvider):
                 offset=offset,
                 with_payload=True,
             )
-            
+
             results = []
             for point in points:
                 payload = point.payload or {}
-                results.append(SearchResult(
-                    id=str(point.id),
-                    document=payload.get("document", ""),
-                    metadata={k: v for k, v in payload.items() if k != "document"},
-                ))
+                results.append(
+                    SearchResult(
+                        id=str(point.id),
+                        document=payload.get("document", ""),
+                        metadata={k: v for k, v in payload.items() if k != "document"},
+                    )
+                )
             return results
-    
+
     def delete(
         self,
         collection: str,
@@ -436,17 +451,17 @@ class QdrantProvider(BaseVectorStoreProvider):
         where: dict[str, Any] | None = None,
     ) -> int:
         """Delete documents from a collection.
-        
+
         Args:
             collection: Collection name
             ids: Optional list of document IDs to delete (int or UUID format)
             where: Optional metadata filter
-        
+
         Returns:
             Number of documents deleted
         """
         client = self._get_client()
-        
+
         if ids:
             # Delete by IDs - Qdrant accepts int or UUID
             client.delete(
@@ -460,15 +475,15 @@ class QdrantProvider(BaseVectorStoreProvider):
                 collection_name=collection,
                 points_selector=query_filter,
             )
-            return result.operation_id if hasattr(result, 'operation_id') else 0
+            return result.operation_id if hasattr(result, "operation_id") else 0
         return 0
-    
+
     def count(self, collection: str) -> int:
         """Count documents in a collection."""
         client = self._get_client()
         info = client.get_collection(collection)
         return info.points_count
-    
+
     def update(
         self,
         collection: str,
@@ -478,7 +493,7 @@ class QdrantProvider(BaseVectorStoreProvider):
         embeddings: list[list[float]] | None = None,
     ) -> None:
         """Update existing documents in a collection.
-        
+
         Args:
             collection: Collection name
             ids: List of document IDs to update (int or UUID format)
@@ -487,14 +502,14 @@ class QdrantProvider(BaseVectorStoreProvider):
             embeddings: Optional new embeddings
         """
         from qdrant_client import models
-        
+
         client = self._get_client()
-        
+
         # Generate embeddings if documents provided but no embeddings
         if documents and embeddings is None:
             embedding_provider = self._get_embedding_provider()
             embeddings = embedding_provider.embed_documents(documents)
-        
+
         # Build points for update
         points = []
         for i, doc_id in enumerate(ids):
@@ -503,24 +518,24 @@ class QdrantProvider(BaseVectorStoreProvider):
                 payload["document"] = documents[i]
             if metadatas and i < len(metadatas):
                 payload.update(metadatas[i])
-            
+
             point_data = {"id": doc_id, "payload": payload if payload else None}
             if embeddings and i < len(embeddings):
                 point_data["vector"] = embeddings[i]
-            
+
             points.append(models.PointStruct(**point_data))
-        
+
         client.upsert(
             collection_name=collection,
             points=points,
             wait=True,
         )
         logger.debug(f"Updated {len(ids)} documents in Qdrant collection '{collection}'")
-    
+
     @classmethod
     def from_config(cls, config: dict[str, Any]) -> QdrantProvider:
         """Create an instance from configuration dictionary.
-        
+
         Args:
             config: Configuration from config.yaml providers section.
                    Expected keys:
@@ -531,7 +546,7 @@ class QdrantProvider(BaseVectorStoreProvider):
                    - url: Full URL (for cloud mode)
                    - api_key: API key (for cloud mode)
                    - embedding_dimension: Vector dimension
-        
+
         Returns:
             New QdrantProvider instance
         """

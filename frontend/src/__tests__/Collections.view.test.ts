@@ -4,18 +4,9 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import Collections from '@/views/Collections.vue'
 
-// Mock the collection store
-const mockLoadCollections = vi.fn().mockResolvedValue(undefined)
-const mockRemoveCollection = vi.fn().mockResolvedValue(undefined)
-
+// Mock the collection store module
 vi.mock('@/stores/collection', () => ({
-  useCollectionStore: vi.fn(() => ({
-    collections: [],
-    loading: false,
-    error: null,
-    loadCollections: mockLoadCollections,
-    removeCollection: mockRemoveCollection,
-  })),
+  useCollectionStore: vi.fn(),
 }))
 
 // Mock lucide-vue-next icons
@@ -23,6 +14,22 @@ vi.mock('lucide-vue-next', () => ({
   Trash2: { name: 'Trash2', template: '<svg></svg>' },
   RefreshCw: { name: 'RefreshCw', template: '<svg></svg>' },
 }))
+
+// Helper to create mock store
+function createMockStore(overrides: Record<string, unknown> = {}) {
+  return {
+    collections: [],
+    loading: false,
+    error: null as string | null,
+    lastUpdated: null as Date | null,
+    totalCollections: 0,
+    totalDocuments: 0,
+    averageDocumentsPerCollection: 0,
+    loadCollections: vi.fn().mockResolvedValue(undefined),
+    removeCollection: vi.fn().mockResolvedValue(undefined),
+    ...overrides,
+  }
+}
 
 describe('Collections.vue', () => {
   let pinia: ReturnType<typeof createPinia>
@@ -52,6 +59,10 @@ describe('Collections.vue', () => {
   })
 
   it('should call loadCollections on mount', async () => {
+    const mockLoadCollections = vi.fn().mockResolvedValue(undefined)
+    const mockStore = createMockStore({ loadCollections: mockLoadCollections })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
+
     mount(Collections, {
       global: { plugins: [pinia] },
     })
@@ -61,13 +72,8 @@ describe('Collections.vue', () => {
   })
 
   it('should display loading state when loading', async () => {
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: [],
-      loading: true,
-      error: null,
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore({ loading: true })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -78,13 +84,8 @@ describe('Collections.vue', () => {
   })
 
   it('should display error message when error exists', async () => {
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: [],
-      loading: false,
-      error: 'Failed to load collections',
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore({ error: 'Failed to load collections' })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -95,13 +96,8 @@ describe('Collections.vue', () => {
   })
 
   it('should display empty state when no collections', async () => {
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: [],
-      loading: false,
-      error: null,
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore()
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -125,13 +121,8 @@ describe('Collections.vue', () => {
       },
     ]
 
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: mockCollections,
-      loading: false,
-      error: null,
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore({ collections: mockCollections })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -153,13 +144,8 @@ describe('Collections.vue', () => {
       },
     ]
 
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: mockCollections,
-      loading: false,
-      error: null,
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore({ collections: mockCollections })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -185,13 +171,8 @@ describe('Collections.vue', () => {
       },
     ]
 
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: mockCollections,
-      loading: false,
-      error: null,
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore({ collections: mockCollections })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -212,6 +193,7 @@ describe('Collections.vue', () => {
   })
 
   it('should call removeCollection when confirm delete clicked', async () => {
+    const mockRemoveCollection = vi.fn().mockResolvedValue(undefined)
     const mockCollections = [
       {
         name: 'test-collection',
@@ -220,13 +202,8 @@ describe('Collections.vue', () => {
       },
     ]
 
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: mockCollections,
-      loading: false,
-      error: null,
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore({ collections: mockCollections, removeCollection: mockRemoveCollection })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -246,13 +223,8 @@ describe('Collections.vue', () => {
   })
 
   it('should disable refresh button when loading', async () => {
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
-      collections: [],
-      loading: true,
-      error: null,
-      loadCollections: mockLoadCollections,
-      removeCollection: mockRemoveCollection,
-    })
+    const mockStore = createMockStore({ loading: true })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },
@@ -293,13 +265,11 @@ describe('Collections.vue', () => {
       },
     ]
 
-    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue({
+    const mockStore = createMockStore({
       collections: mockCollections,
-      loading: false,
-      error: null,
-      loadCollections: mockLoadCollections,
       removeCollection: vi.fn().mockImplementation(() => new Promise(() => {})), // Never resolves
     })
+    vi.mocked(await import('@/stores/collection')).useCollectionStore.mockReturnValue(mockStore as any)
 
     const wrapper = mount(Collections, {
       global: { plugins: [pinia] },

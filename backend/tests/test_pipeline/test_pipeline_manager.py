@@ -11,19 +11,19 @@ Reference: Docs/11-V2-Desing.md, Docs/12-V2-Blueprint.md
 """
 
 import threading
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import pytest
+
+from pipeline.base import RAGPipeline
 from pipeline.manager import (
+    _lock,
+    create_pipeline,
+    execute_search,
     get_pipeline,
     reset_pipeline,
-    execute_search,
-    create_pipeline,
-    _lock,
 )
-from pipeline.result import RAGResult, Document
-from pipeline.base import RAGPipeline
+from pipeline.result import Document, RAGResult
 
 
 class TestGetPipeline:
@@ -36,7 +36,7 @@ class TestGetPipeline:
     def test_get_pipeline_returns_pipeline(self):
         """Test get_pipeline returns a RAGPipeline instance."""
         pipeline = get_pipeline()
-        
+
         assert pipeline is not None
         assert isinstance(pipeline, RAGPipeline)
 
@@ -44,20 +44,20 @@ class TestGetPipeline:
         """Test get_pipeline returns same instance on repeated calls."""
         pipeline1 = get_pipeline()
         pipeline2 = get_pipeline()
-        
+
         assert pipeline1 is pipeline2
 
     def test_get_pipeline_default_profile(self):
         """Test get_pipeline uses balanced profile by default."""
         pipeline = get_pipeline()
-        
+
         assert pipeline is not None
 
     def test_get_pipeline_with_fast_profile(self):
         """Test get_pipeline creates pipeline with fast profile."""
         reset_pipeline()
         pipeline = get_pipeline("fast")
-        
+
         assert pipeline is not None
         assert isinstance(pipeline, RAGPipeline)
 
@@ -65,7 +65,7 @@ class TestGetPipeline:
         """Test get_pipeline creates pipeline with accurate profile."""
         reset_pipeline()
         pipeline = get_pipeline("accurate")
-        
+
         assert pipeline is not None
         assert isinstance(pipeline, RAGPipeline)
 
@@ -73,7 +73,7 @@ class TestGetPipeline:
         """Test switching profile creates new pipeline instance."""
         pipeline1 = get_pipeline("fast")
         pipeline2 = get_pipeline("balanced")
-        
+
         # Different profiles should create different instances
         assert pipeline1 is not pipeline2
 
@@ -82,7 +82,7 @@ class TestGetPipeline:
         reset_pipeline()
         pipeline1 = get_pipeline("balanced")
         pipeline2 = get_pipeline("balanced")
-        
+
         assert pipeline1 is pipeline2
 
 
@@ -94,7 +94,7 @@ class TestResetPipeline:
         pipeline1 = get_pipeline()
         reset_pipeline()
         pipeline2 = get_pipeline()
-        
+
         # After reset, should be a new instance
         assert pipeline1 is not pipeline2
 
@@ -102,7 +102,7 @@ class TestResetPipeline:
         """Test reset_pipeline resets profile to balanced."""
         get_pipeline("fast")
         reset_pipeline()
-        
+
         # After reset, default profile should be balanced
         pipeline = get_pipeline()
         assert pipeline is not None
@@ -120,15 +120,17 @@ class TestExecuteSearch:
         """Test execute_search returns RAGResult."""
         with patch("pipeline.manager.get_pipeline") as mock_get:
             mock_pipeline = MagicMock()
-            mock_pipeline.run = AsyncMock(return_value=RAGResult(
-                query="test",
-                documents=[Document(id="1", text="doc", score=0.9)],
-                total_results=1,
-            ))
+            mock_pipeline.run = AsyncMock(
+                return_value=RAGResult(
+                    query="test",
+                    documents=[Document(id="1", text="doc", score=0.9)],
+                    total_results=1,
+                )
+            )
             mock_get.return_value = mock_pipeline
-            
+
             result = await execute_search("test query")
-            
+
             assert isinstance(result, RAGResult)
             assert result.query == "test"
 
@@ -137,15 +139,17 @@ class TestExecuteSearch:
         """Test execute_search passes options to pipeline."""
         with patch("pipeline.manager.get_pipeline") as mock_get:
             mock_pipeline = MagicMock()
-            mock_pipeline.run = AsyncMock(return_value=RAGResult(
-                query="test",
-                documents=[],
-                total_results=0,
-            ))
+            mock_pipeline.run = AsyncMock(
+                return_value=RAGResult(
+                    query="test",
+                    documents=[],
+                    total_results=0,
+                )
+            )
             mock_get.return_value = mock_pipeline
-            
+
             await execute_search("test query", {"collection": "my_collection", "topK": 10})
-            
+
             mock_pipeline.run.assert_called_once()
             call_args = mock_pipeline.run.call_args
             assert call_args[0][0] == "test query"
@@ -175,45 +179,49 @@ class TestCreatePipeline:
     def test_create_pipeline_returns_pipeline(self):
         """Test create_pipeline returns a RAGPipeline instance."""
         pipeline = create_pipeline({"profile": "balanced"})
-        
+
         assert pipeline is not None
         assert isinstance(pipeline, RAGPipeline)
 
     def test_create_pipeline_with_custom_config(self):
         """Test create_pipeline with custom configuration."""
-        pipeline = create_pipeline({
-            "profile": "fast",
-            "rerank": False,
-            "topK": 3,
-        })
-        
+        pipeline = create_pipeline(
+            {
+                "profile": "fast",
+                "rerank": False,
+                "topK": 3,
+            }
+        )
+
         assert pipeline is not None
 
     def test_create_pipeline_always_creates_new(self):
         """Test create_pipeline always creates new instance."""
         pipeline1 = create_pipeline({"profile": "balanced"})
         pipeline2 = create_pipeline({"profile": "balanced"})
-        
+
         # create_pipeline should always create new instances
         assert pipeline1 is not pipeline2
 
     def test_create_pipeline_with_retriever_config(self):
         """Test create_pipeline with retriever configuration."""
-        pipeline = create_pipeline({
-            "profile": "balanced",
-            "retriever": {
-                "type": "hybrid",
-                "alpha": 0.6,
-                "beta": 0.4,
-            },
-        })
-        
+        pipeline = create_pipeline(
+            {
+                "profile": "balanced",
+                "retriever": {
+                    "type": "hybrid",
+                    "alpha": 0.6,
+                    "beta": 0.4,
+                },
+            }
+        )
+
         assert pipeline is not None
 
     def test_create_pipeline_with_accurate_profile(self):
         """Test create_pipeline with accurate profile."""
         pipeline = create_pipeline({"profile": "accurate"})
-        
+
         assert pipeline is not None
         assert isinstance(pipeline, RAGPipeline)
 
@@ -239,10 +247,7 @@ class TestThreadSafety:
                 errors.append(str(e))
 
         # Create multiple threads calling get_pipeline concurrently
-        threads = [
-            threading.Thread(target=get_pipeline_thread)
-            for _ in range(10)
-        ]
+        threads = [threading.Thread(target=get_pipeline_thread) for _ in range(10)]
 
         for t in threads:
             t.start()
@@ -317,37 +322,37 @@ class TestThreadSafety:
     def test_double_checked_locking_pattern(self):
         """TC-THREAD-004: Verify double-checked locking is correctly implemented."""
         reset_pipeline()
-        
+
         # First call should create the pipeline
         pipeline1 = get_pipeline("balanced")
-        
+
         # Second call should return cached instance (fast path without lock)
         pipeline2 = get_pipeline("balanced")
-        
+
         # Both should be the same instance
         assert pipeline1 is pipeline2
-        
+
         # Different profile should acquire lock and create new instance
         pipeline3 = get_pipeline("fast")
-        
+
         assert pipeline3 is not pipeline1
 
     def test_lock_is_releasing(self):
         """TC-THREAD-005: Verify lock is properly released after use."""
         reset_pipeline()
-        
+
         # Make sure lock is not held
         assert not _lock.locked(), "Lock should not be held before get_pipeline"
-        
+
         # Get pipeline (should acquire and release lock)
         get_pipeline("balanced")
-        
+
         # Lock should be released after
         assert not _lock.locked(), "Lock should be released after get_pipeline"
-        
+
         # Reset should also release lock
         reset_pipeline()
-        
+
         assert not _lock.locked(), "Lock should be released after reset"
 
     def test_stress_test_concurrent_access(self):
@@ -360,7 +365,9 @@ class TestThreadSafety:
         def stress_operation():
             try:
                 # Mix of operations
-                profile = ["fast", "balanced", "accurate"][threading.current_thread()._name.count('a') % 3]  # type: ignore
+                profile = ["fast", "balanced", "accurate"][
+                    threading.current_thread()._name.count("a") % 3
+                ]  # type: ignore
                 pipeline = get_pipeline(profile)
                 with lock:
                     results.append((profile, id(pipeline)))
@@ -368,10 +375,7 @@ class TestThreadSafety:
                 errors.append(str(e))
 
         # Create many threads
-        threads = [
-            threading.Thread(target=stress_operation)
-            for _ in range(50)
-        ]
+        threads = [threading.Thread(target=stress_operation) for _ in range(50)]
 
         for t in threads:
             t.start()

@@ -2,14 +2,14 @@
 
 Usage:
     python -m src.cli.migrate [options]
-    
+
 Examples:
     # Migrate all collections from ChromaDB to local Qdrant
     python -m src.cli.migrate
-    
+
     # Migrate specific collections
     python -m src.cli.migrate --collections docs code
-    
+
     # Migrate to Qdrant remote server
     python -m src.cli.migrate --qdrant-mode remote --qdrant-host localhost --qdrant-port 6333
 """
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 def print_progress(current: int, total: int, message: str) -> None:
     """Print migration progress to console.
-    
+
     Args:
         current: Current progress count
         total: Total count
@@ -46,36 +46,36 @@ def print_progress(current: int, total: int, message: str) -> None:
 
 def print_result(result: dict[str, Any]) -> None:
     """Print migration result summary.
-    
+
     Args:
         result: Migration result dictionary
     """
     print("\n" + "=" * 60)
     print("MIGRATION RESULT")
     print("=" * 60)
-    
+
     status = "✓ SUCCESS" if result.get("success") else "✗ FAILED"
     print(f"Status: {status}")
     print(f"Collections migrated: {result.get('collections_migrated', 0)}")
     print(f"Documents migrated: {result.get('documents_migrated', 0)}")
     print(f"Duration: {result.get('duration_seconds', 0):.2f}s")
-    
+
     if result.get("collections"):
         print("\nCollections:")
         for coll in result["collections"]:
             status_icon = "✓" if coll.get("success") else "✗"
             print(f"  {status_icon} {coll['name']}: {coll.get('documents_migrated', 0)} documents")
-    
+
     if result.get("warnings"):
         print("\nWarnings:")
         for warning in result["warnings"]:
             print(f"  ⚠ {warning}")
-    
+
     if result.get("errors"):
         print("\nErrors:")
         for error in result["errors"]:
             print(f"  ✗ {error}")
-    
+
     print("=" * 60)
 
 
@@ -88,25 +88,25 @@ def main() -> int:
 Examples:
   # Migrate all collections from ChromaDB to local Qdrant
   python -m src.cli.migrate
-  
+
   # Migrate specific collections
   python -m src.cli.migrate --collections docs code
-  
+
   # Migrate to Qdrant remote server
   python -m src.cli.migrate --qdrant-mode remote --qdrant-host localhost
-  
+
   # Migrate to Qdrant Cloud
   python -m src.cli.migrate --qdrant-mode cloud --qdrant-url https://xxx.cloud.qdrant.io --qdrant-api-key YOUR_KEY
         """,
     )
-    
+
     # Source options
     parser.add_argument(
         "--chroma-dir",
         default="./data/chroma",
         help="ChromaDB persistence directory (default: ./data/chroma)",
     )
-    
+
     # Target options
     parser.add_argument(
         "--qdrant-mode",
@@ -136,7 +136,7 @@ Examples:
         "--qdrant-api-key",
         help="Qdrant Cloud API key",
     )
-    
+
     # Migration options
     parser.add_argument(
         "--collections",
@@ -160,47 +160,48 @@ Examples:
         help="List collections without migrating",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Enable verbose output",
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
-    
+
     # Dry run: list collections and exit
     if args.dry_run:
         try:
             from providers.vectorstore import ChromaProvider
-            
+
             print("Scanning ChromaDB collections...")
             source = ChromaProvider(persist_dir=args.chroma_dir)
-            
+
             collections = source.list_collections()
             if not collections:
                 print("No collections found.")
                 return 0
-            
+
             total_docs = 0
             print(f"\nFound {len(collections)} collection(s):")
             print("-" * 40)
-            
+
             for name in collections:
                 count = source.count(name)
                 total_docs += count
                 print(f"  {name}: {count} documents")
-            
+
             print("-" * 40)
             print(f"Total: {total_docs} documents")
-            
+
             return 0
-            
+
         except Exception as e:
             logger.error(f"Failed to scan collections: {e}")
             return 1
-    
+
     # Perform migration
     print("=" * 60)
     print("VECTOR STORE MIGRATION")
@@ -215,10 +216,10 @@ Examples:
     print(f"Verify: {not args.no_verify}")
     print("=" * 60)
     print()
-    
+
     try:
         from utils.migrate import migrate_chroma_to_qdrant
-        
+
         # Build Qdrant config
         qdrant_kwargs: dict[str, Any] = {
             "qdrant_mode": args.qdrant_mode,
@@ -232,7 +233,7 @@ Examples:
             qdrant_kwargs["qdrant_url"] = args.qdrant_url
         if args.qdrant_api_key:
             qdrant_kwargs["qdrant_api_key"] = args.qdrant_api_key
-        
+
         result = migrate_chroma_to_qdrant(
             chroma_persist_dir=args.chroma_dir,
             collections=args.collections,
@@ -241,11 +242,11 @@ Examples:
             verify=not args.no_verify,
             **qdrant_kwargs,
         )
-        
+
         print_result(result.to_dict())
-        
+
         return 0 if result.success else 1
-        
+
     except KeyboardInterrupt:
         print("\nMigration cancelled by user")
         return 130

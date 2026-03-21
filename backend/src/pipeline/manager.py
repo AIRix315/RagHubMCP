@@ -33,34 +33,34 @@ _lock = threading.Lock()
 
 def get_pipeline(profile: str = "balanced") -> RAGPipeline:
     """Get the singleton pipeline instance.
-    
+
     This is the recommended way to obtain a pipeline instance.
     The pipeline is created lazily and cached for reuse.
-    
+
     Thread Safety:
         Uses double-checked locking pattern with threading.Lock
         to ensure thread-safe initialization.
-    
+
     Args:
         profile: Pipeline profile (fast/balanced/accurate).
             - fast: No reranking, top_k=3
             - balanced: Reranking enabled, top_k=5 (default)
             - accurate: Reranking enabled, top_k=10, multi-query
-            
+
     Returns:
         RAGPipeline singleton instance.
-        
+
     Example:
         >>> from pipeline import get_pipeline
         >>> pipeline = get_pipeline("balanced")
         >>> result = await pipeline.run("What is AI?", {"collection": "docs"})
     """
     global _pipeline, _current_profile
-    
+
     # First check without lock (fast path)
     if _pipeline is not None and profile == _current_profile:
         return _pipeline
-    
+
     # Acquire lock for potential creation
     with _lock:
         # Double-check after acquiring lock
@@ -68,16 +68,16 @@ def get_pipeline(profile: str = "balanced") -> RAGPipeline:
             logger.info(f"Creating pipeline with profile: {profile}")
             _pipeline = PipelineFactory.create({"profile": profile})
             _current_profile = profile
-        
+
         return _pipeline
 
 
 def reset_pipeline() -> None:
     """Reset the singleton pipeline (for testing).
-    
+
     This clears the cached pipeline instance, forcing a new
     pipeline to be created on the next get_pipeline() call.
-    
+
     Thread Safety:
         Uses lock to ensure thread-safe reset.
     """
@@ -93,11 +93,11 @@ async def execute_search(
     options: dict[str, Any] | None = None,
 ) -> RAGResult:
     """Convenience function to execute a search through the pipeline.
-    
+
     This is the main entry point for all RAG operations. All search
     requests should go through this function to ensure consistent
     behavior and quality.
-    
+
     Args:
         query: Search query text.
         options: Pipeline options:
@@ -106,14 +106,14 @@ async def execute_search(
             - rerank: Whether to rerank (default: True)
             - where: Metadata filter
             - profile: Pipeline profile (default: "balanced")
-            
+
     Returns:
         RAGResult with retrieved documents.
-        
+
     Raises:
         ValueError: If query is empty or invalid.
         RuntimeError: If pipeline execution fails.
-        
+
     Example:
         >>> from pipeline import execute_search
         >>> result = await execute_search(
@@ -124,17 +124,17 @@ async def execute_search(
     """
     if not query or not isinstance(query, str):
         raise ValueError("Query must be a non-empty string")
-    
+
     pipeline = get_pipeline()
     return await pipeline.run(query, options)
 
 
 def create_pipeline(config: dict[str, Any]) -> RAGPipeline:
     """Create a new pipeline instance with custom configuration.
-    
+
     Unlike get_pipeline(), this always creates a new instance.
     Use this when you need multiple pipelines with different configurations.
-    
+
     Args:
         config: Pipeline configuration:
             - profile: Profile name (fast/balanced/accurate)
@@ -142,10 +142,10 @@ def create_pipeline(config: dict[str, Any]) -> RAGPipeline:
             - topK: Default number of results
             - retriever: Retriever configuration
             - reranker: Reranker configuration
-            
+
     Returns:
         New RAGPipeline instance.
-        
+
     Example:
         >>> from pipeline import create_pipeline
         >>> pipeline = create_pipeline({

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ApiError, ErrorCode } from '@/api/errors'
+import { ErrorCode } from '@/api/errors'
 
 // Mock axios - vi.mock is hoisted, factory cannot reference external variables
 // Define everything inside the factory and expose via module exports

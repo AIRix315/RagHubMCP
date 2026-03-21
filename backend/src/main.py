@@ -24,8 +24,7 @@ from src.utils.config import get_config, load_config
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager.
-    
+
     Handles startup and shutdown events.
     """
     # Startup
@@ -42,6 +41,7 @@ async def lifespan(app: FastAPI):
     # Initialize providers (warm up)
     try:
         from src.providers.factory import factory
+
         config = get_config()
 
         # Pre-load default providers
@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
-    
+
     Returns:
         Configured FastAPI application.
     """
@@ -79,7 +79,7 @@ def create_app() -> FastAPI:
 
     # Configure CORS from config
     config = get_config()
-    
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=config.cors.origins,
@@ -93,7 +93,7 @@ def create_app() -> FastAPI:
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         """Global exception handler for consistent error responses.
-        
+
         TC-1.15.7: Error response format is unified.
         """
         logger.error(f"Unhandled exception: {exc}", exc_info=True)
@@ -104,7 +104,7 @@ def create_app() -> FastAPI:
                 "error": "internal_error",
                 "message": str(exc),
                 "detail": None,
-            }
+            },
         )
 
     # Include API router
@@ -168,39 +168,21 @@ def create_app() -> FastAPI:
 
 def create_parser() -> argparse.ArgumentParser:
     """Create command-line argument parser.
-    
+
     Returns:
         Configured ArgumentParser instance.
     """
     parser = argparse.ArgumentParser(
         description="RagHubMCP - REST API + MCP Server for RAG operations"
     )
+    parser.add_argument("--host", default="0.0.0.0", help="Server host (default: 0.0.0.0)")
+    parser.add_argument("--port", type=int, default=8000, help="Server port (default: 8000)")
     parser.add_argument(
-        "--host",
-        default="0.0.0.0",
-        help="Server host (default: 0.0.0.0)"
+        "--config", default="config.yaml", help="Path to configuration file (default: config.yaml)"
     )
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
     parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="Server port (default: 8000)"
-    )
-    parser.add_argument(
-        "--config",
-        default="config.yaml",
-        help="Path to configuration file (default: config.yaml)"
-    )
-    parser.add_argument(
-        "--reload",
-        action="store_true",
-        help="Enable auto-reload for development"
-    )
-    parser.add_argument(
-        "--workers",
-        type=int,
-        default=1,
-        help="Number of worker processes (default: 1)"
+        "--workers", type=int, default=1, help="Number of worker processes (default: 1)"
     )
     return parser
 

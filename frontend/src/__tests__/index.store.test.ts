@@ -4,6 +4,7 @@ import { useIndexStore } from '@/stores/index'
 import * as api from '@/api'
 import { getErrorMessage } from '@/api/errors'
 import type { ProgressData } from '@/composables/useWebSocket'
+import type { IndexResponse } from '@/types'
 
 // Mock API
 vi.mock('@/api', () => ({
@@ -184,10 +185,10 @@ describe('IndexStore', () => {
     })
 
     it('should set loading state during start', async () => {
-      let resolveStart: (value: unknown) => void
+      let resolveStart: (value: IndexResponse) => void
       vi.mocked(api.startIndex).mockImplementation(
         () =>
-          new Promise((resolve) => {
+          new Promise<IndexResponse>((resolve) => {
             resolveStart = resolve
           })
       )

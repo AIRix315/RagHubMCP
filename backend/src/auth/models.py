@@ -19,31 +19,46 @@ def _utc_now() -> datetime:
 
 class Role(str, Enum):
     """User roles for RBAC."""
-    
+
     ADMIN = "admin"
     MANAGER = "manager"
     USER = "user"
     VIEWER = "viewer"
-    
+
     def get_permissions(self) -> set[str]:
         """Get permissions for this role."""
         permissions_map = {
             Role.ADMIN: {
-                "indexes:read", "indexes:write", "indexes:delete",
-                "collections:read", "collections:write", "collections:delete",
-                "users:read", "users:write", "users:delete",
-                "settings:read", "settings:write",
-                "tenants:read", "tenants:write",
+                "indexes:read",
+                "indexes:write",
+                "indexes:delete",
+                "collections:read",
+                "collections:write",
+                "collections:delete",
+                "users:read",
+                "users:write",
+                "users:delete",
+                "settings:read",
+                "settings:write",
+                "tenants:read",
+                "tenants:write",
             },
             Role.MANAGER: {
-                "indexes:read", "indexes:write", "indexes:delete",
-                "collections:read", "collections:write", "collections:delete",
-                "users:read", "users:write",
+                "indexes:read",
+                "indexes:write",
+                "indexes:delete",
+                "collections:read",
+                "collections:write",
+                "collections:delete",
+                "users:read",
+                "users:write",
                 "settings:read",
             },
             Role.USER: {
-                "indexes:read", "indexes:write",
-                "collections:read", "collections:write",
+                "indexes:read",
+                "indexes:write",
+                "collections:read",
+                "collections:write",
                 "settings:read",
             },
             Role.VIEWER: {
@@ -58,7 +73,7 @@ class Role(str, Enum):
 @dataclass
 class Tenant:
     """Represents a tenant (organization/workspace).
-    
+
     Attributes:
         id: Unique tenant identifier
         name: Display name
@@ -68,6 +83,7 @@ class Tenant:
         created_at: Creation timestamp
         metadata: Additional metadata
     """
+
     id: str
     name: str
     slug: str
@@ -75,16 +91,16 @@ class Tenant:
     is_active: bool = True
     created_at: datetime = field(default_factory=_utc_now)
     metadata: dict[str, Any] = field(default_factory=dict)
-    
+
     @classmethod
-    def create(cls, name: str, slug: str, plan: str = "free") -> "Tenant":
+    def create(cls, name: str, slug: str, plan: str = "free") -> Tenant:
         """Create a new tenant.
-        
+
         Args:
             name: Display name
             slug: URL-friendly identifier
             plan: Subscription plan
-            
+
         Returns:
             New Tenant instance
         """
@@ -94,7 +110,7 @@ class Tenant:
             slug=slug,
             plan=plan,
         )
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -111,7 +127,7 @@ class Tenant:
 @dataclass
 class User:
     """Represents a user in the system.
-    
+
     Attributes:
         id: Unique user identifier
         email: User email address
@@ -124,6 +140,7 @@ class User:
         updated_at: Last update timestamp
         metadata: Additional metadata
     """
+
     id: str
     email: str
     hashed_password: str
@@ -134,7 +151,7 @@ class User:
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
     metadata: dict[str, Any] = field(default_factory=dict)
-    
+
     @classmethod
     def create(
         cls,
@@ -142,20 +159,20 @@ class User:
         password: str,
         tenant_id: str,
         role: Role = Role.USER,
-    ) -> "User":
+    ) -> User:
         """Create a new user with hashed password.
-        
+
         Args:
             email: User email address
             password: Plain text password (will be hashed)
             tenant_id: Tenant ID
             role: User role
-            
+
         Returns:
             New User instance with hashed password
         """
         from src.auth.security import hash_password
-        
+
         return cls(
             id=str(uuid.uuid4()),
             email=email,
@@ -163,34 +180,32 @@ class User:
             tenant_id=tenant_id,
             role=role,
         )
-    
+
     def has_permission(self, permission: str) -> bool:
         """Check if user has a specific permission.
-        
+
         Args:
             permission: Permission string (e.g., "indexes:write")
-            
+
         Returns:
             True if user has permission
         """
         if self.is_superuser:
             return True
         return permission in self.role.get_permissions()
-    
+
     def check_permission(self, permission: str) -> None:
         """Check permission and raise exception if not allowed.
-        
+
         Args:
             permission: Permission string
-            
+
         Raises:
             PermissionError: If user lacks permission
         """
         if not self.has_permission(permission):
-            raise PermissionError(
-                f"User {self.email} lacks permission: {permission}"
-            )
-    
+            raise PermissionError(f"User {self.email} lacks permission: {permission}")
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary (without sensitive data)."""
         return {
@@ -202,17 +217,18 @@ class User:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
-    
+
     def to_json(self) -> str:
         """Convert to JSON string."""
         import json
+
         return json.dumps(self.to_dict())
 
 
 @dataclass
 class TokenPayload:
     """JWT token payload data.
-    
+
     Attributes:
         sub: Subject (user ID)
         email: User email
@@ -221,13 +237,14 @@ class TokenPayload:
         exp: Expiration timestamp
         iat: Issued at timestamp
     """
+
     sub: str
     email: str
     tenant_id: str
     role: str
     exp: datetime
     iat: datetime = field(default_factory=_utc_now)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JWT encoding."""
         return {
@@ -243,16 +260,17 @@ class TokenPayload:
 @dataclass
 class Token:
     """Authentication token response.
-    
+
     Attributes:
         access_token: JWT access token
         token_type: Token type (always "bearer")
         expires_in: Seconds until expiration
     """
+
     access_token: str
     token_type: str = "bearer"
     expires_in: int = 1800  # 30 minutes
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {

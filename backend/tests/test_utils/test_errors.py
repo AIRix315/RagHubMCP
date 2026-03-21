@@ -42,18 +42,18 @@ class TestErrorCode:
         assert ErrorCode.INVALID_COLLECTION.value == "invalid_collection"
         assert ErrorCode.INVALID_QUERY.value == "invalid_query"
         assert ErrorCode.INVALID_CONFIG.value == "invalid_config"
-        
+
         assert ErrorCode.COLLECTION_NOT_FOUND.value == "collection_not_found"
         assert ErrorCode.DOCUMENT_NOT_FOUND.value == "document_not_found"
         assert ErrorCode.TASK_NOT_FOUND.value == "task_not_found"
         assert ErrorCode.PROVIDER_NOT_FOUND.value == "provider_not_found"
-        
+
         assert ErrorCode.SEARCH_FAILED.value == "search_failed"
         assert ErrorCode.INDEX_FAILED.value == "index_failed"
         assert ErrorCode.EMBEDDING_FAILED.value == "embedding_failed"
         assert ErrorCode.RERANK_FAILED.value == "rerank_failed"
         assert ErrorCode.PIPELINE_ERROR.value == "pipeline_error"
-        
+
         assert ErrorCode.SERVICE_UNAVAILABLE.value == "service_unavailable"
         assert ErrorCode.PROVIDER_UNAVAILABLE.value == "provider_unavailable"
         assert ErrorCode.DATABASE_ERROR.value == "database_error"
@@ -70,7 +70,7 @@ class TestRAGError:
     def test_init_default_values(self) -> None:
         """Test RAGError initialization with default values."""
         error = RAGError(message="Test error")
-        
+
         assert error.message == "Test error"
         assert error.error_code == ErrorCode.SEARCH_FAILED
         assert error.details == {}
@@ -84,7 +84,7 @@ class TestRAGError:
             details={"key": "value"},
             status_code=status.HTTP_400_BAD_REQUEST,
         )
-        
+
         assert error.message == "Custom error"
         assert error.error_code == ErrorCode.INVALID_REQUEST
         assert error.details == {"key": "value"}
@@ -96,9 +96,9 @@ class TestRAGError:
             message="Search failed",
             error_code=ErrorCode.SEARCH_FAILED,
         )
-        
+
         result = str(error)
-        
+
         assert result == "[search_failed] Search failed"
 
     def test_to_dict_with_details(self) -> None:
@@ -108,9 +108,9 @@ class TestRAGError:
             error_code=ErrorCode.INVALID_REQUEST,
             details={"field": "query", "reason": "empty"},
         )
-        
+
         result = error.to_dict()
-        
+
         assert result["error"] == "invalid_request"
         assert result["message"] == "Test error"
         assert result["detail"] == {"field": "query", "reason": "empty"}
@@ -122,9 +122,9 @@ class TestRAGError:
             error_code=ErrorCode.SEARCH_FAILED,
             details={},
         )
-        
+
         result = error.to_dict()
-        
+
         assert result["error"] == "search_failed"
         assert result["message"] == "Test error"
         assert result["detail"] is None
@@ -132,7 +132,7 @@ class TestRAGError:
     def test_is_exception(self) -> None:
         """Test that RAGError is an Exception."""
         error = RAGError(message="Test")
-        
+
         assert isinstance(error, Exception)
 
 
@@ -145,7 +145,7 @@ class TestValidationError:
             message="Invalid input",
             details={"field": "name", "reason": "required"},
         )
-        
+
         assert error.message == "Invalid input"
         assert error.error_code == ErrorCode.INVALID_REQUEST
         assert error.details == {"field": "name", "reason": "required"}
@@ -154,7 +154,7 @@ class TestValidationError:
     def test_init_without_details(self) -> None:
         """Test ValidationError initialization without details."""
         error = ValidationError(message="Invalid input")
-        
+
         assert error.message == "Invalid input"
         assert error.error_code == ErrorCode.INVALID_REQUEST
         assert error.details == {}
@@ -163,7 +163,7 @@ class TestValidationError:
     def test_inheritance(self) -> None:
         """Test ValidationError inherits from RAGError."""
         error = ValidationError(message="Test")
-        
+
         assert isinstance(error, RAGError)
         assert isinstance(error, Exception)
 
@@ -174,7 +174,7 @@ class TestNotFoundError:
     def test_init_default_code(self) -> None:
         """Test NotFoundError with default error code."""
         error = NotFoundError(message="Collection not found")
-        
+
         assert error.message == "Collection not found"
         assert error.error_code == ErrorCode.COLLECTION_NOT_FOUND
         assert error.details == {}
@@ -187,7 +187,7 @@ class TestNotFoundError:
             error_code=ErrorCode.DOCUMENT_NOT_FOUND,
             details={"doc_id": "123"},
         )
-        
+
         assert error.message == "Document not found"
         assert error.error_code == ErrorCode.DOCUMENT_NOT_FOUND
         assert error.details == {"doc_id": "123"}
@@ -196,7 +196,7 @@ class TestNotFoundError:
     def test_inheritance(self) -> None:
         """Test NotFoundError inherits from RAGError."""
         error = NotFoundError(message="Test")
-        
+
         assert isinstance(error, RAGError)
 
 
@@ -209,7 +209,7 @@ class TestSearchError:
             message="Search operation failed",
             details={"query": "test", "error": "timeout"},
         )
-        
+
         assert error.message == "Search operation failed"
         assert error.error_code == ErrorCode.SEARCH_FAILED
         assert error.details == {"query": "test", "error": "timeout"}
@@ -218,7 +218,7 @@ class TestSearchError:
     def test_init_without_details(self) -> None:
         """Test SearchError initialization without details."""
         error = SearchError(message="Search failed")
-        
+
         assert error.message == "Search failed"
         assert error.error_code == ErrorCode.SEARCH_FAILED
         assert error.details == {}
@@ -227,7 +227,7 @@ class TestSearchError:
     def test_inheritance(self) -> None:
         """Test SearchError inherits from RAGError."""
         error = SearchError(message="Test")
-        
+
         assert isinstance(error, RAGError)
 
 
@@ -240,7 +240,7 @@ class TestPipelineError:
             message="Pipeline execution failed",
             details={"stage": "embedding", "error": "OOM"},
         )
-        
+
         assert error.message == "Pipeline execution failed"
         assert error.error_code == ErrorCode.PIPELINE_ERROR
         assert error.details == {"stage": "embedding", "error": "OOM"}
@@ -249,7 +249,7 @@ class TestPipelineError:
     def test_init_without_details(self) -> None:
         """Test PipelineError initialization without details."""
         error = PipelineError(message="Pipeline error")
-        
+
         assert error.message == "Pipeline error"
         assert error.error_code == ErrorCode.PIPELINE_ERROR
         assert error.details == {}
@@ -258,7 +258,7 @@ class TestPipelineError:
     def test_inheritance(self) -> None:
         """Test PipelineError inherits from RAGError."""
         error = PipelineError(message="Test")
-        
+
         assert isinstance(error, RAGError)
 
 
@@ -271,7 +271,7 @@ class TestServiceUnavailableError:
             message="Service is down",
             service="chroma",
         )
-        
+
         assert error.message == "Service is down"
         assert error.error_code == ErrorCode.SERVICE_UNAVAILABLE
         assert error.details == {"service": "chroma"}
@@ -284,7 +284,7 @@ class TestServiceUnavailableError:
             service="openai",
             details={"reason": "rate_limit", "retry_after": 60},
         )
-        
+
         assert error.message == "Provider unavailable"
         assert error.error_code == ErrorCode.SERVICE_UNAVAILABLE
         assert error.details == {
@@ -301,7 +301,7 @@ class TestServiceUnavailableError:
             service="primary_service",
             details={"service": "should_be_overridden", "extra": "value"},
         )
-        
+
         # Service parameter should be set first, then details merged
         # So details["service"] would override, but we want to verify behavior
         assert error.details["service"] == "should_be_overridden"
@@ -310,7 +310,7 @@ class TestServiceUnavailableError:
     def test_inheritance(self) -> None:
         """Test ServiceUnavailableError inherits from RAGError."""
         error = ServiceUnavailableError(message="Test", service="test_service")
-        
+
         assert isinstance(error, RAGError)
 
 
@@ -326,9 +326,9 @@ class TestRagErrorHandler:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         request = MagicMock()
-        
+
         response = rag_error_handler(request, error)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 500
 
@@ -336,9 +336,9 @@ class TestRagErrorHandler:
         """Test handler with different status codes."""
         error = NotFoundError(message="Not found")
         request = MagicMock()
-        
+
         response = rag_error_handler(request, error)
-        
+
         assert response.status_code == 404
 
 
@@ -352,9 +352,9 @@ class TestHttpExceptionHandler:
             detail={"error": "custom_error", "message": "Bad request"},
         )
         request = MagicMock()
-        
+
         response = http_exception_handler(request, exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 400
 
@@ -365,9 +365,9 @@ class TestHttpExceptionHandler:
             detail="Resource not found",
         )
         request = MagicMock()
-        
+
         response = http_exception_handler(request, exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 404
 
@@ -378,9 +378,9 @@ class TestHttpExceptionHandler:
             detail=12345,
         )
         request = MagicMock()
-        
+
         response = http_exception_handler(request, exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 500
 
@@ -392,9 +392,9 @@ class TestGeneralExceptionHandler:
         """Test that handler returns JSONResponse with correct data."""
         exc = ValueError("Something went wrong")
         request = MagicMock()
-        
+
         response = general_exception_handler(request, exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 500
 
@@ -402,9 +402,9 @@ class TestGeneralExceptionHandler:
         """Test handler when exception message is empty."""
         exc = ValueError("")
         request = MagicMock()
-        
+
         response = general_exception_handler(request, exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 500
 
@@ -412,9 +412,9 @@ class TestGeneralExceptionHandler:
         """Test handler with exception that has no message."""
         exc = Exception()
         request = MagicMock()
-        
+
         response = general_exception_handler(request, exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 500
 
@@ -422,8 +422,8 @@ class TestGeneralExceptionHandler:
         """Test that handler preserves exception string representation."""
         exc = RuntimeError("Database connection timeout after 30s")
         request = MagicMock()
-        
+
         response = general_exception_handler(request, exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 500

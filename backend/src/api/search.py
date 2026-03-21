@@ -18,14 +18,13 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from src.utils.config import get_config
-from src.utils.errors import NotFoundError, SearchError, ValidationError
 
+from .pipeline_adapter import rag_result_to_search_response
 from .schemas import (
     ErrorResponse,
     SearchRequest,
     SearchResponse,
 )
-from .pipeline_adapter import rag_result_to_search_response
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +33,12 @@ router = APIRouter(prefix="/search", tags=["search"])
 
 def _get_vectorstore_provider() -> Any:
     """Get VectorStore provider through factory (RULE-3 compliant).
-    
+
     Returns:
         VectorStoreProvider instance from factory.
     """
     from src.providers.factory import factory
+
     return factory.get_vectorstore_provider()
 
 
@@ -55,14 +55,14 @@ def _get_vectorstore_provider() -> Any:
 )
 async def execute_search_endpoint(request: SearchRequest) -> SearchResponse:
     """Execute a search query.
-    
+
     TC-1.15.5: POST /api/search executes search
-    
+
     All search operations go through the RAG Pipeline:
     1. Retrieval (Hybrid: vector + BM25)
     2. Reranking (FlashRank)
     3. Context Building
-    
+
     Args:
         request: Search request parameters.
 
@@ -82,7 +82,7 @@ async def execute_search_endpoint(request: SearchRequest) -> SearchResponse:
                 "detail": None,
             },
         )
-    
+
     if request.top_k < 1 or request.top_k > 100:
         raise HTTPException(
             status_code=400,
@@ -92,31 +92,31 @@ async def execute_search_endpoint(request: SearchRequest) -> SearchResponse:
                 "detail": {"top_k": request.top_k},
             },
         )
-    
+
     try:
         start_time = time.time()
-        
+
         # Import pipeline (lazy to avoid circular imports)
         from src.pipeline import execute_search as pipeline_search
-        
+
         config = get_config()
-        
+
         # Build pipeline options
         options = {
             "collection": request.collection_name,
             "topK": request.top_k,
             "rerank": request.use_rerank,
         }
-        
+
         # Execute search through pipeline
         result = await pipeline_search(request.query, options)
-        
+
         # Get provider names for response
         emb_name = config.providers.embedding.default
         rerank_name = None
         if request.use_rerank:
             rerank_name = request.rerank_provider or config.providers.rerank.default
-        
+
         # Convert to API response
         response = rag_result_to_search_response(
             result=result,
@@ -124,13 +124,13 @@ async def execute_search_endpoint(request: SearchRequest) -> SearchResponse:
             embedding_provider=emb_name,
             rerank_provider=rerank_name,
         )
-        
+
         latency = (time.time() - start_time) * 1000
         logger.info(
             f"Search completed: query='{request.query[:50]}...', "
             f"results={len(response.results)}, latency={latency:.2f}ms"
         )
-        
+
         return response
 
     except ValueError as e:
@@ -181,17 +181,21 @@ async def list_collections() -> dict[str, Any]:
         # Get collection details
         try:
             count = vectorstore.count(name)
-            result.append({
-                "name": name,
-                "count": count,
-                "metadata": {},  # Metadata not available through Provider interface
-            })
+            result.append(
+                {
+                    "name": name,
+                    "count": count,
+                    "metadata": {},  # Metadata not available through Provider interface
+                }
+            )
         except Exception:
-            result.append({
-                "name": name,
-                "count": 0,
-                "metadata": {},
-            })
+            result.append(
+                {
+                    "name": name,
+                    "count": 0,
+                    "metadata": {},
+                }
+            )
 
     return {
         "collections": result,
@@ -229,7 +233,7 @@ async def delete_collection(name: str) -> dict[str, Any]:
             "name": name,
             "message": "Collection deleted successfully",
         }
-    except ValueError as e:
+    except ValueError:
         # Collection not found
         logger.warning(f"Collection not found: {name}")
         raise HTTPException(

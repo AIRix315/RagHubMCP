@@ -6,6 +6,7 @@ import {
   getErrorMessage,
 } from '@/api/errors'
 import type { AxiosError } from 'axios'
+import type { ErrorResponse } from '@/types/common'
 
 describe('ApiError', () => {
   describe('constructor', () => {
@@ -39,7 +40,7 @@ describe('ApiError', () => {
         response: undefined,
         code: 'ECONNABORTED',
         message: 'timeout of 30000ms exceeded',
-      } as AxiosError
+      } as AxiosError<ErrorResponse>
 
       const error = ApiError.fromAxiosError(axiosError)
 
@@ -53,7 +54,7 @@ describe('ApiError', () => {
         response: undefined,
         code: 'ERR_NETWORK',
         message: 'Network Error',
-      } as AxiosError
+      } as AxiosError<ErrorResponse>
 
       const error = ApiError.fromAxiosError(axiosError)
 
@@ -68,7 +69,7 @@ describe('ApiError', () => {
           status: 400,
           data: { message: 'Bad request' },
         },
-      } as AxiosError
+      } as AxiosError<ErrorResponse>
 
       const error = ApiError.fromAxiosError(axiosError)
 
@@ -82,7 +83,7 @@ describe('ApiError', () => {
           status: 404,
           data: { message: 'Not found' },
         },
-      } as AxiosError
+      } as AxiosError<ErrorResponse>
 
       const error = ApiError.fromAxiosError(axiosError)
 
@@ -96,7 +97,7 @@ describe('ApiError', () => {
           status: 503,
           data: { message: 'Service unavailable' },
         },
-      } as AxiosError
+      } as AxiosError<ErrorResponse>
 
       const error = ApiError.fromAxiosError(axiosError)
 
@@ -113,7 +114,7 @@ describe('ApiError', () => {
             message: 'Search failed',
           },
         },
-      } as AxiosError
+      } as AxiosError<ErrorResponse>
 
       const error = ApiError.fromAxiosError(axiosError)
 

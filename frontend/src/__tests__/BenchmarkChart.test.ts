@@ -28,8 +28,8 @@ describe('BenchmarkChart', () => {
     {
       config_name: 'Config A',
       results: [
-        { id: '1', text: 'result 1', score: 0.9 },
-        { id: '2', text: 'result 2', score: 0.8 },
+        { id: '1', text: 'result 1', score: 0.9, metadata: {} },
+        { id: '2', text: 'result 2', score: 0.8, metadata: {} },
       ],
       latency_ms: 150.5,
       embedding_provider: 'ollama',
@@ -38,7 +38,7 @@ describe('BenchmarkChart', () => {
     {
       config_name: 'Config B',
       results: [
-        { id: '3', text: 'result 3', score: 0.85 },
+        { id: '3', text: 'result 3', score: 0.85, metadata: {} },
       ],
       latency_ms: 100.2,
       embedding_provider: 'ollama',

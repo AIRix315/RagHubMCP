@@ -21,8 +21,8 @@ class TestOllamaEmbeddingProviderRegistration:
 
     def test_provider_is_registered(self):
         """Ollama embedding provider is registered in registry."""
-        from providers.registry import registry
         from providers.base import ProviderCategory
+        from providers.registry import registry
 
         assert registry.is_registered(ProviderCategory.EMBEDDING, "ollama")
 
@@ -44,10 +44,7 @@ class TestOllamaEmbeddingProviderInit:
         """Initialize with custom base URL."""
         from providers.embedding.ollama import OllamaEmbeddingProvider
 
-        provider = OllamaEmbeddingProvider(
-            model="bge-m3",
-            base_url="http://custom-host:11434"
-        )
+        provider = OllamaEmbeddingProvider(model="bge-m3", base_url="http://custom-host:11434")
 
         assert provider.base_url == "http://custom-host:11434"
 
@@ -60,7 +57,7 @@ class TestOllamaEmbeddingProviderInit:
             "type": "ollama",
             "model": "bge-m3",
             "base_url": "http://localhost:11434",
-            "dimension": 1024
+            "dimension": 1024,
         }
 
         provider = OllamaEmbeddingProvider.from_config(config)
@@ -89,9 +86,7 @@ class TestOllamaEmbeddingProviderEmbed:
 
         # Setup mock
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "embeddings": [[0.1] * 768, [0.2] * 768]
-        }
+        mock_response.json.return_value = {"embeddings": [[0.1] * 768, [0.2] * 768]}
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
 
@@ -146,13 +141,12 @@ class TestOllamaEmbeddingProviderAsync:
     async def test_aembed_documents_success(self):
         """Async embed documents successfully."""
         from unittest.mock import AsyncMock
+
         from providers.embedding.ollama import OllamaEmbeddingProvider
 
         # Setup mock response
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "embeddings": [[0.1] * 768]
-        }
+        mock_response.json.return_value = {"embeddings": [[0.1] * 768]}
         mock_response.raise_for_status = MagicMock()
 
         provider = OllamaEmbeddingProvider(model="nomic-embed-text", dimension=768)
@@ -174,13 +168,12 @@ class TestOllamaEmbeddingProviderAsync:
     async def test_aembed_query_success(self):
         """Async embed query successfully."""
         from unittest.mock import AsyncMock
+
         from providers.embedding.ollama import OllamaEmbeddingProvider
 
         # Setup mock response
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "embedding": [0.5] * 768
-        }
+        mock_response.json.return_value = {"embedding": [0.5] * 768}
         mock_response.raise_for_status = MagicMock()
 
         provider = OllamaEmbeddingProvider(model="nomic-embed-text", dimension=768)
@@ -207,9 +200,7 @@ class TestOllamaEmbeddingProviderBatch:
         from providers.embedding.ollama import OllamaEmbeddingProvider
 
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "embeddings": [[0.1] * 768, [0.2] * 768]
-        }
+        mock_response.json.return_value = {"embeddings": [[0.1] * 768, [0.2] * 768]}
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
 
@@ -227,16 +218,12 @@ class TestOllamaEmbeddingProviderBatch:
 
         # First batch
         mock_response1 = MagicMock()
-        mock_response1.json.return_value = {
-            "embeddings": [[0.1] * 768, [0.2] * 768]
-        }
+        mock_response1.json.return_value = {"embeddings": [[0.1] * 768, [0.2] * 768]}
         mock_response1.raise_for_status.return_value = None
 
         # Second batch
         mock_response2 = MagicMock()
-        mock_response2.json.return_value = {
-            "embeddings": [[0.3] * 768]
-        }
+        mock_response2.json.return_value = {"embeddings": [[0.3] * 768]}
         mock_response2.raise_for_status.return_value = None
 
         mock_post.side_effect = [mock_response1, mock_response2]

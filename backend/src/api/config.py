@@ -45,11 +45,7 @@ def _merge_config(base: dict[str, Any], update: dict[str, Any] | None) -> dict[s
 
     result = base.copy()
     for key, value in update.items():
-        if (
-            key in result
-            and isinstance(result[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
             result[key] = _merge_config(result[key], value)
         else:
             result[key] = value
@@ -134,5 +130,5 @@ async def update_config(request: ConfigUpdateRequest) -> SuccessResponse:
             detail={
                 "error": "config_update_failed",
                 "message": f"Failed to update configuration: {str(e)}",
-            }
+            },
         )

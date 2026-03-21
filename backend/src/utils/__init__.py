@@ -2,29 +2,28 @@
 
 from .config import (
     AppConfig,
-    ServerConfig,
     ChromaConfig,
-    ProvidersConfig,
+    HybridConfig,
     IndexerConfig,
     LoggingConfig,
-    HybridConfig,
-    WatcherConfig,
     ProviderCategory,
     ProviderInstance,
+    ProvidersConfig,
+    ServerConfig,
+    WatcherConfig,
+    clear_config,
+    get_config,
+    get_config_dependency,
     load_config,
     reload_config,
-    get_config,
     set_config,
-    clear_config,
-    get_config_dependency,
 )
 from .migrate import (
-    VectorStoreMigrator,
-    MigrationResult,
     CollectionMigrationResult,
+    MigrationResult,
+    VectorStoreMigrator,
     migrate_chroma_to_qdrant,
 )
-from .singleton import singleton, reset_singleton
 
 # Backward compatibility alias
 Config = AppConfig

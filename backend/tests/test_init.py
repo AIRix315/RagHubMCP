@@ -1,7 +1,5 @@
 """Tests for project initialization (TC-1.1.x)."""
 
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -26,8 +24,8 @@ class TestProjectInitialization:
         """TC-1.1.2: pip install 无报错."""
         # 检查关键依赖是否已安装
         try:
-            import fastapi
             import chromadb
+            import fastapi
             import flashrank
             import pydantic
             import yaml

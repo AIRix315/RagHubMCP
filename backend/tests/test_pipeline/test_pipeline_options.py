@@ -9,8 +9,6 @@ These tests verify:
 Reference: Docs/11-V2-Desing.md, Docs/12-V2-Blueprint.md
 """
 
-import pytest
-from dataclasses import asdict
 from unittest.mock import MagicMock
 
 from pipeline.options import PipelineOptions
@@ -22,7 +20,7 @@ class TestPipelineOptions:
     def test_default_values(self):
         """Test PipelineOptions has correct default values."""
         options = PipelineOptions()
-        
+
         assert options.collection == "default"
         assert options.topK == 5
         assert options.rerank is True
@@ -48,7 +46,7 @@ class TestPipelineOptions:
             alpha=0.6,
             beta=0.4,
         )
-        
+
         assert options.collection == "my_collection"
         assert options.topK == 10
         assert options.rerank is False
@@ -72,9 +70,9 @@ class TestPipelineOptionsToDict:
             rerank=True,
             rerank_provider="cohere",
         )
-        
+
         result = options.to_dict()
-        
+
         assert isinstance(result, dict)
         assert result["collection"] == "test_collection"
         assert result["topK"] == 7
@@ -84,9 +82,9 @@ class TestPipelineOptionsToDict:
     def test_to_dict_includes_none_values(self):
         """Test to_dict includes None values."""
         options = PipelineOptions()
-        
+
         result = options.to_dict()
-        
+
         assert "rerank_provider" in result
         assert result["rerank_provider"] is None
         assert "embedding_provider" in result
@@ -98,18 +96,18 @@ class TestPipelineOptionsToDict:
             where={"status": "active"},
             where_document={"$contains": "test"},
         )
-        
+
         result = options.to_dict()
-        
+
         assert result["where"] == {"status": "active"}
         assert result["where_document"] == {"$contains": "test"}
 
     def test_to_dict_includes_alpha_beta(self):
         """Test to_dict includes alpha and beta."""
         options = PipelineOptions(alpha=0.7, beta=0.3)
-        
+
         result = options.to_dict()
-        
+
         assert result["alpha"] == 0.7
         assert result["beta"] == 0.3
 
@@ -131,9 +129,9 @@ class TestPipelineOptionsFromDict:
             "alpha": 0.8,
             "beta": 0.2,
         }
-        
+
         options = PipelineOptions.from_dict(data)
-        
+
         assert options.collection == "custom_collection"
         assert options.topK == 15
         assert options.rerank is False
@@ -151,9 +149,9 @@ class TestPipelineOptionsFromDict:
             "collection": "my_collection",
             "topK": 8,
         }
-        
+
         options = PipelineOptions.from_dict(data)
-        
+
         assert options.collection == "my_collection"
         assert options.topK == 8
         assert options.rerank is True  # default
@@ -162,7 +160,7 @@ class TestPipelineOptionsFromDict:
     def test_from_dict_with_empty_dict(self):
         """Test from_dict with empty dict uses all defaults."""
         options = PipelineOptions.from_dict({})
-        
+
         assert options.collection == "default"
         assert options.topK == 5
         assert options.rerank is True
@@ -175,9 +173,9 @@ class TestPipelineOptionsFromDict:
             "rerank_provider": None,
             "where": None,
         }
-        
+
         options = PipelineOptions.from_dict(data)
-        
+
         assert options.collection == "test"
         assert options.rerank_provider is None
         assert options.where is None
@@ -196,9 +194,9 @@ class TestPipelineOptionsFromRequest:
         request.embedding_provider = "openai"
         request.where = {"category": "ai"}
         request.where_document = {"$contains": "data"}
-        
+
         options = PipelineOptions.from_request(request)
-        
+
         assert options.collection == "request_collection"
         assert options.topK == 20
         assert options.rerank is False
@@ -210,9 +208,9 @@ class TestPipelineOptionsFromRequest:
     def test_from_request_with_missing_attributes(self):
         """Test from_request handles missing attributes with defaults."""
         request = MagicMock(spec=[])  # Empty spec, no attributes
-        
+
         options = PipelineOptions.from_request(request)
-        
+
         # Should use defaults from getattr
         assert options.collection == "default"
         assert options.topK == 5
@@ -228,9 +226,9 @@ class TestPipelineOptionsFromRequest:
         request.embedding_provider = None
         request.where = None
         request.where_document = None
-        
+
         options = PipelineOptions.from_request(request)
-        
+
         assert options.collection == "partial_collection"
         assert options.topK == 5
 
@@ -238,9 +236,9 @@ class TestPipelineOptionsFromRequest:
         """Test from_request always uses balanced profile."""
         request = MagicMock()
         request.collection_name = "test"
-        
+
         options = PipelineOptions.from_request(request)
-        
+
         assert options.profile == "balanced"
         assert options.alpha == 0.5
         assert options.beta == 0.5
@@ -261,10 +259,10 @@ class TestPipelineOptionsRoundTrip:
             alpha=0.6,
             beta=0.4,
         )
-        
+
         data = original.to_dict()
         restored = PipelineOptions.from_dict(data)
-        
+
         assert restored.collection == original.collection
         assert restored.topK == original.topK
         assert restored.rerank == original.rerank

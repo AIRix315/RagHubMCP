@@ -7,6 +7,26 @@
 
 ---
 
+## [V2.0.4] - 2026-03-21
+
+### 任务编号: CI/CD 修复
+
+- **时间**: 2026-03-21
+- **内容**: 修复 GitHub Actions CI/CD 构建失败问题
+
+### Fixed
+
+- **CI**: 前端 TypeScript 类型检查失败 → 修复测试文件中的类型错误
+- **CI**: 后端 Ruff lint 检查失败 → 格式化代码并修复导入问题
+- **CI**: 优化 `pyproject.toml` lint 配置，测试文件忽略 E402/F401/F841
+
+### Changed
+
+- `ruff format` 格式化所有 Python 文件（111 个文件）
+- `pyproject.toml`: 新增测试文件 per-file-ignores 配置
+
+---
+
 ## [V2.0.3] - 2026-03-21
 
 ### 任务编号: V2架构合规修复（三）

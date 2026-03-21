@@ -22,9 +22,9 @@ from typing import Any
 import chromadb
 
 from ..base import ProviderCategory
-from ..registry import registry
 from ..embedding.base import BaseEmbeddingProvider
-from .base import BaseVectorStoreProvider, SearchResult, QueryResult
+from ..registry import registry
+from .base import BaseVectorStoreProvider, QueryResult, SearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -308,12 +308,14 @@ class ChromaProvider(BaseVectorStoreProvider):
         distances = result.get("distances", [[]])[0]
 
         for i in range(len(ids)):
-            results.append(SearchResult(
-                id=str(ids[i]),
-                document=documents[i] if i < len(documents) else "",
-                metadata=metadatas[i] if i < len(metadatas) else {},
-                score=distances[i] if i < len(distances) else 0.0,
-            ))
+            results.append(
+                SearchResult(
+                    id=str(ids[i]),
+                    document=documents[i] if i < len(documents) else "",
+                    metadata=metadatas[i] if i < len(metadatas) else {},
+                    score=distances[i] if i < len(distances) else 0.0,
+                )
+            )
 
         return QueryResult(results=results)
 
@@ -343,11 +345,13 @@ class ChromaProvider(BaseVectorStoreProvider):
         metadatas = result.get("metadatas", [])
 
         for i in range(len(result_ids)):
-            results.append(SearchResult(
-                id=str(result_ids[i]),
-                document=documents[i] if i < len(documents) else "",
-                metadata=metadatas[i] if i < len(metadatas) else {},
-            ))
+            results.append(
+                SearchResult(
+                    id=str(result_ids[i]),
+                    document=documents[i] if i < len(documents) else "",
+                    metadata=metadatas[i] if i < len(metadatas) else {},
+                )
+            )
 
         return results
 
@@ -416,16 +420,17 @@ class ChromaProvider(BaseVectorStoreProvider):
             New ChromaProvider instance
         """
         embedding_provider = config.get("embedding_provider")
-        
+
         # If no embedding provider provided, try to get from factory
         if embedding_provider is None:
             try:
                 from src.providers.factory import factory
+
                 embedding_provider = factory.get_embedding_provider()
             except Exception:
                 # No embedding provider available, will use ChromaDB default
                 pass
-        
+
         return cls(
             persist_dir=config.get("persist_dir", "./data/chroma"),
             embedding_provider=embedding_provider,

@@ -10,7 +10,6 @@ Reference:
 
 from typing import Any
 
-
 # Test questions for evaluation
 # Format: (question, category, expected_keywords)
 TEST_QUESTIONS: list[dict[str, Any]] = [
@@ -33,7 +32,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "exact",
         "keywords": ["CORS", "middleware", "cross-origin"],
     },
-    
     # Open-ended questions
     {
         "id": 4,
@@ -47,7 +45,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "open",
         "keywords": ["RAG", "retrieval", "LLM", "context"],
     },
-    
     # Long-form questions requiring context
     {
         "id": 6,
@@ -61,7 +58,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "long",
         "keywords": ["Chroma", "Qdrant", "vector database", "comparison"],
     },
-    
     # Implementation-specific questions
     {
         "id": 8,
@@ -81,7 +77,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "exact",
         "keywords": ["chunk", "split", "code", "AST"],
     },
-    
     # Edge cases
     {
         "id": 11,
@@ -95,7 +90,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "edge",
         "keywords": ["long query", "truncation", "limit"],
     },
-    
     # Integration questions
     {
         "id": 13,
@@ -109,7 +103,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "exact",
         "keywords": ["embedding", "provider", "interface"],
     },
-    
     # Performance questions
     {
         "id": 15,
@@ -117,7 +110,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "open",
         "keywords": ["performance", "latency", "rerank", "speed"],
     },
-    
     # Debugging questions
     {
         "id": 16,
@@ -125,7 +117,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "exact",
         "keywords": ["debug", "indexing", "error", "log"],
     },
-    
     # Configuration questions
     {
         "id": 17,
@@ -139,7 +130,6 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
         "category": "exact",
         "keywords": ["Chroma", "Qdrant", "switch", "config"],
     },
-    
     # Advanced questions
     {
         "id": 19,
@@ -158,7 +148,7 @@ TEST_QUESTIONS: list[dict[str, Any]] = [
 
 def get_test_questions() -> list[dict[str, Any]]:
     """Get all test questions.
-    
+
     Returns:
         List of test question dictionaries.
     """
@@ -167,10 +157,10 @@ def get_test_questions() -> list[dict[str, Any]]:
 
 def get_questions_by_category(category: str) -> list[dict[str, Any]]:
     """Get questions filtered by category.
-    
+
     Args:
         category: Category name (exact, open, long, edge).
-        
+
     Returns:
         Filtered list of questions.
     """
@@ -179,10 +169,10 @@ def get_questions_by_category(category: str) -> list[dict[str, Any]]:
 
 def get_question_by_id(question_id: int) -> dict[str, Any] | None:
     """Get a specific question by ID.
-    
+
     Args:
         question_id: Question ID.
-        
+
     Returns:
         Question dictionary or None if not found.
     """

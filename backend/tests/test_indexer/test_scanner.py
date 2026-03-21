@@ -48,10 +48,10 @@ class TestFileScanner:
         # 创建测试文件
         test_file = tmp_path / "test.py"
         test_file.write_text("print('hello')")
-        
+
         # 扫描文件
         results = scanner.scan(test_file)
-        
+
         # 验证
         assert len(results) == 1
         assert results[0].path == test_file.resolve()
@@ -63,9 +63,9 @@ class TestFileScanner:
         """扫描文件并计算 hash"""
         test_file = tmp_path / "test.py"
         test_file.write_text("print('hello')")
-        
+
         results = scanner.scan(test_file, compute_hash=True)
-        
+
         assert len(results) == 1
         assert results[0].content_hash is not None
         assert len(results[0].content_hash) == 32  # MD5 hex length
@@ -78,10 +78,10 @@ class TestFileScanner:
         (tmp_path / "src" / "utils").mkdir()
         (tmp_path / "src" / "utils" / "helper.py").write_text("# helper")
         (tmp_path / "src" / "utils" / "types.ts").write_text("// types")
-        
+
         # 扫描
         results = scanner.scan(tmp_path)
-        
+
         # 验证 - 应该找到 3 个文件
         assert len(results) == 3
         file_names = {r.path.name for r in results}
@@ -97,14 +97,14 @@ class TestFileScanner:
         (tmp_path / "config.json").write_text("{}")  # 不在允许列表
         (tmp_path / "readme.md").write_text("# Readme")
         (tmp_path / "style.css").write_text("body {}")  # 不在允许列表
-        
+
         results = scanner.scan(tmp_path)
-        
+
         # 验证 - 只应该有 .py, .ts, .md
         assert len(results) == 3
         extensions = {r.path.suffix for r in results}
         assert extensions == {".py", ".ts", ".md"}
-        
+
         # 验证被跳过的文件
         skipped_names = {s[0].name for s in scanner.skipped_files}
         assert "config.json" in skipped_names
@@ -115,19 +115,19 @@ class TestFileScanner:
         # 创建目录结构
         (tmp_path / "src").mkdir()
         (tmp_path / "src" / "main.py").write_text("# main")
-        
+
         # 创建应该被排除的目录
         (tmp_path / "node_modules").mkdir()
         (tmp_path / "node_modules" / "package.py").write_text("# package")
-        
+
         (tmp_path / ".git").mkdir()
         (tmp_path / ".git" / "config.py").write_text("# git config")
-        
+
         (tmp_path / "__pycache__").mkdir()
         (tmp_path / "__pycache__" / "cache.py").write_text("# cache")
-        
+
         results = scanner.scan(tmp_path)
-        
+
         # 验证 - 只应该找到 src/main.py
         assert len(results) == 1
         assert results[0].path.name == "main.py"
@@ -137,17 +137,17 @@ class TestFileScanner:
         # 创建小文件
         small_file = tmp_path / "small.py"
         small_file.write_text("x" * 100)  # 100 bytes
-        
+
         # 创建大文件 (超过 10KB 限制)
         large_file = tmp_path / "large.py"
         large_file.write_text("x" * (1024 * 11))  # 11KB
-        
+
         results = scanner.scan(tmp_path)
-        
+
         # 验证 - 只应该有小文件
         assert len(results) == 1
         assert results[0].path.name == "small.py"
-        
+
         # 验证大文件被记录
         skipped = {s[0].name: s[1] for s in scanner.skipped_files}
         assert "large.py" in skipped
@@ -157,7 +157,7 @@ class TestFileScanner:
         """TC-1.8.6: 空目录处理"""
         # 空目录
         results = scanner.scan(tmp_path)
-        
+
         # 验证 - 应该返回空列表
         assert results == []
         assert len(scanner.skipped_files) == 0
@@ -171,9 +171,9 @@ class TestFileScanner:
         """扫描不允许扩展名的文件"""
         test_file = tmp_path / "test.txt"
         test_file.write_text("hello")
-        
+
         results = scanner.scan(test_file)
-        
+
         assert len(results) == 0
         assert len(scanner.skipped_files) == 1
 
@@ -183,9 +183,9 @@ class TestFileScanner:
         deep_path = tmp_path / "a" / "b" / "c" / "d" / "e"
         deep_path.mkdir(parents=True)
         (deep_path / "deep.py").write_text("# deep")
-        
+
         results = scanner.scan(tmp_path)
-        
+
         assert len(results) == 1
         assert results[0].path.name == "deep.py"
 
@@ -194,14 +194,14 @@ class TestFileScanner:
         # 创建真实文件
         real_file = tmp_path / "real.py"
         real_file.write_text("# real")
-        
+
         # 创建符号链接
         link_file = tmp_path / "link.py"
         try:
             link_file.symlink_to(real_file)
-            
+
             results = scanner.scan(tmp_path)
-            
+
             # 符号链接应该被处理
             # 注意：rglob 会跟随符号链接，所以可能会找到
             assert len(results) >= 1
@@ -216,13 +216,13 @@ class TestFileScanner:
         large_file.write_text("x" * (1024 * 11))
         scanner.scan(tmp_path)
         assert len(scanner.skipped_files) == 1
-        
+
         # 第二次扫描 - 创建小文件
         large_file.unlink()
         small_file = tmp_path / "small.py"
         small_file.write_text("x")
         scanner.scan(tmp_path)
-        
+
         # 跳过记录应该被清空
         assert len(scanner.skipped_files) == 0
 
@@ -235,14 +235,11 @@ class TestFileInfo:
         test_file = tmp_path / "test.py"
         test_file.write_text("hello")
         stat = test_file.stat()
-        
+
         info = FileInfo(
-            path=test_file,
-            size=stat.st_size,
-            modified_time=stat.st_mtime,
-            content_hash="abc123"
+            path=test_file, size=stat.st_size, modified_time=stat.st_mtime, content_hash="abc123"
         )
-        
+
         assert info.path == test_file
         assert info.size == 5
         assert info.modified_time == stat.st_mtime
@@ -253,11 +250,11 @@ class TestFileInfo:
         test_file = tmp_path / "test.py"
         test_file.write_text("hello")
         stat = test_file.stat()
-        
+
         info = FileInfo(
             path=test_file,
             size=stat.st_size,
             modified_time=stat.st_mtime,
         )
-        
+
         assert info.content_hash is None

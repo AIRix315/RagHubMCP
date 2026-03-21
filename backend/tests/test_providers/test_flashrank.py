@@ -26,8 +26,8 @@ class TestFlashRankProviderBasic:
 
     def test_provider_registration(self):
         """FlashRank 提供者已注册到 registry"""
-        from providers.registry import registry
         from providers.base import ProviderCategory
+        from providers.registry import registry
 
         assert registry.is_registered(ProviderCategory.RERANK, "flashrank")
 
@@ -36,8 +36,7 @@ class TestFlashRankProviderBasic:
         from providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
         assert provider.NAME == "flashrank"
@@ -51,7 +50,7 @@ class TestFlashRankProviderBasic:
             "name": "test-flashrank",
             "type": "flashrank",
             "model": "ms-marco-TinyBERT-L-2-v2",
-            "cache_dir": "./temp_test_cache"
+            "cache_dir": "./temp_test_cache",
         }
 
         provider = FlashRankRerankProvider.from_config(config)
@@ -62,8 +61,7 @@ class TestFlashRankProviderBasic:
         from providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
         results = provider.rerank("test query", [], top_k=5)
@@ -74,8 +72,7 @@ class TestFlashRankProviderBasic:
         from providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
         documents = ["Machine learning is a subset of AI."]
@@ -96,8 +93,7 @@ class TestFlashRankProviderRerank:
         from providers.rerank.flashrank import FlashRankRerankProvider
 
         return FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
     def test_rerank_returns_sorted_results(self, provider):
@@ -121,13 +117,11 @@ class TestFlashRankProviderRerank:
         # 验证最相关的文档应该排在前面
         # ML 相关文档应该排在 Python 文档之前
         ml_doc_indices = [
-            i for i, r in enumerate(results)
+            i
+            for i, r in enumerate(results)
             if "machine learning" in r.text.lower() or "neural" in r.text.lower()
         ]
-        python_doc_indices = [
-            i for i, r in enumerate(results)
-            if "python" in r.text.lower()
-        ]
+        python_doc_indices = [i for i, r in enumerate(results) if "python" in r.text.lower()]
 
         # ML 相关文档应该排在 Python 文档之前
         if ml_doc_indices and python_doc_indices:
@@ -175,8 +169,7 @@ class TestFlashRankProviderCaching:
         from providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
         documents = ["Machine learning is a subset of AI."]
@@ -202,14 +195,12 @@ class TestFlashRankProviderCaching:
 
         # TinyBERT 模型
         provider_tiny = FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
         # MiniLM 模型
         provider_mini = FlashRankRerankProvider(
-            model="ms-marco-MiniLM-L-12-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-MiniLM-L-12-v2", cache_dir="./temp_test_cache"
         )
 
         query = "What is machine learning?"
@@ -236,8 +227,7 @@ class TestFlashRankProviderAsync:
         from providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
         query = "What is AI?"
@@ -257,8 +247,7 @@ class TestFlashRankProviderRerankWithMetadata:
         from providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
-            model="ms-marco-TinyBERT-L-2-v2",
-            cache_dir="./temp_test_cache"
+            model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
         )
 
         query = "What is machine learning?"

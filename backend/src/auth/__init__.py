@@ -7,9 +7,9 @@ This module provides:
 - Tenant isolation for multi-user support
 """
 
-from src.auth.models import User, Role, Tenant
-from src.auth.security import hash_password, verify_password, create_access_token
-from src.auth.dependencies import get_current_user, get_current_active_user
+from src.auth.dependencies import get_current_active_user, get_current_user
+from src.auth.models import Role, Tenant, User
+from src.auth.security import create_access_token, hash_password, verify_password
 
 __all__ = [
     "User",

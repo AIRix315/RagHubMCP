@@ -13,22 +13,20 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from src.utils.config import get_config
 from src.pipeline import execute_search as pipeline_search
+from src.utils.config import get_config
 
+from .pipeline_adapter import documents_to_search_results
 from .schemas import (
     BenchmarkConfig,
     BenchmarkRequest,
     BenchmarkResponse,
     BenchmarkResult,
     ErrorResponse,
-    SearchResult,
 )
-from .pipeline_adapter import documents_to_search_results
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +39,7 @@ async def run_single_benchmark(
     config: BenchmarkConfig,
 ) -> BenchmarkResult:
     """Run a single benchmark configuration.
-    
+
     Uses the RAG Pipeline for consistent search behavior.
 
     Args:
@@ -53,17 +51,17 @@ async def run_single_benchmark(
         Benchmark result.
     """
     start_time = time.time()
-    
+
     # Build pipeline options
     options = {
         "collection": collection_name,
         "topK": config.top_k,
         "rerank": config.rerank_provider is not None,
     }
-    
+
     # Execute search through pipeline
     result = await pipeline_search(query, options)
-    
+
     # Get provider names
     config_obj = get_config()
     emb_name = config.embedding_provider or config_obj.providers.embedding.default

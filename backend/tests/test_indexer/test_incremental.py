@@ -11,7 +11,6 @@ Tests cover:
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -28,26 +27,22 @@ from src.utils.config import IndexerConfig
 
 class MockEmbeddingProvider(BaseEmbeddingProvider):
     """Mock embedding provider for testing."""
-    
+
     NAME = "mock"
-    
+
     @property
     def dimension(self) -> int:
         return 768
-    
+
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         return [[0.1] * 768 for _ in texts]
-    
+
     def embed_query(self, query: str) -> list[float]:
         return [0.1] * 768
-    
-    def embed_batch(
-        self,
-        texts: list[str],
-        batch_size: int = 32
-    ) -> list[list[float]]:
+
+    def embed_batch(self, texts: list[str], batch_size: int = 32) -> list[list[float]]:
         return [[0.1] * 768 for _ in texts]
-    
+
     @classmethod
     def from_config(cls, config: dict) -> "MockEmbeddingProvider":
         return cls()
@@ -75,13 +70,13 @@ def mock_embedding() -> MockEmbeddingProvider:
 def test_collection(tmp_path: Path):
     """Create a test Chroma collection."""
     import chromadb
-    
+
     persist_dir = tmp_path / "chroma"
     client = chromadb.PersistentClient(path=str(persist_dir))
     collection = client.get_or_create_collection("test_incremental")
-    
+
     yield collection
-    
+
     # Cleanup
     try:
         client.delete_collection("test_incremental")
@@ -90,10 +85,12 @@ def test_collection(tmp_path: Path):
 
 
 @pytest.fixture
-def test_vectorstore(tmp_path: Path, mock_embedding: MockEmbeddingProvider) -> BaseVectorStoreProvider:
+def test_vectorstore(
+    tmp_path: Path, mock_embedding: MockEmbeddingProvider
+) -> BaseVectorStoreProvider:
     """Create a test vectorstore provider."""
     from src.providers.vectorstore.chroma import ChromaProvider
-    
+
     persist_dir = tmp_path / "chroma_vs"
     return ChromaProvider(
         persist_dir=str(persist_dir),
@@ -102,10 +99,12 @@ def test_vectorstore(tmp_path: Path, mock_embedding: MockEmbeddingProvider) -> B
 
 
 @pytest.fixture
-def mock_indexer(mock_embedding: MockEmbeddingProvider, test_vectorstore: BaseVectorStoreProvider, indexer_config):
+def mock_indexer(
+    mock_embedding: MockEmbeddingProvider, test_vectorstore: BaseVectorStoreProvider, indexer_config
+):
     """Create a mock indexer for testing."""
     from src.indexer.indexer import Indexer
-    
+
     indexer = Indexer(
         config=indexer_config,
         embedding_provider=mock_embedding,
@@ -132,7 +131,7 @@ class TestIncrementalResult:
     def test_default_values(self):
         """测试默认值"""
         result = IncrementalResult()
-        
+
         assert result.files_added == 0
         assert result.files_updated == 0
         assert result.files_deleted == 0
@@ -150,7 +149,7 @@ class TestIncrementalResult:
             chunks_removed=20,
             errors=["error1"],
         )
-        
+
         assert result.files_added == 5
         assert result.files_updated == 3
         assert result.files_deleted == 2
@@ -175,20 +174,20 @@ def hello():
     '''Say hello.'''
     print("Hello, World!")
 """)
-        
+
         # Handle created event
         chunks = incremental_indexer.handle_created(test_file)
-        
+
         # Verify chunks were created
         assert chunks > 0
-        
+
         # Verify chunks in vectorstore
         results = incremental_indexer._vectorstore.get(
             collection=incremental_indexer._collection_name,
             where={"source": str(test_file)},
         )
         assert len(results) == chunks
-        
+
         # Verify content_hash in metadata
         if results and results[0].metadata:
             assert "content_hash" in results[0].metadata
@@ -202,10 +201,10 @@ def hello():
         # Create and index initial file
         test_file = tmp_path / "modified.py"
         test_file.write_text("def old(): pass")
-        
+
         initial_chunks = incremental_indexer.handle_created(test_file)
         assert initial_chunks > 0
-        
+
         # Modify the file
         test_file.write_text("""
 def new_function():
@@ -216,14 +215,14 @@ def another_function():
     '''Another function.'''
     return "another"
 """)
-        
+
         # Handle modified event
         removed, added = incremental_indexer.handle_modified(test_file)
-        
+
         # Verify old chunks removed, new chunks added
         assert removed == initial_chunks
         assert added > 0
-        
+
         # Verify only new content in vectorstore
         results = incremental_indexer._vectorstore.get(
             collection=incremental_indexer._collection_name,
@@ -240,17 +239,17 @@ def another_function():
         # Create and index a file
         test_file = tmp_path / "to_delete.py"
         test_file.write_text("def delete_me(): pass")
-        
+
         chunks = incremental_indexer.handle_created(test_file)
         assert chunks > 0
-        
+
         # Delete the file (don't actually delete from disk for test)
         # Handle deleted event
         removed = incremental_indexer.handle_deleted(test_file)
-        
+
         # Verify chunks removed
         assert removed == chunks
-        
+
         # Verify no chunks in vectorstore
         results = incremental_indexer._vectorstore.get(
             collection=incremental_indexer._collection_name,
@@ -267,14 +266,14 @@ def another_function():
         # Create and index file
         test_file = tmp_path / "hash_test.py"
         test_file.write_text("x = 1")
-        
+
         chunks1 = incremental_indexer.handle_created(test_file)
-        
+
         # Try to "modify" with same content
         test_file.write_text("x = 1")  # Same content
-        
+
         removed, added = incremental_indexer.handle_modified(test_file)
-        
+
         # Should detect no change
         assert removed == 0
         assert added == 0
@@ -288,22 +287,22 @@ def another_function():
         # Create files
         file1 = tmp_path / "file1.py"
         file1.write_text("def one(): pass")
-        
+
         file2 = tmp_path / "file2.py"
         file2.write_text("def two(): pass")
-        
+
         file3 = tmp_path / "file3.py"
         file3.write_text("def three(): pass")
-        
+
         # Create events
         events = [
             FileEvent(FileEventType.CREATED, file1, False),
             FileEvent(FileEventType.CREATED, file2, False),
             FileEvent(FileEventType.CREATED, file3, False),
         ]
-        
+
         result = incremental_indexer.process_events(events)
-        
+
         assert result.files_added == 3
         assert result.chunks_added > 0
         assert len(result.errors) == 0
@@ -317,26 +316,26 @@ def another_function():
         # Create files
         create_file = tmp_path / "create.py"
         create_file.write_text("def new(): pass")
-        
+
         modify_file = tmp_path / "modify.py"
         modify_file.write_text("def old(): pass")
         incremental_indexer.handle_created(modify_file)
-        
+
         modify_file.write_text("def new(): pass")  # Modify
-        
+
         delete_file = tmp_path / "delete.py"
         delete_file.write_text("def del(): pass")
         incremental_indexer.handle_created(delete_file)
-        
+
         # Process mixed events
         events = [
             FileEvent(FileEventType.CREATED, create_file, False),
             FileEvent(FileEventType.MODIFIED, modify_file, False),
             FileEvent(FileEventType.DELETED, delete_file, False),
         ]
-        
+
         result = incremental_indexer.process_events(events)
-        
+
         assert result.files_added == 1
         assert result.files_updated == 1
         assert result.files_deleted == 1
@@ -352,10 +351,10 @@ def another_function():
         (tmp_path / "src" / "main.py").write_text("def main(): pass")
         (tmp_path / "src" / "utils.py").write_text("def helper(): pass")
         (tmp_path / "README.md").write_text("# Test")
-        
+
         # Sync directory
         result = incremental_indexer.sync_directory(tmp_path)
-        
+
         assert result.files_added >= 2  # At least .py files
         assert result.chunks_added > 0
         assert len(result.errors) == 0
@@ -369,17 +368,17 @@ def another_function():
         # Create and index initial files
         (tmp_path / "file1.py").write_text("def one(): pass")
         (tmp_path / "file2.py").write_text("def two(): pass")
-        
+
         incremental_indexer.sync_directory(tmp_path)
-        
+
         # Modify one file, add one file, delete one file
         (tmp_path / "file1.py").write_text("def modified(): pass")
         (tmp_path / "file3.py").write_text("def three(): pass")
         (tmp_path / "file2.py").unlink()
-        
+
         # Sync again
         result = incremental_indexer.sync_directory(tmp_path)
-        
+
         assert result.files_added >= 1  # file3
         assert result.files_updated >= 1  # file1
         assert result.files_deleted >= 1  # file2
@@ -391,7 +390,7 @@ def another_function():
     ):
         """测试同步空目录"""
         result = incremental_indexer.sync_directory(tmp_path)
-        
+
         assert result.files_added == 0
         assert result.files_updated == 0
         assert result.files_deleted == 0
@@ -403,10 +402,10 @@ def another_function():
     ):
         """测试处理不存在的文件"""
         nonexistent = tmp_path / "nonexistent.py"
-        
+
         chunks = incremental_indexer.handle_created(nonexistent)
         assert chunks == 0
-        
+
         removed, added = incremental_indexer.handle_modified(nonexistent)
         assert removed == 0
         assert added == 0
@@ -419,7 +418,7 @@ def another_function():
         """测试处理空文件"""
         empty_file = tmp_path / "empty.py"
         empty_file.write_text("")
-        
+
         chunks = incremental_indexer.handle_created(empty_file)
         assert chunks == 0
 
@@ -435,15 +434,15 @@ class TestContentHashStorage:
         """测试hash存储在metadata中"""
         test_file = tmp_path / "hash_storage.py"
         test_file.write_text("def test(): pass")
-        
+
         incremental_indexer.handle_created(test_file)
-        
+
         # Get all chunks for this file
         results = incremental_indexer._vectorstore.get(
             collection=incremental_indexer._collection_name,
             where={"source": str(test_file)},
         )
-        
+
         assert len(results) > 0
         assert "content_hash" in results[0].metadata
         assert len(results[0].metadata["content_hash"]) == 32  # MD5 hex
@@ -456,13 +455,13 @@ class TestContentHashStorage:
         """测试不同内容产生不同hash"""
         file1 = tmp_path / "file1.py"
         file1.write_text("x = 1")
-        
+
         file2 = tmp_path / "file2.py"
         file2.write_text("y = 2")
-        
+
         incremental_indexer.handle_created(file1)
         incremental_indexer.handle_created(file2)
-        
+
         results1 = incremental_indexer._vectorstore.get(
             collection=incremental_indexer._collection_name,
             where={"source": str(file1)},
@@ -471,8 +470,8 @@ class TestContentHashStorage:
             collection=incremental_indexer._collection_name,
             where={"source": str(file2)},
         )
-        
+
         hash1 = results1[0].metadata["content_hash"]
         hash2 = results2[0].metadata["content_hash"]
-        
+
         assert hash1 != hash2

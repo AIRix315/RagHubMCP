@@ -12,7 +12,6 @@ Tests cover:
 import sys
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -49,8 +48,10 @@ def captured_events() -> list[list[FileEvent]]:
 @pytest.fixture
 def event_callback(captured_events: list[list[FileEvent]]):
     """Create a callback that captures events."""
+
     def callback(events: list[FileEvent]) -> None:
         captured_events.append(events)
+
     return callback
 
 
@@ -69,7 +70,7 @@ class TestWatcherConfig:
     def test_default_config(self):
         """测试默认配置"""
         config = WatcherConfig()
-        
+
         assert config.debounce_seconds == 1.0
         assert "node_modules" in config.exclude_dirs
         assert ".py" in config.file_types
@@ -81,7 +82,7 @@ class TestWatcherConfig:
             exclude_dirs=["custom"],
             file_types=[".custom"],
         )
-        
+
         assert config.debounce_seconds == 2.0
         assert config.exclude_dirs == ["custom"]
         assert config.file_types == [".custom"]
@@ -97,7 +98,7 @@ class TestFileEvent:
             path=tmp_path / "test.py",
             is_directory=False,
         )
-        
+
         assert event.event_type == FileEventType.CREATED
         assert event.path == tmp_path / "test.py"
         assert event.is_directory is False
@@ -119,7 +120,7 @@ class TestDebouncedEventHandler:
     ):
         """测试事件处理器创建"""
         handler = DebouncedEventHandler(event_callback, watcher_config)
-        
+
         assert handler._config == watcher_config
 
     def test_should_process_file(
@@ -130,13 +131,13 @@ class TestDebouncedEventHandler:
     ):
         """测试文件处理判断"""
         handler = DebouncedEventHandler(event_callback, watcher_config)
-        
+
         # Should process .py file
         assert handler._should_process(tmp_path / "test.py") is True
-        
+
         # Should not process .txt file (not in file_types)
         assert handler._should_process(tmp_path / "test.txt") is False
-        
+
         # Should not process file in excluded dir
         assert handler._should_process(tmp_path / "node_modules" / "test.py") is False
 
@@ -149,16 +150,12 @@ class TestDebouncedEventHandler:
     ):
         """测试添加事件"""
         handler = DebouncedEventHandler(event_callback, watcher_config)
-        
-        handler._add_event(
-            FileEventType.CREATED,
-            tmp_path / "test.py",
-            is_directory=False
-        )
-        
+
+        handler._add_event(FileEventType.CREATED, tmp_path / "test.py", is_directory=False)
+
         # Wait for debounce
         time.sleep(0.2)
-        
+
         assert len(captured_events) == 1
         assert len(captured_events[0]) == 1
         assert captured_events[0][0].event_type == FileEventType.CREATED
@@ -172,24 +169,16 @@ class TestDebouncedEventHandler:
     ):
         """测试事件合并（创建后删除）"""
         handler = DebouncedEventHandler(event_callback, watcher_config)
-        
+
         # Add created event
-        handler._add_event(
-            FileEventType.CREATED,
-            tmp_path / "test.py",
-            is_directory=False
-        )
-        
+        handler._add_event(FileEventType.CREATED, tmp_path / "test.py", is_directory=False)
+
         # Immediately add deleted event (should cancel out)
-        handler._add_event(
-            FileEventType.DELETED,
-            tmp_path / "test.py",
-            is_directory=False
-        )
-        
+        handler._add_event(FileEventType.DELETED, tmp_path / "test.py", is_directory=False)
+
         # Wait for debounce
         time.sleep(0.2)
-        
+
         # Should have no events (created + deleted = nothing)
         assert len(captured_events) == 0
 
@@ -216,9 +205,9 @@ class TestFileWatcher:
         # Create a directory to watch
         watch_dir = tmp_path / "watch_test"
         watch_dir.mkdir()
-        
+
         result = watcher.start(watch_dir)
-        
+
         assert result is True
         assert watcher.is_running is True
         assert watcher.watch_path == watch_dir.resolve()
@@ -231,12 +220,12 @@ class TestFileWatcher:
         """TC-2.5.3: 停止监听"""
         watch_dir = tmp_path / "watch_test"
         watch_dir.mkdir()
-        
+
         watcher.start(watch_dir)
         assert watcher.is_running is True
-        
+
         watcher.stop()
-        
+
         assert watcher.is_running is False
         assert watcher.watch_path is None
 
@@ -246,7 +235,7 @@ class TestFileWatcher:
     ):
         """测试监听不存在的路径"""
         result = watcher.start("/nonexistent/path/xyz")
-        
+
         assert result is False
         assert watcher.is_running is False
 
@@ -258,9 +247,9 @@ class TestFileWatcher:
         """测试监听文件（非目录）"""
         file_path = tmp_path / "test.py"
         file_path.write_text("test")
-        
+
         result = watcher.start(file_path)
-        
+
         assert result is False
         assert watcher.is_running is False
 
@@ -272,10 +261,10 @@ class TestFileWatcher:
         """测试重复启动"""
         watch_dir = tmp_path / "watch_test"
         watch_dir.mkdir()
-        
+
         watcher.start(watch_dir)
         result = watcher.start(tmp_path / "another")
-        
+
         assert result is False
         assert watcher.is_running is True
 
@@ -288,11 +277,11 @@ class TestFileWatcher:
         """测试上下文管理器"""
         watch_dir = tmp_path / "watch_test"
         watch_dir.mkdir()
-        
+
         with FileWatcher(watcher_config, event_callback) as w:
             w.start(watch_dir)
             assert w.is_running is True
-        
+
         # Should stop on exit
         assert w.is_running is False
 
@@ -307,16 +296,16 @@ class TestFileWatcher:
         watch_dir.mkdir()
         nested_dir = watch_dir / "nested"
         nested_dir.mkdir()
-        
+
         watcher.start(watch_dir, recursive=True)
-        
+
         # Create a file in nested directory
         test_file = nested_dir / "test.py"
         test_file.write_text("test")
-        
+
         # Wait for debounce
         time.sleep(0.3)
-        
+
         # Should have captured the event
         assert len(captured_events) >= 1
 
@@ -329,20 +318,20 @@ class TestFileWatcher:
         """TC-2.5.6: 排除目录"""
         watch_dir = tmp_path / "watch_test"
         watch_dir.mkdir()
-        
+
         # Create excluded directory
         excluded_dir = watch_dir / "node_modules"
         excluded_dir.mkdir()
-        
+
         watcher.start(watch_dir)
-        
+
         # Create file in excluded directory
         excluded_file = excluded_dir / "test.py"
         excluded_file.write_text("test")
-        
+
         # Wait for debounce
         time.sleep(0.3)
-        
+
         # Should not have captured the event
         all_events = [e for batch in captured_events for e in batch]
         excluded_events = [e for e in all_events if "node_modules" in str(e.path)]
@@ -359,19 +348,19 @@ class TestSingleton:
     def test_get_watcher_singleton(self):
         """测试单例获取"""
         from src.indexer.watcher import get_watcher
-        
+
         config = WatcherConfig(debounce_seconds=0.5)
         watcher1 = get_watcher(config, lambda events: None)
         watcher2 = get_watcher()
-        
+
         assert watcher1 is watcher2
 
     def test_reset_watcher(self):
         """测试重置单例"""
         from src.indexer.watcher import get_watcher
-        
+
         watcher1 = get_watcher(WatcherConfig(), lambda events: None)
         reset_watcher()
         watcher2 = get_watcher(WatcherConfig(), lambda events: None)
-        
+
         assert watcher1 is not watcher2

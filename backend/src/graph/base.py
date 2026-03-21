@@ -9,7 +9,7 @@ from typing import Any
 
 class NodeType(str, Enum):
     """Types of nodes in code graph."""
-    
+
     MODULE = "module"
     CLASS = "class"
     FUNCTION = "function"
@@ -20,7 +20,7 @@ class NodeType(str, Enum):
 
 class EdgeType(str, Enum):
     """Types of edges in code graph."""
-    
+
     IMPORTS = "imports"
     CALLS = "calls"
     DEFINES = "defines"
@@ -31,7 +31,7 @@ class EdgeType(str, Enum):
 @dataclass
 class GraphNode:
     """Represents a node in the code graph.
-    
+
     Attributes:
         id: Unique identifier (e.g., "module.function_name")
         name: Display name
@@ -40,13 +40,14 @@ class GraphNode:
         line_number: Line number in source file
         metadata: Additional metadata
     """
+
     id: str
     name: str
     node_type: NodeType
     file_path: str | None = None
     line_number: int | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
@@ -62,18 +63,19 @@ class GraphNode:
 @dataclass
 class GraphEdge:
     """Represents an edge in the code graph.
-    
+
     Attributes:
         source: Source node ID
         target: Target node ID
         edge_type: Type of the relationship
         metadata: Additional metadata
     """
+
     source: str
     target: str
     edge_type: EdgeType
     metadata: dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
@@ -87,7 +89,7 @@ class GraphEdge:
 @dataclass
 class DependencyInfo:
     """Information about a code dependency.
-    
+
     Attributes:
         module_name: The imported module name
         alias: Optional alias for the import
@@ -96,13 +98,14 @@ class DependencyInfo:
         imported_names: Specific names imported (for 'from X import Y')
         line_number: Line number of the import statement
     """
+
     module_name: str
     alias: str | None = None
     is_relative: bool = False
     level: int = 0
     imported_names: list[str] = field(default_factory=list)
     line_number: int | None = None
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {

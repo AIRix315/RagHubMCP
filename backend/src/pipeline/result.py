@@ -18,7 +18,7 @@ from typing import Any
 @dataclass
 class Document:
     """A single document from RAG pipeline.
-    
+
     Attributes:
         id: Unique document identifier.
         text: Document text content.
@@ -28,6 +28,7 @@ class Document:
         bm25_score: BM25 score (if available).
         rerank_score: Reranked score (if available).
     """
+
     id: str
     text: str
     score: float = 0.0
@@ -38,7 +39,7 @@ class Document:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert document to dictionary.
-        
+
         Returns:
             Dictionary representation of the document.
         """
@@ -55,10 +56,10 @@ class Document:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Document:
         """Create document from dictionary.
-        
+
         Args:
             data: Dictionary with document data.
-            
+
         Returns:
             Document instance.
         """
@@ -76,7 +77,7 @@ class Document:
 @dataclass
 class RAGResult:
     """Result from RAG pipeline execution.
-    
+
     Attributes:
         query: Original query string.
         documents: List of retrieved documents.
@@ -85,6 +86,7 @@ class RAGResult:
         profile: Profile used for execution (optional).
         metadata: Additional result metadata (optional).
     """
+
     query: str
     documents: list[Document] = field(default_factory=list)
     total_results: int = 0
@@ -94,7 +96,7 @@ class RAGResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert result to dictionary.
-        
+
         Returns:
             Dictionary representation of the result.
         """
@@ -110,10 +112,10 @@ class RAGResult:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> RAGResult:
         """Create result from dictionary.
-        
+
         Args:
             data: Dictionary with result data.
-            
+
         Returns:
             RAGResult instance.
         """

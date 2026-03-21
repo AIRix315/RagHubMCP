@@ -22,26 +22,26 @@ from fastapi.responses import JSONResponse
 
 class ErrorCode(str, Enum):
     """Standardized error codes for RAG operations."""
-    
+
     # Validation errors (400)
     INVALID_REQUEST = "invalid_request"
     INVALID_COLLECTION = "invalid_collection"
     INVALID_QUERY = "invalid_query"
     INVALID_CONFIG = "invalid_config"
-    
+
     # Not found errors (404)
     COLLECTION_NOT_FOUND = "collection_not_found"
     DOCUMENT_NOT_FOUND = "document_not_found"
     TASK_NOT_FOUND = "task_not_found"
     PROVIDER_NOT_FOUND = "provider_not_found"
-    
+
     # Operation errors (500)
     SEARCH_FAILED = "search_failed"
     INDEX_FAILED = "index_failed"
     EMBEDDING_FAILED = "embedding_failed"
     RERANK_FAILED = "rerank_failed"
     PIPELINE_ERROR = "pipeline_error"
-    
+
     # Service errors (503)
     SERVICE_UNAVAILABLE = "service_unavailable"
     PROVIDER_UNAVAILABLE = "provider_unavailable"
@@ -51,24 +51,25 @@ class ErrorCode(str, Enum):
 @dataclass
 class RAGError(Exception):
     """Base exception class for RAG-related errors.
-    
+
     Provides structured error information for consistent error handling
     across the application.
-    
+
     Attributes:
         message: Human-readable error description
         error_code: Machine-readable error code
         details: Additional context as a dictionary
         status_code: HTTP status code for API responses
     """
+
     message: str
     error_code: ErrorCode = ErrorCode.SEARCH_FAILED
     details: dict[str, Any] = field(default_factory=dict)
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
-    
+
     def __str__(self) -> str:
         return f"[{self.error_code.value}] {self.message}"
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert error to dictionary for API response."""
         return {
@@ -80,7 +81,7 @@ class RAGError(Exception):
 
 class ValidationError(RAGError):
     """Raised for request validation errors."""
-    
+
     def __init__(
         self,
         message: str,
@@ -96,7 +97,7 @@ class ValidationError(RAGError):
 
 class NotFoundError(RAGError):
     """Raised when a resource is not found."""
-    
+
     def __init__(
         self,
         message: str,
@@ -113,7 +114,7 @@ class NotFoundError(RAGError):
 
 class SearchError(RAGError):
     """Raised when search operation fails."""
-    
+
     def __init__(
         self,
         message: str,
@@ -129,7 +130,7 @@ class SearchError(RAGError):
 
 class PipelineError(RAGError):
     """Raised when pipeline execution fails."""
-    
+
     def __init__(
         self,
         message: str,
@@ -145,7 +146,7 @@ class PipelineError(RAGError):
 
 class ServiceUnavailableError(RAGError):
     """Raised when a service is unavailable."""
-    
+
     def __init__(
         self,
         message: str,
@@ -165,11 +166,11 @@ class ServiceUnavailableError(RAGError):
 
 def rag_error_handler(request: Request, exc: RAGError) -> JSONResponse:
     """Handle RAGError exceptions and return JSON response.
-    
+
     Args:
         request: The FastAPI request object.
         exc: The RAGError exception.
-        
+
     Returns:
         JSONResponse with error details.
     """
@@ -181,11 +182,11 @@ def rag_error_handler(request: Request, exc: RAGError) -> JSONResponse:
 
 def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     """Handle HTTPException and return unified JSON response.
-    
+
     Args:
         request: The FastAPI request object.
         exc: The HTTPException.
-        
+
     Returns:
         JSONResponse with error details.
     """
@@ -198,7 +199,7 @@ def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse
             "message": str(exc.detail),
             "detail": None,
         }
-    
+
     return JSONResponse(
         status_code=exc.status_code,
         content=content,
@@ -207,11 +208,11 @@ def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse
 
 def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle unexpected exceptions and return JSON response.
-    
+
     Args:
         request: The FastAPI request object.
         exc: The exception.
-        
+
     Returns:
         JSONResponse with error details.
     """
