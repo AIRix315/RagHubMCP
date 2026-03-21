@@ -84,19 +84,33 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         hashed_password: Stored password hash
 
     Returns:
-        True if password matches
+        True if password matches, False if verification fails or error occurs
     """
     if _BCRYPT_AVAILABLE:
         try:
             return _bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"bcrypt verification failed: {e}")
 
     if _PASSLIB_AVAILABLE:
-        return _pwd_context.verify(plain_password, hashed_password)
+        try:
+            return _pwd_context.verify(plain_password, hashed_password)
+        except Exception as e:
+            logger.warning(f"passlib verification failed: {e}")
+            return False
 
-    # Fallback to SHA256 for testing
-    return hmac.compare_digest(hashlib.sha256(plain_password.encode()).hexdigest(), hashed_password)
+    # Fallback to SHA256 for testing (NOT secure for production!)
+    logger.warning(
+        "bcrypt/passlib not available, using SHA256 fallback. "
+        "Install with: pip install passlib[bcrypt] bcrypt"
+    )
+    try:
+        return hmac.compare_digest(
+            hashlib.sha256(plain_password.encode()).hexdigest(), hashed_password
+        )
+    except Exception as e:
+        logger.error(f"SHA256 fallback verification failed: {e}")
+        return False
 
 
 def create_access_token(
