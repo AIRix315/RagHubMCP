@@ -13,10 +13,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
-from chromadb.api.models.Collection import Collection
-
 from src.indexer.scanner import FileScanner
 from src.indexer.watcher import FileEvent, FileEventType
+from src.providers.vectorstore.base import BaseVectorStoreProvider
 
 if TYPE_CHECKING:
     from src.indexer.indexer import Indexer
@@ -71,18 +70,21 @@ class IncrementalIndexer:
     def __init__(
         self,
         indexer: "Indexer",
-        collection: Collection,
+        vectorstore: BaseVectorStoreProvider,
+        collection_name: str = "default",
         config: "IndexerConfig | None" = None,
     ) -> None:
         """Initialize the incremental indexer.
         
         Args:
             indexer: Indexer instance for indexing files.
-            collection: ChromaDB collection for direct operations.
+            vectorstore: VectorStore provider for storing vectors (RULE-3 compliant).
+            collection_name: Collection name to use (default: "default").
             config: Optional indexer config (uses indexer's config if None).
         """
         self._indexer = indexer
-        self._collection = collection
+        self._vectorstore = vectorstore
+        self._collection_name = collection_name
         self._config = config
         self._scanner = FileScanner(config) if config else FileScanner()
         
@@ -147,16 +149,13 @@ class IncrementalIndexer:
             List of chunk dictionaries with ids, metadatas.
         """
         try:
-            results = self._collection.get(
+            results = self._vectorstore.get(
+                collection=self._collection_name,
                 where={"source": source},
-                include=["metadatas"]
             )
             return [
-                {"id": id, "metadata": meta}
-                for id, meta in zip(
-                    results.get("ids", []),
-                    results.get("metadatas", [])
-                )
+                {"id": result.id, "metadata": result.metadata}
+                for result in results
             ]
         except Exception as e:
             logger.error(f"Error getting chunks for {source}: {e}")
@@ -177,9 +176,9 @@ class IncrementalIndexer:
         
         ids = [c["id"] for c in chunks]
         try:
-            self._collection.delete(ids=ids)
-            logger.debug(f"Deleted {len(ids)} chunks for {source}")
-            return len(ids)
+            deleted_count = self._vectorstore.delete(collection=self._collection_name, ids=ids)
+            logger.debug(f"Deleted {deleted_count} chunks for {source}")
+            return deleted_count
         except Exception as e:
             logger.error(f"Error deleting chunks for {source}: {e}")
             return 0
@@ -245,8 +244,9 @@ class IncrementalIndexer:
             # Generate embeddings
             embeddings = self._indexer._embedding_provider.embed_batch(texts)
             
-            # Add to collection
-            self._collection.add(
+            # Add to vectorstore
+            self._vectorstore.add(
+                collection=self._collection_name,
                 ids=ids,
                 embeddings=embeddings,
                 documents=texts,
@@ -302,7 +302,8 @@ class IncrementalIndexer:
                 
                 embeddings = self._indexer._embedding_provider.embed_batch(texts)
                 
-                self._collection.add(
+                self._vectorstore.add(
+                    collection=self._collection_name,
                     ids=ids,
                     embeddings=embeddings,
                     documents=texts,
@@ -401,21 +402,18 @@ class IncrementalIndexer:
         result = IncrementalResult()
         root = Path(path).resolve()
         
-        # Get all indexed sources from collection
+        # Get all indexed sources from vectorstore
         try:
-            all_items = self._collection.get(include=["metadatas"])
+            all_items = self._vectorstore.get(collection=self._collection_name)
             indexed_sources: set[str] = set()
             source_to_hash: dict[str, str] = {}
             
-            for id, meta in zip(
-                all_items.get("ids", []),
-                all_items.get("metadatas", [])
-            ):
-                source = meta.get("source", "")
+            for item in all_items:
+                source = item.metadata.get("source", "")
                 if source:
                     indexed_sources.add(source)
-                    if "content_hash" in meta:
-                        source_to_hash[source] = meta["content_hash"]
+                    if "content_hash" in item.metadata:
+                        source_to_hash[source] = item.metadata["content_hash"]
         except Exception as e:
             logger.error(f"Error getting indexed sources: {e}")
             indexed_sources = set()

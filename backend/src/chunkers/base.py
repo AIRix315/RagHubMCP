@@ -121,3 +121,24 @@ class ChunkerPlugin(ABC):
         if not self.SUPPORTED_LANGUAGES:
             return True
         return language.lower() in [lang.lower() for lang in self.SUPPORTED_LANGUAGES]
+    
+    def _create_metadata(
+        self,
+        base_metadata: dict[str, Any] | None,
+        chunk_index: int,
+        **extra: Any
+    ) -> dict[str, Any]:
+        """Create metadata for a chunk by merging base metadata with extra fields.
+        
+        Args:
+            base_metadata: Optional base metadata to copy from
+            chunk_index: Index of the chunk (will be added to metadata)
+            **extra: Additional metadata fields to merge
+            
+        Returns:
+            New metadata dictionary with chunk_index and extra fields merged
+        """
+        result = base_metadata.copy() if base_metadata else {}
+        result["chunk_index"] = chunk_index
+        result.update(extra)
+        return result

@@ -16,6 +16,7 @@ import httpx
 from ..base import ProviderCategory
 from ..registry import registry
 from .base import BaseEmbeddingProvider
+from src.utils.config import ProviderDefaultsConfig
 
 
 # Default Ollama API endpoint
@@ -52,7 +53,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
         self,
         model: str = "nomic-embed-text",
         base_url: str = DEFAULT_BASE_URL,
-        dimension: int = 768,
+        dimension: int = ProviderDefaultsConfig().default_embedding_dimension,
     ) -> None:
         """Initialize Ollama embedding provider.
         
@@ -64,6 +65,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
             base_url: Ollama API endpoint URL.
                       Default: "http://localhost:11434"
             dimension: Embedding dimension. Should match model output.
+                       Default: 768 (from ProviderDefaultsConfig)
         """
         self._model = model
         self._base_url = base_url.rstrip("/")
@@ -100,7 +102,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
         response = httpx.post(
             self._get_embedding_url(),
             json={"model": self._model, "prompt": text},
-            timeout=60.0,
+            timeout=ProviderDefaultsConfig().embedding_timeout,
         )
         response.raise_for_status()
         data = response.json()
@@ -118,7 +120,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
         response = httpx.post(
             self._get_embedding_url(),
             json={"model": self._model, "prompt": texts},
-            timeout=60.0,
+            timeout=ProviderDefaultsConfig().embedding_timeout,
         )
         response.raise_for_status()
         data = response.json()
@@ -170,7 +172,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
             response = await client.post(
                 self._get_embedding_url(),
                 json={"model": self._model, "prompt": texts},
-                timeout=60.0,
+                timeout=ProviderDefaultsConfig().embedding_timeout,
             )
             response.raise_for_status()
             data = response.json()
@@ -189,7 +191,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
             response = await client.post(
                 self._get_embedding_url(),
                 json={"model": self._model, "prompt": query},
-                timeout=60.0,
+                timeout=ProviderDefaultsConfig().embedding_timeout,
             )
             response.raise_for_status()
             data = response.json()
@@ -238,5 +240,5 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
         return cls(
             model=config.get("model", "nomic-embed-text"),
             base_url=config.get("base_url", DEFAULT_BASE_URL),
-            dimension=config.get("dimension", 768),
+            dimension=config.get("dimension", ProviderDefaultsConfig().default_embedding_dimension),
         )

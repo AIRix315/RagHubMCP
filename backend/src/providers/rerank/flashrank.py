@@ -23,10 +23,11 @@ from flashrank import Ranker, RerankRequest
 from ..base import ProviderCategory
 from ..registry import registry
 from .base import BaseRerankProvider, RerankResult
+from src.utils.config import PathConfig, ProviderDefaultsConfig
 
 
 # Default cache directory for FlashRank models
-DEFAULT_CACHE_DIR = "./data/flashrank_cache"
+DEFAULT_CACHE_DIR = PathConfig().rerank_cache_dir
 
 
 @registry.register(ProviderCategory.RERANK, "flashrank")
@@ -63,7 +64,7 @@ class FlashRankRerankProvider(BaseRerankProvider):
         self,
         model: str = "ms-marco-TinyBERT-L-2-v2",
         cache_dir: str = DEFAULT_CACHE_DIR,
-        max_length: int = 512,
+        max_length: int = ProviderDefaultsConfig().rerank_max_length,
     ) -> None:
         """Initialize FlashRank reranking provider.
         
@@ -74,8 +75,8 @@ class FlashRankRerankProvider(BaseRerankProvider):
                 - "rank-T5-flan" (~110MB, best zero-shot)
                 - "ms-marco-MultiBERT-L-12" (~150MB, multilingual)
             cache_dir: Directory for caching downloaded models.
-                       Default: "./data/flashrank_cache"
-            max_length: Maximum token length. Default: 512
+                       Default: "./data/flashrank_cache" (from PathConfig)
+            max_length: Maximum token length. Default: 512 (from ProviderDefaultsConfig)
         """
         self._model = model
         self._cache_dir = cache_dir
@@ -194,8 +195,8 @@ class FlashRankRerankProvider(BaseRerankProvider):
         """
         return cls(
             model=config.get("model", "ms-marco-TinyBERT-L-2-v2"),
-            cache_dir=config.get("cache_dir", DEFAULT_CACHE_DIR),
-            max_length=config.get("max_length", 512),
+            cache_dir=config.get("cache_dir", PathConfig().rerank_cache_dir),
+            max_length=config.get("max_length", ProviderDefaultsConfig().rerank_max_length),
         )
     
     @classmethod

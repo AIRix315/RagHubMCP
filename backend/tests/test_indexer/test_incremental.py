@@ -21,15 +21,19 @@ sys.path.insert(0, str(src_path))
 
 from src.indexer.incremental import IncrementalIndexer, IncrementalResult
 from src.indexer.watcher import FileEvent, FileEventType
-from src.services.chroma_service import reset_chroma_service
+from src.providers.embedding.base import BaseEmbeddingProvider
+from src.providers.vectorstore.base import BaseVectorStoreProvider
 from src.utils.config import IndexerConfig
 
 
-class MockEmbeddingProvider:
+class MockEmbeddingProvider(BaseEmbeddingProvider):
     """Mock embedding provider for testing."""
     
     NAME = "mock"
-    dimension = 768
+    
+    @property
+    def dimension(self) -> int:
+        return 768
     
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         return [[0.1] * 768 for _ in texts]
@@ -43,6 +47,10 @@ class MockEmbeddingProvider:
         batch_size: int = 32
     ) -> list[list[float]]:
         return [[0.1] * 768 for _ in texts]
+    
+    @classmethod
+    def from_config(cls, config: dict) -> "MockEmbeddingProvider":
+        return cls()
 
 
 @pytest.fixture
@@ -68,7 +76,6 @@ def test_collection(tmp_path: Path):
     """Create a test Chroma collection."""
     import chromadb
     
-    reset_chroma_service()
     persist_dir = tmp_path / "chroma"
     client = chromadb.PersistentClient(path=str(persist_dir))
     collection = client.get_or_create_collection("test_incremental")
@@ -83,24 +90,38 @@ def test_collection(tmp_path: Path):
 
 
 @pytest.fixture
-def mock_indexer(mock_embedding: MockEmbeddingProvider, test_collection, indexer_config):
+def test_vectorstore(tmp_path: Path, mock_embedding: MockEmbeddingProvider) -> BaseVectorStoreProvider:
+    """Create a test vectorstore provider."""
+    from src.providers.vectorstore.chroma import ChromaProvider
+    
+    persist_dir = tmp_path / "chroma_vs"
+    return ChromaProvider(
+        persist_dir=str(persist_dir),
+        embedding_provider=mock_embedding,
+    )
+
+
+@pytest.fixture
+def mock_indexer(mock_embedding: MockEmbeddingProvider, test_vectorstore: BaseVectorStoreProvider, indexer_config):
     """Create a mock indexer for testing."""
     from src.indexer.indexer import Indexer
     
     indexer = Indexer(
         config=indexer_config,
         embedding_provider=mock_embedding,
-        collection=test_collection,
+        vectorstore=test_vectorstore,
+        collection_name="test_incremental",
     )
     return indexer
 
 
 @pytest.fixture
-def incremental_indexer(mock_indexer, test_collection, indexer_config):
+def incremental_indexer(mock_indexer, test_vectorstore: BaseVectorStoreProvider, indexer_config):
     """Create an IncrementalIndexer instance for testing."""
     return IncrementalIndexer(
         indexer=mock_indexer,
-        collection=test_collection,
+        vectorstore=test_vectorstore,
+        collection_name="test_incremental",
         config=indexer_config,
     )
 
@@ -161,15 +182,16 @@ def hello():
         # Verify chunks were created
         assert chunks > 0
         
-        # Verify chunks in collection
-        results = incremental_indexer._collection.get(
-            where={"source": str(test_file)}
+        # Verify chunks in vectorstore
+        results = incremental_indexer._vectorstore.get(
+            collection=incremental_indexer._collection_name,
+            where={"source": str(test_file)},
         )
-        assert len(results["ids"]) == chunks
+        assert len(results) == chunks
         
         # Verify content_hash in metadata
-        if results["metadatas"]:
-            assert "content_hash" in results["metadatas"][0]
+        if results and results[0].metadata:
+            assert "content_hash" in results[0].metadata
 
     def test_handle_modified_file(
         self,
@@ -202,11 +224,12 @@ def another_function():
         assert removed == initial_chunks
         assert added > 0
         
-        # Verify only new content in collection
-        results = incremental_indexer._collection.get(
-            where={"source": str(test_file)}
+        # Verify only new content in vectorstore
+        results = incremental_indexer._vectorstore.get(
+            collection=incremental_indexer._collection_name,
+            where={"source": str(test_file)},
         )
-        assert len(results["ids"]) == added
+        assert len(results) == added
 
     def test_handle_deleted_file(
         self,
@@ -228,11 +251,12 @@ def another_function():
         # Verify chunks removed
         assert removed == chunks
         
-        # Verify no chunks in collection
-        results = incremental_indexer._collection.get(
-            where={"source": str(test_file)}
+        # Verify no chunks in vectorstore
+        results = incremental_indexer._vectorstore.get(
+            collection=incremental_indexer._collection_name,
+            where={"source": str(test_file)},
         )
-        assert len(results["ids"]) == 0
+        assert len(results) == 0
 
     def test_content_hash_detection(
         self,
@@ -415,13 +439,14 @@ class TestContentHashStorage:
         incremental_indexer.handle_created(test_file)
         
         # Get all chunks for this file
-        results = incremental_indexer._collection.get(
-            where={"source": str(test_file)}
+        results = incremental_indexer._vectorstore.get(
+            collection=incremental_indexer._collection_name,
+            where={"source": str(test_file)},
         )
         
-        assert len(results["metadatas"]) > 0
-        assert "content_hash" in results["metadatas"][0]
-        assert len(results["metadatas"][0]["content_hash"]) == 32  # MD5 hex
+        assert len(results) > 0
+        assert "content_hash" in results[0].metadata
+        assert len(results[0].metadata["content_hash"]) == 32  # MD5 hex
 
     def test_different_content_different_hash(
         self,
@@ -438,14 +463,16 @@ class TestContentHashStorage:
         incremental_indexer.handle_created(file1)
         incremental_indexer.handle_created(file2)
         
-        results1 = incremental_indexer._collection.get(
-            where={"source": str(file1)}
+        results1 = incremental_indexer._vectorstore.get(
+            collection=incremental_indexer._collection_name,
+            where={"source": str(file1)},
         )
-        results2 = incremental_indexer._collection.get(
-            where={"source": str(file2)}
+        results2 = incremental_indexer._vectorstore.get(
+            collection=incremental_indexer._collection_name,
+            where={"source": str(file2)},
         )
         
-        hash1 = results1["metadatas"][0]["content_hash"]
-        hash2 = results2["metadatas"][0]["content_hash"]
+        hash1 = results1[0].metadata["content_hash"]
+        hash2 = results2[0].metadata["content_hash"]
         
         assert hash1 != hash2

@@ -10,10 +10,11 @@ from __future__ import annotations
 
 from typing import Callable
 
+from src.common.registry import Registry
 from .base import ChunkerPlugin
 
 
-class ChunkerRegistry:
+class ChunkerRegistry(Registry[ChunkerPlugin, str]):
     """Chunker registry with singleton pattern.
     
     Provides a central registration point for all chunker types.
@@ -38,17 +39,16 @@ class ChunkerRegistry:
         chunker_cls = registry.get_for_language("markdown")
     """
     
-    _instance: ChunkerRegistry | None = None
-    _chunkers: dict[str, type[ChunkerPlugin]] = {}
-    _language_map: dict[str, type[ChunkerPlugin]] = {}
+    _language_map: dict[str, type[ChunkerPlugin]]
     
-    def __new__(cls) -> ChunkerRegistry:
-        """Ensure singleton pattern."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._chunkers = {}
-            cls._instance._language_map = {}
-        return cls._instance
+    def __init__(self) -> None:
+        """Initialize chunker registry."""
+        super().__init__()
+        # Initialize language_map on first instantiation
+        if not hasattr(self, '_language_map'):
+            self._language_map = {}
+        if not hasattr(self, '_items'):
+            self._items = {}
     
     def register(self, name: str) -> Callable[[type], type]:
         """Decorator to register a chunker class.
@@ -69,12 +69,16 @@ class ChunkerRegistry:
                 ...
         """
         def decorator(cls: type) -> type:
-            if name in self._chunkers:
+            # Use "chunkers" as the fixed key for all chunker registrations
+            key = "chunkers"
+            if key not in self._items:
+                self._items[key] = {}
+            if name in self._items[key]:
                 raise ValueError(
                     f"Chunker '{name}' already registered. Existing: "
-                    f"{self._chunkers[name]}"
+                    f"{self._items[key][name]}"
                 )
-            self._chunkers[name] = cls
+            self._items[key][name] = cls
             
             # Build language mapping from SUPPORTED_LANGUAGES
             if hasattr(cls, "SUPPORTED_LANGUAGES"):
@@ -96,12 +100,13 @@ class ChunkerRegistry:
         Raises:
             KeyError: If chunker is not registered
         """
-        if name not in self._chunkers:
-            available = list(self._chunkers.keys())
+        key = "chunkers"
+        if key not in self._items or name not in self._items[key]:
+            available = list(self._items.get(key, {}).keys())
             raise KeyError(
                 f"Chunker '{name}' not registered. Available: {available}"
             )
-        return self._chunkers[name]
+        return self._items[key][name]
     
     def get_for_language(self, language: str) -> type[ChunkerPlugin]:
         """Get the appropriate chunker class for a language.
@@ -127,7 +132,7 @@ class ChunkerRegistry:
         Returns:
             List of registered chunker names
         """
-        return list(self._chunkers.keys())
+        return list(self._items.get("chunkers", {}).keys())
     
     def is_registered(self, name: str) -> bool:
         """Check if a chunker is registered.
@@ -138,12 +143,25 @@ class ChunkerRegistry:
         Returns:
             True if registered, False otherwise
         """
-        return name in self._chunkers
+        return name in self._items.get("chunkers", {})
     
     def clear(self) -> None:
         """Clear all registrations (for testing purposes)."""
-        self._chunkers.clear()
-        self._language_map.clear()
+        if hasattr(self, '_items'):
+            self._items.clear()
+        if hasattr(self, '_language_map'):
+            self._language_map.clear()
+    
+    # Backward compatibility: provide _chunkers as a property
+    @property
+    def _chunkers(self) -> dict[str, type[ChunkerPlugin]]:
+        """Backward compatibility property for _chunkers."""
+        return self._items.get("chunkers", {})
+    
+    @_chunkers.setter
+    def _chunkers(self, value: dict[str, type[ChunkerPlugin]]) -> None:
+        """Backward compatibility setter for _chunkers."""
+        self._items["chunkers"] = value
 
 
 # Global registry instance
@@ -157,10 +175,10 @@ def _register_builtin_chunkers() -> None:
     from .line import LineChunker
     from .markdown import MarkdownChunker
     
-    # Register each built-in chunker
+    # Register each built-in chunker directly
     for chunker_cls in [SimpleChunker, LineChunker, MarkdownChunker]:
-        if chunker_cls.NAME not in registry._chunkers:
-            registry._chunkers[chunker_cls.NAME] = chunker_cls
+        if chunker_cls.NAME not in registry._items.get("chunkers", {}):
+            registry._items.setdefault("chunkers", {})[chunker_cls.NAME] = chunker_cls
             
             # Build language mapping
             for lang in chunker_cls.SUPPORTED_LANGUAGES:
@@ -171,8 +189,8 @@ def _register_ast_chunkers() -> None:
     """Register AST chunker implementations (if tree-sitter is available)."""
     try:
         from .python_ast import PythonASTChunker
-        if PythonASTChunker.NAME not in registry._chunkers:
-            registry._chunkers[PythonASTChunker.NAME] = PythonASTChunker
+        if PythonASTChunker.NAME not in registry._items.get("chunkers", {}):
+            registry._items.setdefault("chunkers", {})[PythonASTChunker.NAME] = PythonASTChunker
             for lang in PythonASTChunker.SUPPORTED_LANGUAGES:
                 registry._language_map[lang.lower()] = PythonASTChunker
     except ImportError:
@@ -180,8 +198,8 @@ def _register_ast_chunkers() -> None:
     
     try:
         from .typescript_ast import TypeScriptASTChunker
-        if TypeScriptASTChunker.NAME not in registry._chunkers:
-            registry._chunkers[TypeScriptASTChunker.NAME] = TypeScriptASTChunker
+        if TypeScriptASTChunker.NAME not in registry._items.get("chunkers", {}):
+            registry._items.setdefault("chunkers", {})[TypeScriptASTChunker.NAME] = TypeScriptASTChunker
             for lang in TypeScriptASTChunker.SUPPORTED_LANGUAGES:
                 registry._language_map[lang.lower()] = TypeScriptASTChunker
     except ImportError:
@@ -189,8 +207,8 @@ def _register_ast_chunkers() -> None:
     
     try:
         from .go_ast import GoASTChunker
-        if GoASTChunker.NAME not in registry._chunkers:
-            registry._chunkers[GoASTChunker.NAME] = GoASTChunker
+        if GoASTChunker.NAME not in registry._items.get("chunkers", {}):
+            registry._items.setdefault("chunkers", {})[GoASTChunker.NAME] = GoASTChunker
             for lang in GoASTChunker.SUPPORTED_LANGUAGES:
                 registry._language_map[lang.lower()] = GoASTChunker
     except ImportError:

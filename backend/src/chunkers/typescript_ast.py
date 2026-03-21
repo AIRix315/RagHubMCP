@@ -6,31 +6,9 @@ and extract semantic units (functions, classes, methods) as chunks.
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from .ast_base import ASTChunkerBase
-
-logger = logging.getLogger(__name__)
-
-# Lazy import for tree-sitter TypeScript grammar
-_ts_typescript: Any = None
-
-
-def _get_tree_sitter_typescript() -> Any:
-    """Lazily import tree-sitter-typescript.
-    
-    Returns:
-        The tree_sitter_typescript module
-        
-    Raises:
-        ImportError: If tree-sitter-typescript is not installed
-    """
-    global _ts_typescript
-    if _ts_typescript is None:
-        import tree_sitter_typescript
-        _ts_typescript = tree_sitter_typescript
-    return _ts_typescript
 
 
 class TypeScriptASTChunker(ASTChunkerBase):
@@ -62,9 +40,10 @@ class TypeScriptASTChunker(ASTChunkerBase):
     
     NAME = "typescript-ast"
     SUPPORTED_LANGUAGES = ["typescript", "ts", "tsx"]
+    LANGUAGE_MODULE = "tree_sitter_typescript"
+    LANGUAGE_NAME = "typescript"
     
     # Tree-sitter query for TypeScript semantic units
-    # Matches functions, classes, methods, and arrow functions in variable declarations
     QUERY_STRING = """
     (function_declaration
         name: (identifier) @name) @chunk
@@ -85,6 +64,11 @@ class TypeScriptASTChunker(ASTChunkerBase):
             name: (identifier) @name
             value: (function_expression))) @chunk
     """
+    
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Auto-register language module when subclass is defined."""
+        super().__init_subclass__(**kwargs)
+        cls.auto_register()
     
     def __init__(
         self, 
@@ -109,20 +93,12 @@ class TypeScriptASTChunker(ASTChunkerBase):
         Returns:
             The tree-sitter Language object for TypeScript or TSX
         """
-        ts_typescript = _get_tree_sitter_typescript()
+        language_module = self._load_language_module()
         from tree_sitter import Language
         
         if self.tsx_mode:
-            return Language(ts_typescript.language_tsx())
-        return Language(ts_typescript.language_typescript())
-    
-    def get_query_string(self) -> str:
-        """Get the tree-sitter query string for TypeScript.
-        
-        Returns:
-            Query string matching functions, classes, and methods
-        """
-        return self.QUERY_STRING
+            return Language(language_module.language_tsx())
+        return Language(language_module.language_typescript())
     
     def chunk(self, text: str, metadata: dict[str, Any] | None = None) -> list[Any]:
         """Split TypeScript code into AST-based chunks.
@@ -144,11 +120,7 @@ class TypeScriptASTChunker(ASTChunkerBase):
         
         return super().chunk(text, metadata)
     
-    def _extract_name(
-        self, 
-        captures: dict[str, list[Any]], 
-        chunk_node: Any
-    ) -> str | None:
+    def _extract_name(self, captures: dict[str, list[Any]], chunk_node: Any) -> str | None:
         """Extract the name for a TypeScript chunk node.
         
         Handles various TypeScript node types including arrow functions
@@ -167,11 +139,4 @@ class TypeScriptASTChunker(ASTChunkerBase):
             return name
         
         # For lexical_declaration with arrow function, get the variable name
-        if chunk_node.type == "lexical_declaration":
-            for child in chunk_node.children:
-                if child.type == "variable_declarator":
-                    for subchild in child.children:
-                        if subchild.type == "identifier":
-                            return subchild.text.decode("utf-8")
-        
-        return None
+        return self._find_name_in_children(chunk_node, "identifier")

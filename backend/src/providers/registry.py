@@ -10,10 +10,11 @@ from __future__ import annotations
 
 from typing import Callable
 
+from src.common.registry import Registry
 from .base import ProviderCategory, BaseProvider, UnsupportedProviderError
 
 
-class ProviderRegistry:
+class ProviderRegistry(Registry[BaseProvider, ProviderCategory]):
     """Provider registry with singleton pattern.
     
     Provides a central registration point for all provider types.
@@ -31,20 +32,17 @@ class ProviderRegistry:
         provider_cls = registry.get(ProviderCategory.EMBEDDING, "ollama")
     """
     
-    _instance: ProviderRegistry | None = None
-    _providers: dict[ProviderCategory, dict[str, type[BaseProvider]]]
-    
-    def __new__(cls) -> ProviderRegistry:
-        """Ensure singleton pattern."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._providers = {
+    def __init__(self) -> None:
+        """Initialize provider registry with default categories."""
+        # Only initialize if not already done
+        if not hasattr(self, '_initialized') or not self._initialized:
+            self._items = {
                 ProviderCategory.EMBEDDING: {},
                 ProviderCategory.RERANK: {},
                 ProviderCategory.LLM: {},
                 ProviderCategory.VECTORSTORE: {},
             }
-        return cls._instance
+            self._initialized = True
     
     def register(
         self,
@@ -69,12 +67,14 @@ class ProviderRegistry:
                 ...
         """
         def decorator(cls: type) -> type:
-            if name in self._providers[category]:
+            if category not in self._items:
+                self._items[category] = {}
+            if name in self._items[category]:
                 raise ValueError(
                     f"Provider '{name}' already registered in category '{category.value}'. "
-                    f"Existing: {self._providers[category][name]}"
+                    f"Existing: {self._items[category][name]}"
                 )
-            self._providers[category][name] = cls
+            self._items[category][name] = cls
             return cls
         return decorator
     
@@ -91,10 +91,10 @@ class ProviderRegistry:
         Raises:
             UnsupportedProviderError: If provider is not registered
         """
-        if name not in self._providers[category]:
-            available = list(self._providers[category].keys())
+        if category not in self._items or name not in self._items[category]:
+            available = list(self._items.get(category, {}).keys())
             raise UnsupportedProviderError(name, category.value, available)
-        return self._providers[category][name]
+        return self._items[category][name]
     
     def list_providers(self, category: ProviderCategory) -> list[str]:
         """List all registered provider names in a category.
@@ -105,7 +105,7 @@ class ProviderRegistry:
         Returns:
             List of registered provider names
         """
-        return list(self._providers[category].keys())
+        return list(self._items.get(category, {}).keys())
     
     def is_registered(self, category: ProviderCategory, name: str) -> bool:
         """Check if a provider is registered.
@@ -117,12 +117,16 @@ class ProviderRegistry:
         Returns:
             True if registered, False otherwise
         """
-        return name in self._providers[category]
+        return name in self._items.get(category, {})
     
     def clear(self) -> None:
         """Clear all registrations (for testing purposes)."""
-        for category in self._providers:
-            self._providers[category] = {}
+        self._items = {
+            ProviderCategory.EMBEDDING: {},
+            ProviderCategory.RERANK: {},
+            ProviderCategory.LLM: {},
+            ProviderCategory.VECTORSTORE: {},
+        }
 
 
 # Global registry instance

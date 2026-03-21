@@ -4,7 +4,11 @@ This module provides the Indexer class that coordinates:
 1. File scanning (FileScanner)
 2. Text chunking (ChunkerRegistry)
 3. Embedding generation (EmbeddingProvider)
-4. Vector storage (ChromaService)
+4. Vector storage (BaseVectorStoreProvider)
+
+Reference:
+- RULE-3: Use interfaces, not concrete implementations
+- Use BaseVectorStoreProvider instead of ChromaDB Collection directly
 """
 
 from __future__ import annotations
@@ -14,10 +18,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
-from chromadb.api.models.Collection import Collection
-
 from src.chunkers import Chunk, ChunkerRegistry
 from src.indexer.scanner import FileScanner
+from src.providers.vectorstore.base import BaseVectorStoreProvider
 
 if TYPE_CHECKING:
     from src.providers.embedding.base import BaseEmbeddingProvider
@@ -88,16 +91,18 @@ class Indexer:
         1. FileScanner scans files from disk
         2. ChunkerRegistry selects appropriate chunker per file
         3. EmbeddingProvider generates vectors
-        4. ChromaService stores vectors
+        4. VectorStoreProvider stores vectors (via ChromaDB collection)
     
     Example:
-        >>> from src.providers.embedding.ollama import OllamaEmbeddingProvider
-        >>> from src.services import get_chroma_service
+        >>> from src.providers.factory import factory
+        >>> from src.utils.config import IndexerConfig
+        >>> 
+        >>> # Get vectorstore provider (RULE-3 compliant)
+        >>> vectorstore = factory.get_vectorstore_provider()
+        >>> collection = vectorstore.create_collection("code_index")
         >>> 
         >>> config = IndexerConfig(chunk_size=500, chunk_overlap=50)
-        >>> embedding = OllamaEmbeddingProvider(model="nomic-embed-text")
-        >>> service = get_chroma_service("./data/chroma")
-        >>> collection = service.get_or_create_collection("code_index")
+        >>> embedding = factory.get_embedding_provider()
         >>> 
         >>> indexer = Indexer(config, embedding, collection)
         >>> result = indexer.index_directory("./src")
@@ -107,18 +112,21 @@ class Indexer:
         self,
         config: IndexerConfig,
         embedding_provider: BaseEmbeddingProvider,
-        collection: Collection,
+        vectorstore: BaseVectorStoreProvider,
+        collection_name: str = "default",
     ) -> None:
         """Initialize the Indexer.
         
         Args:
             config: Indexer configuration (chunk_size, overlap, etc.)
             embedding_provider: Provider for generating embeddings
-            collection: ChromaDB collection to store vectors
+            vectorstore: VectorStore provider for storing vectors (RULE-3 compliant)
+            collection_name: Collection name to use (default: "default")
         """
         self._config = config
         self._embedding_provider = embedding_provider
-        self._collection = collection
+        self._vectorstore = vectorstore
+        self._collection_name = collection_name
         self._scanner = FileScanner(config)
         self._chunker_registry = ChunkerRegistry()
     
@@ -239,7 +247,8 @@ class Indexer:
         embeddings = self._embedding_provider.embed_batch(texts)
         
         # Add to collection
-        self._collection.add(
+        self._vectorstore.add(
+            collection=self._collection_name,
             ids=ids,
             embeddings=embeddings,
             documents=texts,
@@ -288,7 +297,8 @@ class Indexer:
             embeddings = self._embedding_provider.embed_batch(texts, batch_size=batch_size)
             
             # Add to collection
-            self._collection.add(
+            self._vectorstore.add(
+                collection=self._collection_name,
                 ids=ids,
                 embeddings=embeddings,
                 documents=texts,
@@ -377,30 +387,30 @@ class Indexer:
         # Generate query embedding
         query_embedding = self._embedding_provider.embed_query(query)
         
-        # Query the collection
-        results = self._collection.query(
-            query_embeddings=[query_embedding],
+        # Query the vectorstore
+        query_result = self._vectorstore.query(
+            collection=self._collection_name,
+            query_embedding=query_embedding,
             n_results=n_results,
-            include=["documents", "metadatas", "distances"],
         )
         
         # Format results
         formatted = []
-        if results["documents"] and results["documents"][0]:
-            for i, doc in enumerate(results["documents"][0]):
-                formatted.append({
-                    "document": doc,
-                    "metadata": results["metadatas"][0][i] if results["metadatas"] else {},
-                    "distance": results["distances"][0][i] if results["distances"] else 0.0,
-                })
+        for result in query_result.results:
+            formatted.append({
+                "document": result.document,
+                "metadata": result.metadata,
+                "distance": result.score,
+            })
         
         return formatted
     
     def clear(self) -> None:
         """Clear all indexed content from the collection."""
-        # Get all IDs
-        all_items = self._collection.get()
+        # Get all items from vectorstore
+        all_items = self._vectorstore.get(collection=self._collection_name)
         
-        if all_items["ids"]:
-            self._collection.delete(ids=all_items["ids"])
-            logger.info(f"Cleared {len(all_items['ids'])} items from collection")
+        if all_items:
+            ids = [item.id for item in all_items]
+            deleted_count = self._vectorstore.delete(collection=self._collection_name, ids=ids)
+            logger.info(f"Cleared {deleted_count} items from collection")

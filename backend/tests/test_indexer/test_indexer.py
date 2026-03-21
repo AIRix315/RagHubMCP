@@ -22,15 +22,19 @@ sys.path.insert(0, str(src_path))
 
 from src.chunkers import Chunk
 from src.indexer.indexer import Indexer, IndexResult
-from src.services.chroma_service import reset_chroma_service
+from src.providers.embedding.base import BaseEmbeddingProvider
+from src.providers.vectorstore.base import BaseVectorStoreProvider
 from src.utils.config import IndexerConfig
 
 
-class MockEmbeddingProvider:
+class MockEmbeddingProvider(BaseEmbeddingProvider):
     """Mock embedding provider for testing."""
     
     NAME = "mock"
-    dimension = 768
+    
+    @property
+    def dimension(self) -> int:
+        return 768
     
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         return [[0.1] * 768 for _ in texts]
@@ -44,6 +48,10 @@ class MockEmbeddingProvider:
         batch_size: int = 32
     ) -> list[list[float]]:
         return [[0.1] * 768 for _ in texts]
+    
+    @classmethod
+    def from_config(cls, config: dict) -> "MockEmbeddingProvider":
+        return cls()
 
 
 @pytest.fixture
@@ -69,7 +77,6 @@ def test_collection(tmp_path: Path):
     """Create a test Chroma collection."""
     import chromadb
     
-    reset_chroma_service()
     persist_dir = tmp_path / "chroma"
     client = chromadb.PersistentClient(path=str(persist_dir))
     collection = client.get_or_create_collection("test_index")
@@ -84,16 +91,29 @@ def test_collection(tmp_path: Path):
 
 
 @pytest.fixture
+def test_vectorstore(tmp_path: Path, mock_embedding: MockEmbeddingProvider) -> BaseVectorStoreProvider:
+    """Create a test vectorstore provider."""
+    from src.providers.vectorstore.chroma import ChromaProvider
+    
+    persist_dir = tmp_path / "chroma_vs"
+    return ChromaProvider(
+        persist_dir=str(persist_dir),
+        embedding_provider=mock_embedding,
+    )
+
+
+@pytest.fixture
 def indexer(
     indexer_config: IndexerConfig,
     mock_embedding: MockEmbeddingProvider,
-    test_collection,
+    test_vectorstore: BaseVectorStoreProvider,
 ) -> Indexer:
     """Create an Indexer instance for testing."""
     return Indexer(
         config=indexer_config,
         embedding_provider=mock_embedding,
-        collection=test_collection,
+        vectorstore=test_vectorstore,
+        collection_name="test_index",
     )
 
 

@@ -94,7 +94,6 @@ class MarkdownChunker(ChunkerPlugin):
         if not text:
             return []
         
-        base_metadata = metadata.copy() if metadata else {}
         chunks: list[Chunk] = []
         
         headings = self._find_headings(text)
@@ -106,10 +105,10 @@ class MarkdownChunker(ChunkerPlugin):
                     text=text,
                     start=0,
                     end=len(text),
-                    metadata={**base_metadata, "chunk_index": 0}
+                    metadata=self._create_metadata(metadata, 0)
                 )]
             # Fall back to character-based splitting
-            return self._split_large_section(text, 0, base_metadata)
+            return self._split_large_section(text, 0, metadata)
         
         # Process each section (from heading to next heading or end)
         for i, (start, end, heading_text, level) in enumerate(headings):
@@ -125,7 +124,7 @@ class MarkdownChunker(ChunkerPlugin):
             if len(section_text) > self.chunk_size:
                 # Split large section, preserving heading
                 section_chunks = self._split_large_section(
-                    section_text, start, base_metadata, heading_text
+                    section_text, start, metadata, heading_text
                 )
                 chunks.extend(section_chunks)
             else:
@@ -133,12 +132,12 @@ class MarkdownChunker(ChunkerPlugin):
                     text=section_text,
                     start=start,
                     end=section_end,
-                    metadata={
-                        **base_metadata,
-                        "heading": heading_text,
-                        "heading_level": level,
-                        "chunk_index": len(chunks)
-                    }
+                    metadata=self._create_metadata(
+                        metadata,
+                        len(chunks),
+                        heading=heading_text,
+                        heading_level=level
+                    )
                 ))
         
         return chunks
@@ -147,7 +146,7 @@ class MarkdownChunker(ChunkerPlugin):
         self,
         text: str,
         offset: int,
-        base_metadata: dict[str, Any],
+        base_metadata: dict[str, Any] | None,
         heading: str | None = None
     ) -> list[Chunk]:
         """Split a large section using character-based fallback.
@@ -155,7 +154,7 @@ class MarkdownChunker(ChunkerPlugin):
         Args:
             text: The section text to split
             offset: Character offset in original document
-            base_metadata: Base metadata for chunks
+            base_metadata: Base metadata for chunks (can be None)
             heading: Optional heading text for metadata
             
         Returns:
@@ -171,11 +170,11 @@ class MarkdownChunker(ChunkerPlugin):
             end = min(start + self.chunk_size, text_len)
             chunk_text = text[start:end]
             
-            chunk_metadata = {
-                **base_metadata,
-                "chunk_index": chunk_idx,
-                "large_section": True
-            }
+            chunk_metadata = self._create_metadata(
+                base_metadata,
+                chunk_idx,
+                large_section=True
+            )
             if heading:
                 chunk_metadata["heading"] = heading
             

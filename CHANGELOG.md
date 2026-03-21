@@ -7,6 +7,37 @@
 
 ---
 
+## [V2.0.3] - 2026-03-21
+
+### 任务编号: V2架构合规修复（三）
+
+- **时间**: 2026-03-21 08:09
+- **内容**: 第四次代码审查，解决RULE-3违规、代码重复、硬编码等问题
+
+### Changed
+
+- **RULE-3**: Indexer/IncrementalIndexer 改用 `BaseVectorStoreProvider` 接口
+- **RULE-3**: Provider `__init__.py` 仅导出基类，移除具体类导出
+- **RULE-2**: 新增 `Registry[T, K]` 泛型基类，消除 ~90% 重复代码
+- **RULE-4**: 提取 37 处硬编码值到配置类
+
+### Added
+
+- `OllamaLLMProvider` 实现 `BaseLLMProvider` 接口
+- `PipelineProfileConfig`, `ProviderDefaultsConfig`, `PathConfig` 配置类
+- `MCPValidationConfig` 新增 7 个验证方法
+- `ChunkerPlugin._create_metadata()` 消除重复代码
+- `ASTChunkerBase.auto_register()` 自动注册语言模块
+
+### Fixed
+
+- P0-1: Indexer 直接依赖 ChromaDB → 使用 BaseVectorStoreProvider
+- P0-2: LLM Provider 缺失 → 创建 OllamaLLMProvider
+- P0-3: Registry 重复 → 泛型基类
+- P1-1~P2-3: 硬编码、验证、导出、懒导入等问题
+
+---
+
 ## [V2.0.2] - 2026-03-21
 
 ### 任务编号: V2架构合规修复（二）

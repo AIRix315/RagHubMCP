@@ -140,8 +140,8 @@ class ChromaEmbeddingFunction:
     def __call__(self, input: list[str]) -> list[list[float]]:
         return self._provider.embed_documents(input)
 
-    @property
     def name(self) -> str:
+        """Return the name of the embedding function (ChromaDB requires callable)."""
         return f"raghub_{self._provider.NAME}"
 
 
@@ -158,7 +158,7 @@ class ChromaProvider(BaseVectorStoreProvider):
 
     Example:
         >>> from providers.factory import factory
-        >>> provider = factory.get_vectorstore_provider("chroma", persist_dir="./data/chroma")
+        >>> provider = factory.get_vectorstore_provider("chroma")
         >>> provider.add("my_collection", ["doc1"], ["id1"])
         >>> results = provider.query("my_collection", query_text="search", n_results=5)
     """
@@ -169,38 +169,17 @@ class ChromaProvider(BaseVectorStoreProvider):
         self,
         persist_dir: str = "./data/chroma",
         embedding_provider: BaseEmbeddingProvider | None = None,
-        # Backward compatibility with old API
-        host: str | None = None,
-        port: int | None = None,
     ) -> None:
         """Initialize ChromaProvider.
 
         Args:
             persist_dir: Directory for persistent storage.
             embedding_provider: Optional embedding provider for auto-embedding.
-            host: Deprecated, kept for backward compatibility.
-            port: Deprecated, kept for backward compatibility.
         """
         self._persist_dir = persist_dir
         self._embedding_provider = embedding_provider
-        self._host = host  # Deprecated, kept for backward compatibility
-        self._port = port  # Deprecated, kept for backward compatibility
         self._client: chromadb.PersistentClient | None = None
         self._embedding_function: ChromaEmbeddingFunction | None = None
-
-    def _get_service(self) -> Any:
-        """Backward compatibility: return a ChromaService-like wrapper.
-
-        Deprecated: This method exists only for backward compatibility with
-        code that mocks _get_service. New code should not use this.
-        """
-        # Return self as a pseudo-service for backward compatibility
-        # Tests may patch this to return a mock
-        return self
-
-    def get_collection(self, name: str) -> Any:
-        """Backward compatibility method for code expecting ChromaService interface."""
-        return self._get_client().get_collection(name)
 
     def _get_client(self) -> chromadb.PersistentClient:
         """Get or create ChromaDB client (lazy initialization)."""

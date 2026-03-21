@@ -5,18 +5,22 @@ These tests verify:
 - reset_pipeline() reset functionality
 - execute_search() parameter validation and error handling
 - create_pipeline() factory method
+- Thread safety of singleton access
 
 Reference: Docs/11-V2-Desing.md, Docs/12-V2-Blueprint.md
 """
 
+import threading
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from pipeline.manager import (
     get_pipeline,
     reset_pipeline,
     execute_search,
     create_pipeline,
+    _lock,
 )
 from pipeline.result import RAGResult, Document
 from pipeline.base import RAGPipeline
@@ -212,3 +216,168 @@ class TestCreatePipeline:
         
         assert pipeline is not None
         assert isinstance(pipeline, RAGPipeline)
+
+
+class TestThreadSafety:
+    """Tests for thread safety of pipeline manager."""
+
+    def setup_method(self):
+        """Reset singleton before each test."""
+        reset_pipeline()
+
+    def test_concurrent_get_pipeline_returns_same_instance(self):
+        """TC-THREAD-001: Concurrent calls to get_pipeline return same instance."""
+        reset_pipeline()
+        results = []
+        errors = []
+
+        def get_pipeline_thread():
+            try:
+                pipeline = get_pipeline("balanced")
+                results.append(id(pipeline))
+            except Exception as e:
+                errors.append(str(e))
+
+        # Create multiple threads calling get_pipeline concurrently
+        threads = [
+            threading.Thread(target=get_pipeline_thread)
+            for _ in range(10)
+        ]
+
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        # All should have gotten the same pipeline instance
+        assert len(errors) == 0, f"Errors occurred: {errors}"
+        assert len(results) == 10
+        assert len(set(results)) == 1, "All threads should get the same instance"
+
+    def test_concurrent_get_pipeline_with_different_profiles(self):
+        """TC-THREAD-002: Concurrent calls with different profiles create correct instances."""
+        reset_pipeline()
+        results = {}
+        errors = []
+        lock = threading.Lock()
+
+        def get_pipeline_thread(profile: str):
+            try:
+                pipeline = get_pipeline(profile)
+                with lock:
+                    if profile not in results:
+                        results[profile] = []
+                    results[profile].append(id(pipeline))
+            except Exception as e:
+                errors.append(str(e))
+
+        # Create threads for each profile
+        threads = []
+        profiles = ["fast", "balanced", "accurate"]
+        for profile in profiles:
+            for _ in range(5):
+                threads.append(threading.Thread(target=get_pipeline_thread, args=(profile,)))
+
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        # Each profile should have exactly one unique instance
+        assert len(errors) == 0, f"Errors occurred: {errors}"
+        for profile in profiles:
+            assert profile in results
+            assert len(results[profile]) == 5
+            # All calls with same profile should return same instance
+            assert len(set(results[profile])) == 1, f"{profile} should have single instance"
+
+    def test_thread_safe_reset_pipeline(self):
+        """TC-THREAD-003: reset_pipeline is thread-safe."""
+        reset_pipeline()
+        errors = []
+
+        def reset_thread():
+            try:
+                for _ in range(5):
+                    pipeline = get_pipeline("balanced")
+                    reset_pipeline()
+            except Exception as e:
+                errors.append(str(e))
+
+        threads = [threading.Thread(target=reset_thread) for _ in range(5)]
+
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        # Should complete without errors
+        assert len(errors) == 0, f"Errors occurred: {errors}"
+
+    def test_double_checked_locking_pattern(self):
+        """TC-THREAD-004: Verify double-checked locking is correctly implemented."""
+        reset_pipeline()
+        
+        # First call should create the pipeline
+        pipeline1 = get_pipeline("balanced")
+        
+        # Second call should return cached instance (fast path without lock)
+        pipeline2 = get_pipeline("balanced")
+        
+        # Both should be the same instance
+        assert pipeline1 is pipeline2
+        
+        # Different profile should acquire lock and create new instance
+        pipeline3 = get_pipeline("fast")
+        
+        assert pipeline3 is not pipeline1
+
+    def test_lock_is_releasing(self):
+        """TC-THREAD-005: Verify lock is properly released after use."""
+        reset_pipeline()
+        
+        # Make sure lock is not held
+        assert not _lock.locked(), "Lock should not be held before get_pipeline"
+        
+        # Get pipeline (should acquire and release lock)
+        get_pipeline("balanced")
+        
+        # Lock should be released after
+        assert not _lock.locked(), "Lock should be released after get_pipeline"
+        
+        # Reset should also release lock
+        reset_pipeline()
+        
+        assert not _lock.locked(), "Lock should be released after reset"
+
+    def test_stress_test_concurrent_access(self):
+        """TC-THREAD-006: Stress test with many concurrent operations."""
+        reset_pipeline()
+        errors = []
+        results = []
+        lock = threading.Lock()
+
+        def stress_operation():
+            try:
+                # Mix of operations
+                profile = ["fast", "balanced", "accurate"][threading.current_thread()._name.count('a') % 3]  # type: ignore
+                pipeline = get_pipeline(profile)
+                with lock:
+                    results.append((profile, id(pipeline)))
+            except Exception as e:
+                errors.append(str(e))
+
+        # Create many threads
+        threads = [
+            threading.Thread(target=stress_operation)
+            for _ in range(50)
+        ]
+
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        # All should complete without errors
+        assert len(errors) == 0, f"Errors occurred: {errors}"
+        assert len(results) == 50

@@ -55,13 +55,13 @@ class SimpleChunker(ChunkerPlugin):
         if not text:
             return []
         
-        base_metadata = metadata.copy() if metadata else {}
         chunks: list[Chunk] = []
         
         start = 0
         text_len = len(text)
         step = self.chunk_size - self.overlap
         
+        chunk_index = 0
         while start < text_len:
             end = min(start + self.chunk_size, text_len)
             chunk_text = text[start:end]
@@ -70,9 +70,10 @@ class SimpleChunker(ChunkerPlugin):
                 text=chunk_text,
                 start=start,
                 end=end,
-                metadata={**base_metadata, "chunk_index": len(chunks)}
+                metadata=self._create_metadata(metadata, chunk_index)
             ))
             
+            chunk_index += 1
             # Move start position, accounting for overlap
             if end == text_len:
                 break

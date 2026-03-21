@@ -3,7 +3,11 @@
 This module provides hybrid search functionality:
 - Reciprocal Rank Fusion (RRF) algorithm
 - Configurable weights for vector and BM25 scores
-- Integration with ChromaService and BM25Service
+- Integration with BM25Service (use HybridRetriever for full functionality)
+
+Reference:
+- RULE-3: 禁止在模块中直接依赖具体实现
+- Use pipeline.retriever.HybridRetriever for production use
 """
 
 from __future__ import annotations

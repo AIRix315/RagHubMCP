@@ -3,6 +3,10 @@
 This module provides a singleton manager for RAG pipelines,
 allowing easy access from API and MCP layers.
 
+Thread Safety:
+    Uses threading.Lock to ensure thread-safe singleton access.
+    Multiple threads can safely call get_pipeline() concurrently.
+
 Reference:
 - Docs/11-V2-Desing.md (RULE-1: Pipeline是唯一执行入口)
 - Docs/12-V2-Blueprint.md (Module 1.3)
@@ -12,18 +16,19 @@ Reference:
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Any
 
 from .base import RAGPipeline
-from .default import DefaultRAGPipeline
 from .factory import PipelineFactory
 from .result import RAGResult
 
 logger = logging.getLogger(__name__)
 
-# Singleton instance
+# Singleton instance and lock for thread safety
 _pipeline: RAGPipeline | None = None
 _current_profile: str = "balanced"
+_lock = threading.Lock()
 
 
 def get_pipeline(profile: str = "balanced") -> RAGPipeline:
@@ -31,6 +36,10 @@ def get_pipeline(profile: str = "balanced") -> RAGPipeline:
     
     This is the recommended way to obtain a pipeline instance.
     The pipeline is created lazily and cached for reuse.
+    
+    Thread Safety:
+        Uses double-checked locking pattern with threading.Lock
+        to ensure thread-safe initialization.
     
     Args:
         profile: Pipeline profile (fast/balanced/accurate).
@@ -48,12 +57,19 @@ def get_pipeline(profile: str = "balanced") -> RAGPipeline:
     """
     global _pipeline, _current_profile
     
-    if _pipeline is None or profile != _current_profile:
-        logger.info(f"Creating pipeline with profile: {profile}")
-        _pipeline = PipelineFactory.create({"profile": profile})
-        _current_profile = profile
+    # First check without lock (fast path)
+    if _pipeline is not None and profile == _current_profile:
+        return _pipeline
     
-    return _pipeline
+    # Acquire lock for potential creation
+    with _lock:
+        # Double-check after acquiring lock
+        if _pipeline is None or profile != _current_profile:
+            logger.info(f"Creating pipeline with profile: {profile}")
+            _pipeline = PipelineFactory.create({"profile": profile})
+            _current_profile = profile
+        
+        return _pipeline
 
 
 def reset_pipeline() -> None:
@@ -61,11 +77,15 @@ def reset_pipeline() -> None:
     
     This clears the cached pipeline instance, forcing a new
     pipeline to be created on the next get_pipeline() call.
+    
+    Thread Safety:
+        Uses lock to ensure thread-safe reset.
     """
     global _pipeline, _current_profile
-    _pipeline = None
-    _current_profile = "balanced"
-    logger.debug("Pipeline singleton reset")
+    with _lock:
+        _pipeline = None
+        _current_profile = "balanced"
+        logger.debug("Pipeline singleton reset")
 
 
 async def execute_search(

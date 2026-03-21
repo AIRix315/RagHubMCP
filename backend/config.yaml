@@ -17,6 +17,7 @@ hybrid:
   bm25_persist_dir: ./data/bm25
   rrf_k: 60
 indexer:
+  allowed_roots: []
   chunk_overlap: 50
   chunk_size: 500
   exclude_dirs:

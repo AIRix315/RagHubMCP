@@ -1,8 +1,8 @@
-"""Provider factory with singleton caching.
+"""Provider factory with thread-safe singleton caching.
 
 This module implements the factory pattern for provider instantiation:
 - ProviderFactory: Creates provider instances from configuration
-- Singleton caching: Reuses instances with same configuration
+- Thread-safe singleton caching: Reuses instances with same configuration
 - Configuration-driven: Integrates with config.yaml
 """
 
@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from typing import Any
 
 from src.utils.config import get_config
@@ -24,11 +25,13 @@ from .registry import registry
 
 
 class ProviderFactory:
-    """Provider factory with singleton caching.
+    """Thread-safe provider factory with singleton caching.
     
     Creates provider instances based on YAML configuration and caches
     them for reuse. The cache key is based on the full configuration,
     so different configurations get different instances.
+    
+    Thread-safety: Uses lock to protect cache during instance creation.
     
     Example:
         from providers.factory import factory
@@ -42,12 +45,15 @@ class ProviderFactory:
     
     _instance: ProviderFactory | None = None
     _cache: dict[str, BaseProvider]
+    _lock: threading.Lock = threading.Lock()
     
     def __new__(cls) -> ProviderFactory:
         """Ensure singleton pattern."""
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._cache = {}
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._cache = {}
         return cls._instance
     
     def _cache_key(
@@ -73,7 +79,7 @@ class ProviderFactory:
         config_hash = hashlib.md5(config_str.encode()).hexdigest()[:8]
         return f"{category.value}:{name}:{config_hash}"
     
-    def get_embedding_provider(self, name: str | None = None) -> BaseEmbeddingProvider:
+    def get_embedding_provider(self, name: str | None = None) -> "BaseEmbeddingProvider":
         """Get an embedding provider instance.
         
         Args:
@@ -82,14 +88,10 @@ class ProviderFactory:
                   
         Returns:
             BaseEmbeddingProvider instance
-            
-        Raises:
-            ProviderNotFoundError: If provider instance not found in config
-            ProviderInitializationError: If provider fails to initialize
         """
         return self._get_provider(ProviderCategory.EMBEDDING, name)
     
-    def get_rerank_provider(self, name: str | None = None) -> BaseRerankProvider:
+    def get_rerank_provider(self, name: str | None = None) -> "BaseRerankProvider":
         """Get a rerank provider instance.
         
         Args:
@@ -101,7 +103,7 @@ class ProviderFactory:
         """
         return self._get_provider(ProviderCategory.RERANK, name)
     
-    def get_llm_provider(self, name: str | None = None) -> BaseLLMProvider:
+    def get_llm_provider(self, name: str | None = None) -> "BaseLLMProvider":
         """Get an LLM provider instance.
         
         Args:
@@ -113,7 +115,7 @@ class ProviderFactory:
         """
         return self._get_provider(ProviderCategory.LLM, name)
     
-    def get_vectorstore_provider(self, name: str | None = None) -> BaseVectorStoreProvider:
+    def get_vectorstore_provider(self, name: str | None = None) -> "BaseVectorStoreProvider":
         """Get a vector store provider instance.
         
         Args:
@@ -130,13 +132,13 @@ class ProviderFactory:
         category: ProviderCategory,
         name: str | None = None
     ) -> BaseProvider:
-        """Internal method to get a provider instance.
+        """Internal method to get a provider instance (thread-safe).
         
         Flow:
         1. Load configuration
         2. Resolve provider name (default if not specified)
         3. Find instance configuration
-        4. Check cache
+        4. Check cache (thread-safe)
         5. Create and cache if not found
         
         Args:
@@ -174,25 +176,27 @@ class ProviderFactory:
             available = [i.get("name") for i in category_config.instances]
             raise ProviderNotFoundError(provider_name, category.value, available)
         
-        # Check cache
+        # Check cache (thread-safe)
         cache_key = self._cache_key(category, provider_name, instance_config)
-        if cache_key in self._cache:
-            return self._cache[cache_key]
         
-        # Get provider class from registry
-        provider_type = instance_config.get("type")
-        provider_class = registry.get(category, provider_type)
-        
-        # Create instance
-        try:
-            instance = provider_class.from_config(instance_config)
-            self._cache[cache_key] = instance
-            return instance
-        except Exception as e:
-            raise ProviderInitializationError(
-                provider=provider_name,
-                reason=str(e)
-            ) from e
+        with self._lock:
+            if cache_key in self._cache:
+                return self._cache[cache_key]
+            
+            # Get provider class from registry
+            provider_type = instance_config.get("type")
+            provider_class = registry.get(category, provider_type)
+            
+            # Create instance
+            try:
+                instance = provider_class.from_config(instance_config)
+                self._cache[cache_key] = instance
+                return instance
+            except Exception as e:
+                raise ProviderInitializationError(
+                    provider=provider_name,
+                    reason=str(e)
+                ) from e
     
     def clear_cache(self) -> None:
         """Clear the instance cache.
@@ -200,7 +204,8 @@ class ProviderFactory:
         Call this after configuration hot-reload to ensure
         new instances are created with updated configuration.
         """
-        self._cache.clear()
+        with self._lock:
+            self._cache.clear()
 
 
 # Type hints for forward references
@@ -210,5 +215,5 @@ from .llm.base import BaseLLMProvider
 from .vectorstore.base import BaseVectorStoreProvider
 
 
-# Global factory instance
+# Global factory instance (thread-safe singleton)
 factory = ProviderFactory()

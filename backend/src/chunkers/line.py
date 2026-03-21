@@ -54,7 +54,6 @@ class LineChunker(ChunkerPlugin):
         if not text:
             return []
         
-        base_metadata = metadata.copy() if metadata else {}
         chunks: list[Chunk] = []
         
         # Find all line boundaries (character positions)
@@ -64,7 +63,7 @@ class LineChunker(ChunkerPlugin):
                 line_starts.append(i + 1)
         
         # Remove the position after last newline if it's at end of text
-        if line_starts[-1] == len(text) and text.endswith("\n"):
+        if line_starts and line_starts[-1] == len(text) and text.endswith("\n"):
             line_starts.pop()
         
         # If no newlines, treat entire text as one line
@@ -97,12 +96,12 @@ class LineChunker(ChunkerPlugin):
                 text=chunk_text,
                 start=start_pos,
                 end=end_pos,
-                metadata={
-                    **base_metadata,
-                    "chunk_index": chunk_index,
-                    "line_start": line_idx + 1,  # 1-indexed
-                    "line_end": end_line_idx      # inclusive, 1-indexed
-                }
+                metadata=self._create_metadata(
+                    metadata, 
+                    chunk_index,
+                    line_start=line_idx + 1,  # 1-indexed
+                    line_end=end_line_idx      # inclusive, 1-indexed
+                )
             ))
             
             if end_line_idx >= num_lines:

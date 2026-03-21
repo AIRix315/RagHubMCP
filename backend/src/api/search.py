@@ -6,6 +6,7 @@ All search operations go through the RAG Pipeline.
 Reference:
 - Docs/11-V2-Desing.md (RULE-1: Pipeline是唯一执行入口)
 - Docs/12-V2-Blueprint.md (Module 1)
+- RULE.md (RULE-3: 禁止在模块中直接依赖具体实现)
 """
 
 from __future__ import annotations
@@ -31,14 +32,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/search", tags=["search"])
 
 
-def _get_chroma_service() -> Any:
-    """Get ChromaService for backward compatibility.
+def _get_vectorstore_provider() -> Any:
+    """Get VectorStore provider through factory (RULE-3 compliant).
     
-    Deprecated: Only for backward compatibility with collection management endpoints.
-    New code should use ProviderFactory.
+    Returns:
+        VectorStoreProvider instance from factory.
     """
-    from src.providers.vectorstore.chroma import ChromaProvider
-    return ChromaProvider()
+    from src.providers.factory import factory
+    return factory.get_vectorstore_provider()
 
 
 @router.post(
@@ -164,7 +165,7 @@ async def execute_search_endpoint(request: SearchRequest) -> SearchResponse:
     "/collections",
     response_model=dict,
     summary="List collections",
-    description="List all Chroma collections",
+    description="List all collections from the vector store",
 )
 async def list_collections() -> dict[str, Any]:
     """List all collections.
@@ -172,18 +173,18 @@ async def list_collections() -> dict[str, Any]:
     Returns:
         List of collection info.
     """
-    chroma_service = _get_chroma_service()
-    collection_names = chroma_service.list_collections()
+    vectorstore = _get_vectorstore_provider()
+    collection_names = vectorstore.list_collections()
 
     result = []
     for name in collection_names:
         # Get collection details
         try:
-            coll = chroma_service._get_client().get_collection(name=name)
+            count = vectorstore.count(name)
             result.append({
                 "name": name,
-                "count": coll.count(),
-                "metadata": coll.metadata or {},
+                "count": count,
+                "metadata": {},  # Metadata not available through Provider interface
             })
         except Exception:
             result.append({
@@ -205,7 +206,7 @@ async def list_collections() -> dict[str, Any]:
         404: {"model": ErrorResponse, "description": "Collection not found"},
     },
     summary="Delete collection",
-    description="Delete a Chroma collection by name",
+    description="Delete a collection by name from the vector store",
 )
 async def delete_collection(name: str) -> dict[str, Any]:
     """Delete a collection.
@@ -219,10 +220,10 @@ async def delete_collection(name: str) -> dict[str, Any]:
     Raises:
         HTTPException: If collection not found.
     """
-    chroma_service = _get_chroma_service()
+    vectorstore = _get_vectorstore_provider()
 
     try:
-        chroma_service.delete_collection(name)
+        vectorstore.delete_collection(name)
         logger.info(f"Collection deleted: {name}")
         return {
             "name": name,
