@@ -19,6 +19,11 @@ const router = createRouter({
       component: () => import('@/views/Config/Providers/Rerank.vue'),
     },
     {
+      path: '/config/pipeline',
+      name: 'pipeline',
+      component: () => import('@/views/Config/Pipeline.vue'),
+    },
+    {
       path: '/collections',
       name: 'collections',
       component: () => import('@/views/Collections.vue'),
