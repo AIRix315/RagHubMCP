@@ -147,6 +147,28 @@ class FileScanner:
                 return True
         return False
 
+    def _validate_path_in_root(self, path: Path, root: Path) -> bool:
+        """Validate that resolved path is within root directory.
+
+        This prevents path traversal attacks where a malicious path
+        might escape the intended root directory.
+
+        Args:
+            path: The path to validate.
+            root: The root directory that path must be within.
+
+        Returns:
+            True if path is within root, False otherwise.
+        """
+        try:
+            resolved = path.resolve()
+            root_resolved = root.resolve()
+            # Ensure resolved path starts with root path
+            return str(resolved).startswith(str(root_resolved))
+        except (OSError, ValueError) as e:
+            logger.warning(f"Path validation failed for {path}: {e}")
+            return False
+
     def _is_valid_file(self, path: Path) -> bool:
         """Check if file is valid for indexing.
 

@@ -615,8 +615,9 @@ def status(ctx: CLIContext, output: str):
                 active_profile = profiles_response.json()
                 console.print(f"\n[bold]Active Profile:[/] {active_profile.get('name', 'N/A')}")
                 console.print(f"  {active_profile.get('description', '')}")
-        except Exception:
-            pass
+        except Exception as e:
+            # Silently ignore - profile info is optional for status display
+            logger.debug(f"Could not retrieve active profile: {e}")
                 
     except Exception as e:
         console.print(f"[red]Error: {e}[/]")

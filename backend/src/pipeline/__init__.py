@@ -24,6 +24,15 @@ from .base import RAGPipeline
 from .context_builder import ContextBuilder, DefaultContextBuilder, MultiQueryContextBuilder
 from .default import DefaultRAGPipeline
 from .factory import PROFILES, PipelineFactory
+from .index_pipeline import (
+    DefaultIndexPipeline,
+    IndexOptions,
+    IndexPipeline,
+    IndexResult,
+    execute_index,
+    get_index_pipeline,
+    reset_index_pipeline,
+)
 from .manager import create_pipeline, execute_search, get_pipeline, reset_pipeline
 from .multi_query import (
     MultiQueryGenerator,
@@ -73,6 +82,14 @@ __all__ = [
     "DefaultRAGPipeline",
     "PipelineFactory",
     "PipelineOptions",
+    # Index Pipeline
+    "IndexPipeline",
+    "DefaultIndexPipeline",
+    "IndexOptions",
+    "IndexResult",
+    "get_index_pipeline",
+    "reset_index_pipeline",
+    "execute_index",
     # Interfaces
     "Retriever",
     "HybridRetriever",

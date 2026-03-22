@@ -60,7 +60,9 @@ class DebugWebSocketHandler:
                     try:
                         self._subscribers[query_id].remove(websocket)
                     except ValueError:
-                        pass
+                        # WebSocket was not in the subscriber list - this is normal
+                        # if connection was closed unexpectedly
+                        logger.debug(f"WebSocket {websocket.client} not in subscribers list for query {query_id}")
             del self._subscriptions[websocket]
         logger.info("WebSocket debug connection closed")
 

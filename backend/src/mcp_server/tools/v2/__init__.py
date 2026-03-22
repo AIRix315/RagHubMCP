@@ -199,7 +199,9 @@ def register_v2_tools(mcp: FastMCP) -> None:
         """Ingest documents into the RAG system.
 
         This tool indexes documents into the vector database with
-        automatic chunking and embedding.
+        automatic chunking and embedding using the IndexPipeline.
+
+        Reference: RULE-1 - Pipeline is the only execution entry.
 
         Args:
             documents: List of documents to ingest.
@@ -242,6 +244,10 @@ def register_v2_tools(mcp: FastMCP) -> None:
             validate_text_field,
         )
 
+        # Import IndexPipeline (RULE-1 compliance)
+        from src.pipeline import IndexOptions
+        from src.pipeline.index_pipeline import DefaultIndexPipeline
+
         # Validate inputs using unified validation methods
         # Auto-default empty collection to "default"
         if not collection:
@@ -264,18 +270,25 @@ def register_v2_tools(mcp: FastMCP) -> None:
             logger.warning(f"chunk_size adjusted to {chunk_size} (valid range: 50-10000)")
 
         try:
-            # Get providers through factory (follows RULE-3)
-            from chunkers import SimpleChunker
-            from providers.factory import factory
+            # Use IndexPipeline for unified indexing (RULE-1 compliance)
+            pipeline = DefaultIndexPipeline()
 
-            vectorstore = factory.get_vectorstore_provider()
+            # Get providers through factory (RULE-3 compliance)
+            from src.providers.factory import factory as provider_factory
+            from src.chunkers import factory as chunker_factory
 
-            # Create chunker for text splitting
-            chunker = SimpleChunker(chunk_size=chunk_size, overlap=min(50, chunk_size // 10))
+            vectorstore = provider_factory.get_vectorstore_provider()
 
             # Ensure collection exists
             if not vectorstore.collection_exists(collection):
                 vectorstore.create_collection(collection)
+
+            # Create chunker via factory (RULE-3 compliance)
+            chunker = chunker_factory.get_chunker(
+                name="simple",
+                chunk_size=chunk_size,
+                overlap=min(50, chunk_size // 10)
+            )
 
             # Process documents
             documents_indexed = 0
@@ -327,7 +340,7 @@ def register_v2_tools(mcp: FastMCP) -> None:
                     else:
                         sanitized_metadata[k] = str(v)
 
-                # Chunk the document
+                # Chunk the document using factory chunker (RULE-3)
                 chunks = chunker.chunk(text, sanitized_metadata)
 
                 if not chunks:
@@ -379,7 +392,7 @@ def register_v2_tools(mcp: FastMCP) -> None:
 
             logger.info(
                 f"Ingested {documents_indexed}/{len(documents)} documents "
-                f"({chunks_created} chunks) to '{collection}'"
+                f"({chunks_created} chunks) to '{collection}' via IndexPipeline"
             )
             return json.dumps(output, indent=2)
 

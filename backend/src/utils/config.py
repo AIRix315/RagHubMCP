@@ -194,6 +194,7 @@ class CORSConfig(BaseModel):
     """CORS configuration for security.
 
     In production, restrict allowed origins to specific domains.
+    Explicit methods and headers instead of wildcard for security.
     """
 
     origins: list[str] = Field(
@@ -202,10 +203,12 @@ class CORSConfig(BaseModel):
     )
     allow_credentials: bool = Field(default=True, description="Allow credentials")
     allow_methods: list[str] = Field(
-        default_factory=lambda: ["*"], description="Allowed HTTP methods"
+        default_factory=lambda: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        description="Allowed HTTP methods (explicit list for security)",
     )
     allow_headers: list[str] = Field(
-        default_factory=lambda: ["*"], description="Allowed HTTP headers"
+        default_factory=lambda: ["Content-Type", "Authorization", "X-Requested-With"],
+        description="Allowed HTTP headers (explicit list for security)",
     )
 
 

@@ -7,6 +7,113 @@
 
 ---
 
+## [V2.5.2] - 2026-03-22
+
+### 任务: 系统性修复计划 (REPAIR_PLAN.md)
+
+- **时间**: 2026-03-22 (根据系统时间)
+- **内容**: 执行完整修复计划，解决架构合规性、安全性和代码质量问题
+
+### Added (架构基础 - 修复 RULE-1/RULE-3)
+
+- **backend/src/pipeline/index_pipeline.py**: IndexPipeline 统一索引入口
+  - `IndexPipeline`: 抽象基类定义索引接口
+  - `DefaultIndexPipeline`: 默认实现，整合 FileScanner、Chunker、VectorStore
+  - `IndexOptions`/`IndexResult`: 索引操作选项和结果
+  - `execute_index()`: 便捷函数，遵循 RULE-1
+
+- **backend/src/chunkers/factory.py**: ChunkerFactory 工厂模式
+  - 类似 ProviderFactory 的配置驱动实例化
+  - 支持按名称或文件类型获取分块器
+  - 内置缓存机制
+  - `factory` 单例导出，遵循 RULE-3
+
+### Fixed (安全与配置)
+
+- **backend/config.yaml**: 修复 CORS 配置安全性
+  - `allow_methods`: 从 `["*"]` 改为显式 `[GET, POST, PUT, DELETE, OPTIONS]`
+  - `allow_headers`: 从 `["*"]` 改为 `[Content-Type, Authorization, X-Requested-With]`
+  - 减少安全攻击面
+
+- **backend/src/utils/config.py**: 更新 CORSConfig Pydantic 模型
+  - 默认允许方法改为显式列表
+  - 默认允许头部改为显式列表
+  - 添加安全说明文档
+
+- **backend/requirements-lock.txt**: 生成依赖锁定文件
+  - 支持漏洞扫描 (safety)
+  - 确保可复现的依赖版本
+
+- **.github/workflows/ci.yml**: 添加 Safety 安全检查
+  - 新增 Security Scan 步骤使用 safety 扫描依赖
+  - 保留 Trivy 容器扫描
+
+### Fixed (代码质量)
+
+- **backend/src/cli/main.py**: 修复空 catch 块
+  - 添加日志记录：`logger.debug(f"Could not retrieve active profile: {e}")`
+  - 提供有意义的错误信息
+
+- **backend/src/api/websocket_debug.py**: 修复空 catch 块
+  - 添加调试日志：`logger.debug(f"WebSocket {websocket.client} not in subscribers list...")`
+  - 说明这是正常情况
+
+- **backend/src/rerank_engine/scorers/onnx_scorer.py**: 添加资源清理机制
+  - `__del__()` 方法：GC 时自动清理
+  - `close()` 方法：显式释放 ONNX session 和 tokenizer
+  - `__enter__()`/`__exit__()`: 支持上下文管理器模式
+  - 防止 ONNX Runtime 资源泄露
+
+### Deprecated (模块废弃)
+
+- **backend/src/services/DEPRECATED.md**: 废弃模块说明文档
+  - 说明 services 模块将于 v3.0 移除
+  - 提供完整的迁移指南
+  - 组件映射表：旧服务 -> 新 Pipeline
+
+- **backend/src/services/__init__.py**: 添加废弃警告
+  - 模块导入时发出 `DeprecationWarning`
+  - 引导用户使用 pipeline 模块
+
+### Enhanced (安全增强)
+
+- **backend/src/indexer/scanner.py**: 增强路径遍历防护
+  - 新增 `_validate_path_in_root()` 方法
+  - 验证解析后的路径仍在 root 目录内
+  - 防止路径遍历攻击
+
+### Changed (MCP 工具更新)
+
+- **backend/src/mcp_server/tools/v2/__init__.py**: MCP ingest 工具更新
+  - 使用 `DefaultIndexPipeline` 替代直接依赖 (RULE-1)
+  - 使用 `ChunkerFactory` 获取分块器 (RULE-3)
+  - 添加兼容性注释说明架构变更
+
+### 验证清单
+
+```
+✅ IndexPipeline 创建并导出
+✅ ChunkerFactory 创建并导出
+✅ MCP ingest 工具使用新的 Pipeline/Factory
+✅ CORS 配置显式列出允许方法/头部
+✅ requirements-lock.txt 生成
+✅ CI workflow 添加 Safety 检查
+✅ cli/main.py 空 catch 块修复
+✅ websocket_debug.py 空 catch 块修复
+✅ onnx_scorer.py 添加资源清理
+✅ services 模块添加废弃警告和文档
+✅ scanner.py 添加路径验证
+✅ 所有关键模块导入测试通过
+```
+
+### 向后兼容性
+
+- ✅ 所有旧接口保持可用
+- ✅ services 模块带警告继续工作
+- ✅ CORS 配置变更不影响 API 功能
+
+---
+
 ## [V2.5.1] - 2026-03-22
 
 ### 任务编号: 8.3 简单 Eval

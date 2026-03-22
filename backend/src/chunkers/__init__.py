@@ -34,6 +34,7 @@ Usage:
 
 from .ast_base import ASTChunkerBase
 from .base import Chunk, ChunkerPlugin
+from .factory import ChunkerFactory, factory, get_chunker_factory, reset_chunker_factory
 from .line import LineChunker
 from .markdown import MarkdownChunker
 from .registry import ChunkerRegistry, registry
@@ -49,6 +50,11 @@ __all__ = [
     "ASTChunkerBase",
     "ChunkerRegistry",
     "registry",
+    # Factory
+    "ChunkerFactory",
+    "factory",
+    "get_chunker_factory",
+    "reset_chunker_factory",
     # AST chunkers (lazy loaded)
     "PythonASTChunker",
     "TypeScriptASTChunker",

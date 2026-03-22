@@ -38,6 +38,9 @@ class ONNXScorer(BaseScorer):
         ...     tokenizer_path="./models/tokenizer.json",
         ... )
         >>> scores = scorer.compute_scores("query", ["doc1", "doc2"])
+        >>> # Use as context manager for automatic cleanup
+        >>> with ONNXScorer(...) as scorer:
+        ...     scores = scorer.compute_scores("query", docs)
     """
 
     def __init__(
@@ -69,6 +72,36 @@ class ONNXScorer(BaseScorer):
         # Lazy initialization
         self._session = None
         self._tokenizer = None
+
+    def __del__(self) -> None:
+        """Cleanup ONNX session on garbage collection."""
+        self.close()
+
+    def close(self) -> None:
+        """Explicitly close ONNX session and release resources.
+
+        This method releases the ONNX session and tokenizer resources.
+        Should be called when the scorer is no longer needed, or use
+        the context manager pattern for automatic cleanup.
+        """
+        if self._session is not None:
+            # ONNX Runtime doesn't have explicit close, but we set to None
+            # to allow garbage collection of the session object
+            self._session = None
+            logger.debug("ONNX session closed")
+
+        if self._tokenizer is not None:
+            # Tokenizer may have resources to release
+            self._tokenizer = None
+            logger.debug("Tokenizer resources released")
+
+    def __enter__(self) -> "ONNXScorer":
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Context manager exit - ensures cleanup."""
+        self.close()
 
     @property
     def name(self) -> str:
