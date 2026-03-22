@@ -11,7 +11,7 @@
  * Reference: Docs/21-UI-Design-System.md Section 3.2
  */
 
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   FlaskConical,
@@ -241,10 +241,27 @@ function toggleEngine(name: string) {
 // ============================================================================
 // Debug Tab
 // ============================================================================
+const debugQuery = ref('')
+const debugDocuments = ref<string[]>([
+  'Machine learning is transforming industries.',
+  'Deep learning uses neural networks.',
+  'Python is popular for data science.',
+])
 const debugQueryId = ref('')
 const debugInfo = ref<DebugInfo | null>(null)
 const debugLoading = ref(false)
 const debugExpanded = ref<string[]>([])
+const debugWs = ref<WebSocket | null>(null)
+const debugWsConnected = ref(false)
+const debugStageEvents = ref<StageEvent[]>([])
+const debugUseWebSocket = ref(true)
+
+interface StageEvent {
+  stage: string
+  event: string
+  data: Record<string, unknown>
+  timestamp: string
+}
 
 interface DebugStage {
   name: string
@@ -295,9 +312,136 @@ function getStageIconClass(status: string) {
   }
 }
 
-// ============================================================================
-// Lifecycle
-// ============================================================================
+// WebSocket connection for real-time debug
+function connectDebugWebSocket() {
+  const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/debug/ws`
+  debugWs.value = new WebSocket(wsUrl)
+
+  debugWs.value.onopen = () => {
+    debugWsConnected.value = true
+    console.log('Debug WebSocket connected')
+  }
+
+  debugWs.value.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      handleDebugMessage(data)
+    } catch (e) {
+      console.error('Failed to parse WebSocket message:', e)
+    }
+  }
+
+  debugWs.value.onclose = () => {
+    debugWsConnected.value = false
+    console.log('Debug WebSocket disconnected')
+  }
+
+  debugWs.value.onerror = (error) => {
+    console.error('Debug WebSocket error:', error)
+    debugWsConnected.value = false
+  }
+}
+
+function handleDebugMessage(data: Record<string, unknown>) {
+  const event = data.event as string
+  const stage = data.stage as string | undefined
+
+  // Store events for display
+  if (stage) {
+    debugStageEvents.value.push({
+      stage,
+      event: data.event as string,
+      data: (data.data || data.output || {}) as Record<string, unknown>,
+      timestamp: data.timestamp as string,
+    })
+  }
+
+  if (event === 'stage_completed') {
+    // Update stage status in debugInfo
+    if (debugInfo.value && stage) {
+      const stageObj = debugInfo.value.stages.find((s) => s.name === stage)
+      if (stageObj) {
+        stageObj.status = 'completed'
+        stageObj.output = (data.output || {}) as Record<string, unknown>
+        stageObj.latency_ms = (data.latency_ms as number) || 0
+      }
+    }
+  } else if (event === 'stage_started') {
+    if (debugInfo.value && stage) {
+      const stageObj = debugInfo.value.stages.find((s) => s.name === stage)
+      if (stageObj) {
+        stageObj.status = 'running'
+      }
+    }
+  }
+}
+
+function disconnectDebugWebSocket() {
+  if (debugWs.value) {
+    debugWs.value.close()
+    debugWs.value = null
+  }
+}
+
+async function runDebugPipeline() {
+  // ... (implementation continues)
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  rerankStore.loadProviders()
+})
+
+// Connect WebSocket when debug tab is active
+watch(activeTab, (newTab) => {
+  if (newTab === 'debug' && debugUseWebSocket.value) {
+    connectDebugWebSocket()
+  } else if (newTab !== 'debug') {
+    disconnectDebugWebSocket()
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  disconnectDebugWebSocket()
+})
+      )
+    } else {
+      // Fallback to REST API
+      const response = await fetch('/api/debug/pipeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: debugQuery.value,
+          documents: debugDocuments.value.filter((d) => d.trim()),
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        debugQueryId.value = data.query_id
+
+        // Simulate execution
+        const simResponse = await fetch(`/api/debug/pipeline/${data.query_id}/simulate`, {
+          method: 'POST',
+        })
+
+        if (simResponse.ok) {
+          const debugData = await fetch(`/api/debug/pipeline/${data.query_id}`)
+          if (debugData.ok) {
+            debugInfo.value = await debugData.json()
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Debug pipeline failed:', e)
+  } finally {
+    debugLoading.value = false
+  }
+}
+
+// Lifecycle hooks
 onMounted(() => {
   rerankStore.loadProviders()
 })
@@ -682,81 +826,143 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- ============================================================================ -->
-    <!-- Debug Tab -->
-    <!-- ============================================================================ -->
-    <div v-if="activeTab === 'debug'" class="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{{ t('rerankLab.debug.title') }}</CardTitle>
-          <CardDescription>{{ t('rerankLab.debug.description') }}</CardDescription>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <!-- Query ID Input -->
-          <div class="flex gap-4">
-            <Input
-              v-model="debugQueryId"
-              :placeholder="t('rerankLab.debug.queryIdPlaceholder')"
-              class="flex-1"
-            />
-            <Button :disabled="!debugQueryId.trim()">
-              {{ t('rerankLab.debug.load') }}
-            </Button>
-          </div>
+<!-- ============================================================================ -->
+<!-- Debug Tab -->
+<!-- ============================================================================ -->
+<div v-if="activeTab === 'debug'" class="space-y-6">
+  <!-- WebSocket Status -->
+  <Card v-if="debugUseWebSocket" class="border-l-4" :class="debugWsConnected ? 'border-l-green-500' : 'border-l-yellow-500'">
+    <CardContent class="flex items-center justify-between py-3">
+      <div class="flex items-center gap-2">
+        <div :class="['w-2 h-2 rounded-full', debugWsConnected ? 'bg-green-500' : 'bg-yellow-500']" />
+        <span class="text-sm text-muted-foreground">
+          {{ debugWsConnected ? t('rerankLab.debug.connected') : t('rerankLab.debug.disconnected') }}
+        </span>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        @click="debugUseWebSocket = false"
+        class="text-xs"
+      >
+        {{ t('rerankLab.debug.useRest') }}
+      </Button>
+    </CardContent>
+  </Card>
 
-          <!-- Pipeline Visualization -->
-          <div v-if="debugInfo" class="space-y-4">
-            <!-- Stage Flow -->
-            <div class="flex items-center justify-between border rounded-lg p-4">
-              <template v-for="(stage, index) in debugInfo.stages" :key="stage.name">
-                <div
-                  class="flex flex-col items-center cursor-pointer"
-                  @click="toggleDebugStage(stage.name)"
-                >
-                  <component
-                    :is="getStageIcon(stage.status)"
-                    :class="['h-8 w-8', getStageIconClass(stage.status)]"
-                  />
-                  <span class="text-sm font-medium mt-1">{{ stage.name }}</span>
-                  <span class="text-xs text-muted-foreground">{{ stage.latency_ms }}ms</span>
-                </div>
-                <ArrowUpDown
-                  v-if="index < debugInfo.stages.length - 1"
-                  class="h-6 w-6 text-muted-foreground"
-                />
-              </template>
+  <Card>
+    <CardHeader>
+      <CardTitle>{{ t('rerankLab.debug.title') }}</CardTitle>
+      <CardDescription>{{ t('rerankLab.debug.description') }}</CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      <!-- Query Input -->
+      <div class="space-y-2">
+        <label class="text-sm font-medium">{{ t('rerankLab.test.query') }}</label>
+        <Textarea
+          v-model="debugQuery"
+          :placeholder="t('rerankLab.test.queryPlaceholder')"
+          rows="2"
+        />
+      </div>
+
+      <!-- Documents -->
+      <div class="space-y-2">
+        <label class="text-sm font-medium">{{ t('rerankLab.test.documents') }}</label>
+        <div class="grid gap-2 md:grid-cols-3">
+          <Textarea
+            v-for="(_, index) in debugDocuments"
+            :key="index"
+            v-model="debugDocuments[index]"
+            :placeholder="`Doc ${index + 1}`"
+            rows="2"
+          />
+        </div>
+      </div>
+
+      <!-- Run Button -->
+      <Button
+        class="w-full"
+        :disabled="debugLoading || !debugQuery.trim()"
+        @click="runDebugPipeline"
+      >
+        <Loader2 v-if="debugLoading" class="mr-2 h-4 w-4 animate-spin" />
+        <Bug v-else class="mr-2 h-4 w-4" />
+        {{ debugLoading ? t('rerankLab.debug.running') : t('rerankLab.debug.run') }}
+      </Button>
+
+      <!-- Pipeline Visualization -->
+      <div v-if="debugInfo" class="space-y-4">
+        <!-- Stage Flow -->
+        <div class="flex items-center justify-between border rounded-lg p-4">
+          <template v-for="(stage, index) in debugInfo.stages" :key="stage.name">
+            <div
+              class="flex flex-col items-center cursor-pointer"
+              @click="toggleDebugStage(stage.name)"
+            >
+              <component
+                :is="getStageIcon(stage.status)"
+                :class="['h-8 w-8', getStageIconClass(stage.status)]"
+              />
+              <span class="text-sm font-medium mt-1">{{ stage.name }}</span>
+              <span v-if="stage.latency_ms > 0" class="text-xs text-muted-foreground">
+                {{ stage.latency_ms.toFixed(0) }}ms
+              </span>
             </div>
+            <ArrowUpDown
+              v-if="index < debugInfo.stages.length - 1"
+              class="h-6 w-6 text-muted-foreground"
+            />
+          </template>
+        </div>
 
-            <!-- Stage Details -->
-            <div class="space-y-2">
-              <div
-                v-for="stage in debugInfo.stages"
-                :key="stage.name"
-                v-show="debugExpanded.includes(stage.name)"
-                class="border rounded-lg p-4 bg-muted/30"
-              >
-                <h4 class="font-medium mb-2">{{ stage.name }}</h4>
-                <div class="grid gap-4 md:grid-cols-2 text-sm">
-                  <div>
-                    <span class="text-muted-foreground">{{ t('rerankLab.debug.input') }}:</span>
-                    <pre class="mt-1 p-2 rounded bg-muted text-xs overflow-x-auto">{{ JSON.stringify(stage.input, null, 2) }}</pre>
-                  </div>
-                  <div>
-                    <span class="text-muted-foreground">{{ t('rerankLab.debug.output') }}:</span>
-                    <pre class="mt-1 p-2 rounded bg-muted text-xs overflow-x-auto">{{ JSON.stringify(stage.output, null, 2) }}</pre>
-                  </div>
-                </div>
+        <!-- Real-time Events -->
+        <div v-if="debugStageEvents.length > 0" class="border rounded-lg p-4">
+          <h4 class="font-medium mb-3">{{ t('rerankLab.debug.events') }}</h4>
+          <div class="space-y-2 max-h-48 overflow-y-auto">
+            <div
+              v-for="(event, index) in debugStageEvents"
+              :key="index"
+              class="flex items-center gap-2 text-xs p-2 rounded bg-muted/50"
+            >
+              <Badge variant="outline" class="text-xs">{{ event.stage }}</Badge>
+              <span class="text-muted-foreground">{{ event.event }}</span>
+              <span class="ml-auto text-muted-foreground font-mono">{{ event.timestamp }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage Details -->
+        <div class="space-y-2">
+          <div
+            v-for="stage in debugInfo.stages"
+            :key="stage.name"
+            v-show="debugExpanded.includes(stage.name)"
+            class="border rounded-lg p-4 bg-muted/30"
+          >
+            <h4 class="font-medium mb-2">{{ stage.name }}</h4>
+            <div class="grid gap-4 md:grid-cols-2 text-sm">
+              <div>
+                <span class="text-muted-foreground">{{ t('rerankLab.debug.input') }}:</span>
+                <pre class="mt-1 p-2 rounded bg-muted text-xs overflow-x-auto">{{ JSON.stringify(stage.input, null, 2) }}</pre>
+              </div>
+              <div>
+                <span class="text-muted-foreground">{{ t('rerankLab.debug.output') }}:</span>
+                <pre class="mt-1 p-2 rounded bg-muted text-xs overflow-x-auto">{{ JSON.stringify(stage.output, null, 2) }}</pre>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- Empty State -->
-          <div v-else class="text-center py-12 text-muted-foreground">
-            <Bug class="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>{{ t('rerankLab.debug.noData') }}</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      <!-- Empty State -->
+      <div v-else class="text-center py-12 text-muted-foreground">
+        <Bug class="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>{{ t('rerankLab.debug.noData') }}</p>
+        <p class="text-sm mt-2">{{ t('rerankLab.debug.runHint') }}</p>
+      </div>
+    </CardContent>
+  </Card>
+</div>
   </div>
 </template>

@@ -20,6 +20,7 @@ from fastapi.responses import JSONResponse
 
 from src.api.router import api_router
 from src.api.websocket import manager as ws_manager
+from src.api.websocket_debug import router as debug_ws_router
 from src.utils.config import get_config, load_config
 
 # Configure logging
@@ -109,6 +110,9 @@ def create_app() -> FastAPI:
 
     # Include API router
     app.include_router(api_router)
+
+    # Include WebSocket debug router
+    app.include_router(debug_ws_router)
 
     # Add health check endpoint
     @app.get("/health", tags=["health"])
