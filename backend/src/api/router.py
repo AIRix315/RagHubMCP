@@ -7,8 +7,10 @@ from fastapi import APIRouter
 
 from .benchmark import router as benchmark_router
 from .config import router as config_router
+from .debug import router as debug_router
 from .index import router as index_router
 from .pipeline import router as pipeline_router
+from .profiles import router as profiles_router
 from .providers import router as providers_router
 from .search import router as search_router
 
@@ -22,6 +24,8 @@ api_router.include_router(search_router)
 api_router.include_router(benchmark_router)
 api_router.include_router(providers_router)
 api_router.include_router(pipeline_router)
+api_router.include_router(profiles_router)
+api_router.include_router(debug_router)
 
 
 # Add a root endpoint for API health check
@@ -44,5 +48,7 @@ async def api_root() -> dict:
             "/api/benchmark",
             "/api/providers",
             "/api/providers/rerank",
+            "/api/profiles",
+            "/api/debug/pipeline",
         ],
     }

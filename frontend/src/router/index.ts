@@ -24,6 +24,11 @@ const router = createRouter({
       component: () => import('@/views/Config/Pipeline.vue'),
     },
     {
+      path: '/config/profiles',
+      name: 'profiles',
+      component: () => import('@/views/Config/Profiles.vue'),
+    },
+    {
       path: '/collections',
       name: 'collections',
       component: () => import('@/views/Collections.vue'),

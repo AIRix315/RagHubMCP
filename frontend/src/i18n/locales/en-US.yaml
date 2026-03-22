@@ -108,6 +108,12 @@ profile:
   accurate_desc: "Quality priority for complex queries"
   apply: "Apply Profile"
   applied: "Applied {profile} configuration"
+  active: "Active"
+  select_profile: "Select a profile to quickly switch pipeline settings"
+  use_cases: "Use Cases"
+  show_details: "Show Details"
+  hide_details: "Hide Details"
+  currently_active: "Currently Active"
 
 # Errors
 errors:

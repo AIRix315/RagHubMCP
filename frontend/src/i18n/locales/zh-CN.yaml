@@ -108,6 +108,12 @@ profile:
   accurate_desc: "质量优先，适合复杂查询"
   apply: "应用预设"
   applied: "已应用{profile}配置"
+  active: "当前"
+  select_profile: "选择预设配置快速切换Pipeline设置"
+  use_cases: "适用场景"
+  show_details: "展开详情"
+  hide_details: "收起详情"
+  currently_active: "当前使用中"
 
 # 错误信息
 errors:
