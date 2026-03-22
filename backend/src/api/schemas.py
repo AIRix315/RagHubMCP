@@ -341,3 +341,43 @@ class SetDefaultProviderResponse(BaseModel):
     name: str = Field(..., description="Provider name")
     type: str = Field(..., description="Provider category")
     message: str = Field(default="Default provider updated")
+
+
+# =============================================================================
+# Rerank Compare API Models (Task 2.6)
+# =============================================================================
+
+
+class RerankCompareRequest(BaseModel):
+    """Request to compare multiple rerank engines."""
+
+    query: str = Field(..., min_length=1, description="Search query")
+    documents: list[str] = Field(..., min_length=1, description="Documents to rerank")
+    engines: list[str] = Field(..., min_length=2, description="Engine names to compare")
+    top_k: int = Field(default=5, ge=1, le=100, description="Number of results per engine")
+
+
+class EngineMetrics(BaseModel):
+    """Metrics for a single engine comparison."""
+
+    latency_ms: float = Field(..., description="Latency in milliseconds")
+    top1_score: float = Field(..., description="Top-1 result score")
+    avg_score: float = Field(..., description="Average score of results")
+
+
+class EngineComparison(BaseModel):
+    """Comparison result for a single engine."""
+
+    engine: str = Field(..., description="Engine name")
+    metrics: EngineMetrics = Field(..., description="Performance metrics")
+    results: list[RerankResult] = Field(default_factory=list, description="Reranked results")
+
+
+class RerankCompareResponse(BaseModel):
+    """Response from comparing multiple rerank engines."""
+
+    query: str = Field(..., description="Original query")
+    comparisons: list[EngineComparison] = Field(
+        default_factory=list, description="Comparison results per engine"
+    )
+    total_latency_ms: float = Field(..., description="Total comparison time")

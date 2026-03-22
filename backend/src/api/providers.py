@@ -27,12 +27,16 @@ from src.utils.config import get_config
 
 from .schemas import (
     ErrorResponse,
+    EngineComparison,
+    EngineMetrics,
     ProviderCreateRequest,
     ProviderDeleteResponse,
     ProviderInfo,
     ProvidersListResponse,
     ProviderStatus,
     ProviderUpdateResponse,
+    RerankCompareRequest,
+    RerankCompareResponse,
     RerankResult,
     RerankTestRequest,
     RerankTestResponse,
@@ -295,6 +299,98 @@ async def test_rerank_provider(name: str, request: RerankTestRequest) -> RerankT
             status_code=500,
             detail={"error": "test_failed", "message": f"Rerank test failed: {str(e)}"},
         )
+
+
+@router.post(
+    "/rerank/compare",
+    response_model=RerankCompareResponse,
+    responses={404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+)
+async def compare_rerank_engines(request: RerankCompareRequest) -> RerankCompareResponse:
+    """Compare multiple rerank engines.
+
+    Task 2.6.1: POST /api/providers/rerank/compare
+
+    Args:
+        request: Compare request with query, documents, and engine names
+
+    Returns:
+        RerankCompareResponse with comparison results.
+
+    Raises:
+        HTTPException: 404 if any engine not found, 500 on comparison failure
+    """
+    import time  # already imported at top
+
+    start_time = time.time()
+    comparisons: list[EngineComparison] = []
+
+    for engine_name in request.engines:
+        try:
+            provider = factory.get_rerank_provider(engine_name)
+        except Exception as e:
+            raise HTTPException(
+                status_code=404,
+                detail={"error": "provider_not_found", "message": f"Engine '{engine_name}' not found: {str(e)}"},
+            )
+
+        engine_start = time.time()
+
+        try:
+            # Call the provider's async rerank method
+            results = await provider.arerank(
+                query=request.query,
+                documents=request.documents,
+                top_k=request.top_k,
+            )
+            engine_latency = (time.time() - engine_start) * 1000
+
+            # Build result list
+            rerank_results = []
+            scores = []
+            for i, result in enumerate(results[: request.top_k]):
+                rerank_results.append(
+                    RerankResult(
+                        index=result.index,
+                        text=result.text or request.documents[result.index],
+                        score=result.score,
+                        rank=i + 1,
+                    )
+                )
+                scores.append(result.score)
+
+            # Calculate metrics
+            top1_score = scores[0] if scores else 0.0
+            avg_score = sum(scores) / len(scores) if scores else 0.0
+
+            comparisons.append(
+                EngineComparison(
+                    engine=engine_name,
+                    metrics=EngineMetrics(
+                        latency_ms=engine_latency,
+                        top1_score=top1_score,
+                        avg_score=avg_score,
+                    ),
+                    results=rerank_results,
+                )
+            )
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "error": "comparison_failed",
+                    "message": f"Engine '{engine_name}' comparison failed: {str(e)}",
+                },
+            )
+
+    total_latency = (time.time() - start_time) * 1000
+
+    return RerankCompareResponse(
+        query=request.query,
+        comparisons=comparisons,
+        total_latency_ms=total_latency,
+    )
 
 
 @router.put(
