@@ -88,3 +88,11 @@ TODO.md
 RULE.md
 Docs/
 scripts/AI_DEPLOYMENT_GUIDE.md
+
+# Packaged executable
+pack/dist/
+pack/build/
+pack/*.spec.cache
+
+# Runtime directory (created by packaged EXE)
+dist/runtime/

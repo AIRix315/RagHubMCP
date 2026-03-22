@@ -69,9 +69,17 @@ describe('router/index.ts', () => {
     expect(settingsRoute?.name).toBe('settings')
   })
 
+  it('should have rerank-providers route with correct path', () => {
+    const routes = router.getRoutes()
+    const rerankRoute = routes.find(route => route.path === '/config/providers/rerank')
+    
+    expect(rerankRoute).toBeDefined()
+    expect(rerankRoute?.name).toBe('rerank-providers')
+  })
+
   it('should have correct number of routes', () => {
     const routes = router.getRoutes()
-    expect(routes.length).toBe(5)
+    expect(routes.length).toBe(6)
   })
 
   it('should use createWebHistory', () => {

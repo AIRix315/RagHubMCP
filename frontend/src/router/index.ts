@@ -14,6 +14,11 @@ const router = createRouter({
       component: () => import('@/views/Config.vue'),
     },
     {
+      path: '/config/providers/rerank',
+      name: 'rerank-providers',
+      component: () => import('@/views/Config/Providers/Rerank.vue'),
+    },
+    {
       path: '/collections',
       name: 'collections',
       component: () => import('@/views/Collections.vue'),
