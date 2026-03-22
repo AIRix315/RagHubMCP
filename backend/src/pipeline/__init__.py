@@ -8,6 +8,8 @@ This module provides the unified RAG Pipeline architecture:
 - Retriever: Interface for document retrieval
 - Reranker: Interface for document reranking
 - ContextBuilder: Interface for context construction
+- QueryRewriter: Interface for query preprocessing
+- MultiQueryGenerator: Interface for multi-query generation
 - get_pipeline: Singleton pipeline accessor
 - execute_search: Convenience function for search
 - get_retrieval_multiplier: Get retrieval multiplier for profile
@@ -19,11 +21,28 @@ Reference:
 """
 
 from .base import RAGPipeline
-from .context_builder import ContextBuilder, DefaultContextBuilder
+from .context_builder import ContextBuilder, DefaultContextBuilder, MultiQueryContextBuilder
 from .default import DefaultRAGPipeline
 from .factory import PROFILES, PipelineFactory
 from .manager import create_pipeline, execute_search, get_pipeline, reset_pipeline
+from .multi_query import (
+    MultiQueryGenerator,
+    MultiQueryResult,
+    NoOpQueryGenerator,
+    QueryGenerationMode,
+    TemplateQueryGenerator,
+    create_multi_query_generator,
+)
 from .options import PipelineOptions
+from .query_rewrite import (
+    IdentityRewriter,
+    NormalizeRewriter,
+    QueryRewriter,
+    RewriteMode,
+    RewriteResult,
+    TemplateRewriter,
+    create_query_rewriter,
+)
 from .reranker import PipelineReranker
 from .result import Document, RAGResult
 from .retriever import HybridRetriever, Retriever
@@ -42,8 +61,8 @@ def get_retrieval_multiplier(profile: str = "balanced") -> float:
         Retrieval multiplier (e.g., 1.5 for fast, 2.0 for balanced, 3.0 for accurate).
     """
     profile_config = PROFILES.get(profile, PROFILES["balanced"])
-    value = profile_config.get("retrieval_multiplier", 2.0)
-    return float(value) if not isinstance(value, int | float) else float(value)
+    # PipelineProfileConfig is a Pydantic model, access attribute directly
+    return float(profile_config.retrieval_multiplier)
 
 
 __all__ = [
@@ -60,6 +79,22 @@ __all__ = [
     "PipelineReranker",
     "ContextBuilder",
     "DefaultContextBuilder",
+    "MultiQueryContextBuilder",
+    # Query rewriting
+    "QueryRewriter",
+    "RewriteMode",
+    "RewriteResult",
+    "IdentityRewriter",
+    "NormalizeRewriter",
+    "TemplateRewriter",
+    "create_query_rewriter",
+    # Multi-query
+    "MultiQueryGenerator",
+    "MultiQueryResult",
+    "QueryGenerationMode",
+    "NoOpQueryGenerator",
+    "TemplateQueryGenerator",
+    "create_multi_query_generator",
     # Convenience functions
     "get_pipeline",
     "reset_pipeline",
