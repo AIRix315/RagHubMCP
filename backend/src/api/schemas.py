@@ -244,3 +244,100 @@ class CollectionDeleteResponse(BaseModel):
 
     name: str = Field(..., description="Deleted collection name")
     message: str = Field(default="Collection deleted successfully")
+
+
+# =============================================================================
+# Provider API Models (Task 1.10)
+# =============================================================================
+
+
+class ProviderStatus(str, Enum):
+    """Provider status values."""
+
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ERROR = "error"
+
+
+class ProviderInfo(BaseModel):
+    """Information about a provider instance."""
+
+    name: str = Field(..., description="Provider instance name")
+    type: str = Field(..., description="Provider type (e.g., onnx, ollama, openai)")
+    status: ProviderStatus = Field(..., description="Provider status")
+    is_default: bool = Field(default=False, description="Whether this is the default provider")
+    model: str | None = Field(default=None, description="Model name")
+    config: dict[str, Any] | None = Field(default=None, description="Provider configuration")
+    error_message: str | None = Field(default=None, description="Error message if status is error")
+    capabilities: dict[str, Any] | None = Field(default=None, description="Provider capabilities")
+
+
+class ProvidersListResponse(BaseModel):
+    """Response listing all providers grouped by category."""
+
+    embedding: list[ProviderInfo] = Field(default_factory=list, description="Embedding providers")
+    rerank: list[ProviderInfo] = Field(default_factory=list, description="Rerank providers")
+    llm: list[ProviderInfo] = Field(default_factory=list, description="LLM providers")
+    vectorstore: list[ProviderInfo] = Field(
+        default_factory=list, description="Vector store providers"
+    )
+
+
+class RerankResult(BaseModel):
+    """Single rerank result."""
+
+    index: int = Field(..., ge=0, description="Original document index")
+    text: str = Field(..., description="Document text")
+    score: float = Field(..., ge=0.0, le=1.0, description="Relevance score (0.0 - 1.0)")
+    rank: int = Field(..., ge=1, description="Rank position (1-based)")
+    processing_time_ms: float | None = Field(default=None, description="Processing time")
+
+
+class RerankTestRequest(BaseModel):
+    """Request to test a rerank provider."""
+
+    query: str = Field(..., min_length=1, description="Search query")
+    documents: list[str] = Field(..., min_length=1, description="Documents to rerank")
+    top_k: int = Field(default=5, ge=1, le=100, description="Number of results to return")
+
+
+class RerankTestResponse(BaseModel):
+    """Response from testing a rerank provider."""
+
+    results: list[RerankResult] = Field(default_factory=list, description="Reranked results")
+    latency_ms: float = Field(..., description="Total latency in milliseconds")
+    engine_info: dict[str, Any] = Field(..., description="Engine information")
+    intermediate_scores: dict[str, list[float]] | None = Field(
+        default=None, description="Intermediate scores (raw, normalized)"
+    )
+
+
+class ProviderCreateRequest(BaseModel):
+    """Request to create or update a provider."""
+
+    type: str = Field(..., description="Provider type (e.g., onnx, ollama)")
+    config: dict[str, Any] = Field(..., description="Provider configuration")
+    set_as_default: bool = Field(default=False, description="Set as default provider")
+
+
+class ProviderUpdateResponse(BaseModel):
+    """Response after creating or updating a provider."""
+
+    name: str = Field(..., description="Provider name")
+    message: str = Field(..., description="Result message")
+    is_new: bool = Field(..., description="Whether this was a new provider")
+
+
+class ProviderDeleteResponse(BaseModel):
+    """Response after deleting a provider."""
+
+    name: str = Field(..., description="Deleted provider name")
+    message: str = Field(default="Provider deleted successfully")
+
+
+class SetDefaultProviderResponse(BaseModel):
+    """Response after setting default provider."""
+
+    name: str = Field(..., description="Provider name")
+    type: str = Field(..., description="Provider category")
+    message: str = Field(default="Default provider updated")

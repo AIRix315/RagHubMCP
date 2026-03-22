@@ -19,10 +19,21 @@ from .schemas import (
     IndexRequest,
     IndexResponse,
     IndexTaskStatus,
+    # Provider (Task 1.10)
+    ProviderCreateRequest,
+    ProviderDeleteResponse,
+    ProviderInfo,
+    ProvidersListResponse,
+    ProviderStatus,
+    ProviderUpdateResponse,
+    RerankResult,
+    RerankTestRequest,
+    RerankTestResponse,
     # Search
     SearchRequest,
     SearchResponse,
     SearchResult,
+    SetDefaultProviderResponse,
     SuccessResponse,
     TaskStatus,
 )
@@ -50,4 +61,15 @@ __all__ = [
     "BenchmarkResponse",
     "BenchmarkResult",
     "BenchmarkConfig",
+    # Provider (Task 1.10)
+    "ProviderInfo",
+    "ProviderStatus",
+    "ProvidersListResponse",
+    "RerankTestRequest",
+    "RerankTestResponse",
+    "RerankResult",
+    "ProviderCreateRequest",
+    "ProviderUpdateResponse",
+    "ProviderDeleteResponse",
+    "SetDefaultProviderResponse",
 ]
