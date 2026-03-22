@@ -219,3 +219,60 @@ class ONNXScorer(BaseScorer):
             "batch_size": self._batch_size,
             "providers": self._providers,
         }
+
+    def warmup(self, num_warmup: int = 3) -> float:
+        """Warmup the model to avoid cold-start latency.
+
+        Runs a few dummy inferences to load the model into memory
+        and optimize inference paths.
+
+        Args:
+            num_warmup: Number of warmup inferences.
+
+        Returns:
+            Total warmup time in milliseconds.
+        """
+        import time
+
+        dummy_query = "warmup query"
+        dummy_docs = ["warmup document"] * min(num_warmup, 10)
+
+        start_time = time.time()
+
+        # Force initialization
+        self._ensure_initialized()
+
+        # Run warmup inferences
+        for _ in range(num_warmup):
+            _ = self.compute_scores(dummy_query, dummy_docs)
+
+        warmup_ms = (time.time() - start_time) * 1000
+
+        logger.info(
+            f"ONNX model warmed up ({self.name}): "
+            f"{num_warmup} iterations, {warmup_ms:.2f}ms"
+        )
+
+        return warmup_ms
+
+    def get_model_info(self) -> dict[str, Any]:
+        """Get model information.
+
+        Returns:
+            Dictionary with model metadata.
+        """
+        self._ensure_initialized()
+
+        # Get input/output info
+        input_names = [inp.name for inp in self._session.get_inputs()]
+        output_names = [out.name for out in self._session.get_outputs()]
+
+        return {
+            "name": self.name,
+            "model_path": str(self._model_path),
+            "input_names": input_names,
+            "output_names": output_names,
+            "providers": self._session.get_providers(),
+            "max_length": self._max_length,
+            "batch_size": self._batch_size,
+        }

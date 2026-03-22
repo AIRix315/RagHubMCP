@@ -5,6 +5,8 @@ This module provides the core reranking engine with:
 - Configurable ranking strategies
 - Score post-processing pipeline
 - Full observability of intermediate states
+- Query caching for performance
+- Provider fallback for resilience
 
 Reference: Docs/20-RerankEngine-Architecture.md
 """
@@ -17,6 +19,8 @@ from .models import (
     ScorerType,
 )
 from .core import BaseScorer, BaseRankStrategy, BasePostProcessor, ScoredDocument
+from .cache import QueryCache, get_cache, reset_cache
+from .fallback import FallbackManager, get_fallback_manager, reset_fallback_manager
 
 __all__ = [
     # Models
@@ -30,4 +34,12 @@ __all__ = [
     "BaseRankStrategy",
     "BasePostProcessor",
     "ScoredDocument",
+    # Performance
+    "QueryCache",
+    "get_cache",
+    "reset_cache",
+    # Reliability
+    "FallbackManager",
+    "get_fallback_manager",
+    "reset_fallback_manager",
 ]
