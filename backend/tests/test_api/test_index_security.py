@@ -186,7 +186,7 @@ class TestPathSecurityIntegration:
         self, mock_get_config: MagicMock, client: TestClient, tmp_path: Path
     ) -> None:
         """Test that index endpoint rejects path traversal attempts."""
-        from src.utils.config import AppConfig, IndexerConfig
+        from raghub_mcp.utils.config import AppConfig, IndexerConfig
 
         # Setup allowed directories
         allowed_dir = tmp_path / "allowed"
@@ -230,7 +230,7 @@ class TestPathSecurityIntegration:
         self, mock_get_config: MagicMock, client: TestClient, tmp_path: Path
     ) -> None:
         """Test that index endpoint allows paths in configured directories."""
-        from src.utils.config import AppConfig, IndexerConfig
+        from raghub_mcp.utils.config import AppConfig, IndexerConfig
 
         # Setup allowed directory
         allowed_dir = tmp_path / "allowed"

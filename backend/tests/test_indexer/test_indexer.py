@@ -18,11 +18,11 @@ import pytest
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from src.chunkers import Chunk
-from src.indexer.indexer import Indexer, IndexResult
-from src.providers.embedding.base import BaseEmbeddingProvider
-from src.providers.vectorstore.base import BaseVectorStoreProvider
-from src.utils.config import IndexerConfig
+from raghub_mcp.chunkers import Chunk
+from raghub_mcp.indexer.indexer import Indexer, IndexResult
+from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
+from raghub_mcp.providers.vectorstore.base import BaseVectorStoreProvider
+from raghub_mcp.utils.config import IndexerConfig
 
 
 class MockEmbeddingProvider(BaseEmbeddingProvider):
@@ -89,7 +89,7 @@ def test_vectorstore(
     tmp_path: Path, mock_embedding: MockEmbeddingProvider
 ) -> BaseVectorStoreProvider:
     """Create a test vectorstore provider."""
-    from src.providers.vectorstore.chroma import ChromaProvider
+    from raghub_mcp.providers.vectorstore.chroma import ChromaProvider
 
     persist_dir = tmp_path / "chroma_vs"
     return ChromaProvider(

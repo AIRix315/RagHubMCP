@@ -13,7 +13,7 @@ Reference:
 import numpy as np
 import pytest
 
-from src.rerank_engine.core.scorer import BaseScorer
+from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
 
 class TestHybridFusionScorer:
@@ -22,14 +22,14 @@ class TestHybridFusionScorer:
     @pytest.fixture
     def hybrid_scorer(self):
         """Create HybridFusionScorer with default parameters."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         return HybridFusionScorer(vector_weight=0.7, fusion_method="linear")
 
     @pytest.fixture
     def hybrid_rrf(self):
         """Create HybridFusionScorer with RRF fusion."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         return HybridFusionScorer(fusion_method="rrf", k=60)
 
@@ -120,7 +120,7 @@ class TestHybridFusionScorer:
 
     def test_linear_fusion_vector_dominant(self):
         """Test fusion when vector weight is high."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         scorer = HybridFusionScorer(vector_weight=0.9)
 
@@ -134,7 +134,7 @@ class TestHybridFusionScorer:
 
     def test_linear_fusion_bm25_dominant(self):
         """Test fusion when BM25 weight is high."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         scorer = HybridFusionScorer(vector_weight=0.1)
 
@@ -148,7 +148,7 @@ class TestHybridFusionScorer:
 
     def test_linear_fusion_equal_weights(self):
         """Test fusion with equal weights (50/50)."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         scorer = HybridFusionScorer(vector_weight=0.5)
 
@@ -183,7 +183,7 @@ class TestHybridFusionScorer:
 
     def test_rrf_fusion_k_parameter(self):
         """Test RRF k parameter affects scoring."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         scorer_k10 = HybridFusionScorer(fusion_method="rrf", k=10)
         scorer_k60 = HybridFusionScorer(fusion_method="rrf", k=60)
@@ -233,7 +233,7 @@ class TestHybridFusionScorer:
 
     def test_fusion_method_comparison(self):
         """Compare different fusion methods produce different results."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         linear_scorer = HybridFusionScorer(fusion_method="linear", vector_weight=0.7)
         rrf_scorer = HybridFusionScorer(fusion_method="rrf", k=60)
@@ -255,7 +255,7 @@ class TestHybridFusionScorer:
 
     def test_weighted_rrf_fusion(self):
         """Test weighted RRF fusion."""
-        from src.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
+        from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 
         scorer = HybridFusionScorer(
             fusion_method="weighted_rrf",

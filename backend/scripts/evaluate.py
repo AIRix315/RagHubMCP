@@ -37,8 +37,8 @@ from pathlib import Path
 from typing import Any
 
 # Imports - use src/scripts/tests paths relative to backend directory
-from src.config.profiles import get_profile
-from src.pipeline import Document, RAGResult, get_pipeline
+from raghub_mcp.config.profiles import get_profile
+from raghub_mcp.pipeline import Document, RAGResult, get_pipeline
 from tests.test_evaluation.metrics import (
     calculate_noise_ratio,
     calculate_relevance_score,

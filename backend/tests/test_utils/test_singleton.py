@@ -1,6 +1,6 @@
 """Tests for singleton decorator."""
 
-from src.utils.singleton import reset_singleton, singleton
+from raghub_mcp.utils.singleton import reset_singleton, singleton
 
 
 @singleton

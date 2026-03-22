@@ -10,7 +10,7 @@ Reference: Cosine/Dot/Euclidean similarity calculations
 import numpy as np
 import pytest
 
-from src.rerank_engine.core.scorer import BaseScorer
+from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
 
 class TestVectorScorer:
@@ -19,21 +19,21 @@ class TestVectorScorer:
     @pytest.fixture
     def vector_scorer(self):
         """Create VectorScorer with cosine similarity."""
-        from src.rerank_engine.scorers.vector_scorer import VectorScorer
+        from raghub_mcp.rerank_engine.scorers.vector_scorer import VectorScorer
 
         return VectorScorer(similarity_fn="cosine")
 
     @pytest.fixture
     def vector_dot(self):
         """Create VectorScorer with dot product similarity."""
-        from src.rerank_engine.scorers.vector_scorer import VectorScorer
+        from raghub_mcp.rerank_engine.scorers.vector_scorer import VectorScorer
 
         return VectorScorer(similarity_fn="dot")
 
     @pytest.fixture
     def vector_euclidean(self):
         """Create VectorScorer with euclidean similarity."""
-        from src.rerank_engine.scorers.vector_scorer import VectorScorer
+        from raghub_mcp.rerank_engine.scorers.vector_scorer import VectorScorer
 
         return VectorScorer(similarity_fn="euclidean")
 
@@ -202,7 +202,7 @@ class TestVectorScorer:
 
     def test_different_similarity_functions(self):
         """Test that different similarity functions produce different results."""
-        from src.rerank_engine.scorers.vector_scorer import VectorScorer
+        from raghub_mcp.rerank_engine.scorers.vector_scorer import VectorScorer
 
         cosine = VectorScorer(similarity_fn="cosine")
         dot = VectorScorer(similarity_fn="dot")
@@ -246,7 +246,7 @@ class TestVectorScorer:
 
     def test_custom_similarity_fn(self):
         """Test creating scorer with custom similarity function."""
-        from src.rerank_engine.scorers.vector_scorer import VectorScorer
+        from raghub_mcp.rerank_engine.scorers.vector_scorer import VectorScorer
 
         scorer = VectorScorer(similarity_fn="dot")
         assert scorer.similarity_fn == "dot"

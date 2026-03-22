@@ -18,8 +18,8 @@ import pytest
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from src.indexer.scanner import FileInfo, FileScanner
-from src.utils.config import IndexerConfig
+from raghub_mcp.indexer.scanner import FileInfo, FileScanner
+from raghub_mcp.utils.config import IndexerConfig
 
 
 @pytest.fixture

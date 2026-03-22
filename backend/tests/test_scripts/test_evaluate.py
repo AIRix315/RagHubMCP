@@ -32,7 +32,7 @@ class TestEvaluationRunner:
     def sample_result(self):
         """Create a sample RAGResult for testing."""
         # Import locally to avoid import issues in test discovery
-        from src.pipeline import Document, RAGResult
+        from raghub_mcp.pipeline import Document, RAGResult
 
         return RAGResult(
             query="test query",
@@ -76,7 +76,7 @@ class TestEvaluationRunner:
     async def test_run_single_query(self, mock_pipeline, sample_result):
         """Test running a single evaluation query."""
         from scripts.evaluate import EvaluationRunner
-        from src.pipeline import RAGResult
+        from raghub_mcp.pipeline import RAGResult
 
         mock_pipeline.run.return_value = sample_result
 
@@ -114,7 +114,7 @@ class TestEvaluationRunner:
     def test_calculate_metrics(self, sample_result):
         """Test metrics calculation."""
         from scripts.evaluate import EvaluationRunner
-        from src.pipeline import Document
+        from raghub_mcp.pipeline import Document
 
         runner = EvaluationRunner(profile="balanced")
 
@@ -183,7 +183,7 @@ class TestEvaluationResult:
     def test_result_creation(self):
         """Test creating EvaluationResult."""
         from scripts.evaluate import EvaluationResult
-        from src.pipeline import Document
+        from raghub_mcp.pipeline import Document
 
         result = EvaluationResult(
             query_id=1,
@@ -201,7 +201,7 @@ class TestEvaluationResult:
     def test_result_to_dict(self):
         """Test EvaluationResult serialization."""
         from scripts.evaluate import EvaluationResult
-        from src.pipeline import Document
+        from raghub_mcp.pipeline import Document
 
         result = EvaluationResult(
             query_id=1,
@@ -280,7 +280,7 @@ class TestEdgeCases:
     async def test_empty_results(self):
         """Test handling empty results."""
         from scripts.evaluate import EvaluationRunner
-        from src.pipeline import RAGResult
+        from raghub_mcp.pipeline import RAGResult
 
         runner = EvaluationRunner(profile="balanced")
 

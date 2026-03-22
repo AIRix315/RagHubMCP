@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.utils.scoring import (
+from raghub_mcp.utils.scoring import (
     distance_to_score,
     normalize_scores,
     reciprocal_rank_fusion,

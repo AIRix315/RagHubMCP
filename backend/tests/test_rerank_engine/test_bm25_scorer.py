@@ -12,7 +12,7 @@ import math
 import numpy as np
 import pytest
 
-from src.rerank_engine.core.scorer import BaseScorer
+from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
 
 class TestBM25Scorer:
@@ -21,14 +21,14 @@ class TestBM25Scorer:
     @pytest.fixture
     def bm25_scorer(self):
         """Create BM25Scorer instance with default parameters."""
-        from src.rerank_engine.scorers.bm25_scorer import BM25Scorer
+        from raghub_mcp.rerank_engine.scorers.bm25_scorer import BM25Scorer
 
         return BM25Scorer(k1=1.2, b=0.75)
 
     @pytest.fixture
     def bm25_custom(self):
         """Create BM25Scorer with custom parameters."""
-        from src.rerank_engine.scorers.bm25_scorer import BM25Scorer
+        from raghub_mcp.rerank_engine.scorers.bm25_scorer import BM25Scorer
 
         return BM25Scorer(k1=2.0, b=0.5)
 

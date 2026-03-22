@@ -1,9 +1,20 @@
 # RagHubMCP 更新日志
 
-本文件记录项目所有重要变更。
+---
 
-格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
-版本本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+## [2.6.0] - 2026-03-23
+
+### Changed
+- 包名重构: `src` → `raghub_mcp` (符合Python规范)
+- 所有导入: `from src.xxx` → `from raghub_mcp.xxx`
+
+### Added
+- Go打包程序: pack/go/ (9源文件 + 6测试文件)
+- REST/MCP服务启动验证通过
+
+### Fixed
+- MCP服务器: `streamable_http_app()` → `sse_app()`
+- 导入路径修正
 
 ---
 

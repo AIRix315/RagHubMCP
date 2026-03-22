@@ -19,7 +19,7 @@ import pytest
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from src.indexer.watcher import (
+from raghub_mcp.indexer.watcher import (
     DebouncedEventHandler,
     FileEvent,
     FileEventType,
@@ -347,7 +347,7 @@ class TestSingleton:
 
     def test_get_watcher_singleton(self):
         """测试单例获取"""
-        from src.indexer.watcher import get_watcher
+        from raghub_mcp.indexer.watcher import get_watcher
 
         config = WatcherConfig(debounce_seconds=0.5)
         watcher1 = get_watcher(config, lambda events: None)
@@ -357,7 +357,7 @@ class TestSingleton:
 
     def test_reset_watcher(self):
         """测试重置单例"""
-        from src.indexer.watcher import get_watcher
+        from raghub_mcp.indexer.watcher import get_watcher
 
         watcher1 = get_watcher(WatcherConfig(), lambda events: None)
         reset_watcher()

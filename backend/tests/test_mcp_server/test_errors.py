@@ -2,7 +2,7 @@
 
 import json
 
-from src.mcp_server.tools._errors import (
+from raghub_mcp.mcp_server.tools._errors import (
     error_response,
     success_response,
     validate_collection_name,

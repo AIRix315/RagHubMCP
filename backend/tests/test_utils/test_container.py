@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.utils.container import Container, get_container, inject, injectable, reset_container
+from raghub_mcp.utils.container import Container, get_container, inject, injectable, reset_container
 
 
 class TestContainer:
@@ -116,7 +116,7 @@ class TestGlobalContainer:
 
         # After reset, should get a new container
         # The module variable should be None
-        from src.utils.container import _container
+        from raghub_mcp.utils.container import _container
 
         assert _container is None
 
