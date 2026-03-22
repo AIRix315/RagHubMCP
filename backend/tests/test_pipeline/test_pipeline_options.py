@@ -22,7 +22,7 @@ class TestPipelineOptions:
         options = PipelineOptions()
 
         assert options.collection == "default"
-        assert options.topK == 5
+        assert options.top_k == 5  # Changed from topK to top_k
         assert options.rerank is True
         assert options.rerank_provider is None
         assert options.embedding_provider is None
@@ -36,7 +36,7 @@ class TestPipelineOptions:
         """Test PipelineOptions with custom values."""
         options = PipelineOptions(
             collection="my_collection",
-            topK=10,
+            top_k=10,  # Changed from topK to top_k
             rerank=False,
             rerank_provider="flashrank",
             embedding_provider="openai",
@@ -48,7 +48,7 @@ class TestPipelineOptions:
         )
 
         assert options.collection == "my_collection"
-        assert options.topK == 10
+        assert options.top_k == 10  # Changed from topK to top_k
         assert options.rerank is False
         assert options.rerank_provider == "flashrank"
         assert options.embedding_provider == "openai"
@@ -66,7 +66,7 @@ class TestPipelineOptionsToDict:
         """Test to_dict returns all fields."""
         options = PipelineOptions(
             collection="test_collection",
-            topK=7,
+            top_k=7,  # Changed from topK to top_k
             rerank=True,
             rerank_provider="cohere",
         )
@@ -75,7 +75,7 @@ class TestPipelineOptionsToDict:
 
         assert isinstance(result, dict)
         assert result["collection"] == "test_collection"
-        assert result["topK"] == 7
+        assert result["topK"] == 7  # to_dict converts to topK for API compatibility
         assert result["rerank"] is True
         assert result["rerank_provider"] == "cohere"
 
@@ -119,7 +119,7 @@ class TestPipelineOptionsFromDict:
         """Test from_dict with all fields."""
         data = {
             "collection": "custom_collection",
-            "topK": 15,
+            "topK": 15,  # API uses topK, from_dict handles conversion
             "rerank": False,
             "rerank_provider": "test_provider",
             "embedding_provider": "test_embedding",
@@ -133,7 +133,7 @@ class TestPipelineOptionsFromDict:
         options = PipelineOptions.from_dict(data)
 
         assert options.collection == "custom_collection"
-        assert options.topK == 15
+        assert options.top_k == 15  # Changed from topK to top_k
         assert options.rerank is False
         assert options.rerank_provider == "test_provider"
         assert options.embedding_provider == "test_embedding"
@@ -153,7 +153,7 @@ class TestPipelineOptionsFromDict:
         options = PipelineOptions.from_dict(data)
 
         assert options.collection == "my_collection"
-        assert options.topK == 8
+        assert options.top_k == 8  # Changed from topK to top_k
         assert options.rerank is True  # default
         assert options.profile == "balanced"  # default
 
@@ -162,7 +162,7 @@ class TestPipelineOptionsFromDict:
         options = PipelineOptions.from_dict({})
 
         assert options.collection == "default"
-        assert options.topK == 5
+        assert options.top_k == 5  # Changed from topK to top_k
         assert options.rerank is True
         assert options.profile == "balanced"
 
@@ -179,6 +179,18 @@ class TestPipelineOptionsFromDict:
         assert options.collection == "test"
         assert options.rerank_provider is None
         assert options.where is None
+
+    def test_from_dict_with_top_k_key(self):
+        """Test from_dict handles both topK and top_k keys."""
+        # Test with top_k key
+        data = {"top_k": 20}
+        options = PipelineOptions.from_dict(data)
+        assert options.top_k == 20
+
+        # Test with topK key (API format)
+        data = {"topK": 25}
+        options = PipelineOptions.from_dict(data)
+        assert options.top_k == 25
 
 
 class TestPipelineOptionsFromRequest:
@@ -198,7 +210,7 @@ class TestPipelineOptionsFromRequest:
         options = PipelineOptions.from_request(request)
 
         assert options.collection == "request_collection"
-        assert options.topK == 20
+        assert options.top_k == 20  # Changed from topK to top_k
         assert options.rerank is False
         assert options.rerank_provider == "flashrank"
         assert options.embedding_provider == "openai"
@@ -213,7 +225,7 @@ class TestPipelineOptionsFromRequest:
 
         # Should use defaults from getattr
         assert options.collection == "default"
-        assert options.topK == 5
+        assert options.top_k == 5  # Changed from topK to top_k
         assert options.rerank is True
 
     def test_from_request_partial_attributes(self):
@@ -230,7 +242,7 @@ class TestPipelineOptionsFromRequest:
         options = PipelineOptions.from_request(request)
 
         assert options.collection == "partial_collection"
-        assert options.topK == 5
+        assert options.top_k == 5  # Changed from topK to top_k
 
     def test_from_request_profile_defaults_to_balanced(self):
         """Test from_request always uses balanced profile."""
@@ -251,7 +263,7 @@ class TestPipelineOptionsRoundTrip:
         """Test to_dict -> from_dict roundtrip preserves data."""
         original = PipelineOptions(
             collection="roundtrip",
-            topK=12,
+            top_k=12,  # Changed from topK to top_k
             rerank=True,
             rerank_provider="test",
             where={"key": "value"},
@@ -264,7 +276,7 @@ class TestPipelineOptionsRoundTrip:
         restored = PipelineOptions.from_dict(data)
 
         assert restored.collection == original.collection
-        assert restored.topK == original.topK
+        assert restored.top_k == original.top_k  # Changed from topK to top_k
         assert restored.rerank == original.rerank
         assert restored.rerank_provider == original.rerank_provider
         assert restored.where == original.where
