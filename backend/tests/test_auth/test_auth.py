@@ -22,7 +22,7 @@ class TestUserModel:
 
     def test_create_user(self):
         """TC-3.2.1: User can be created with required fields."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -39,7 +39,7 @@ class TestUserModel:
 
     def test_create_user_with_create_method(self):
         """TC-3.2.1: User can be created with create() class method."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User.create(
             email="test@example.com",
@@ -54,7 +54,7 @@ class TestUserModel:
 
     def test_user_to_dict(self):
         """TC-3.2.1: User can be converted to dictionary."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -73,7 +73,7 @@ class TestUserModel:
 
     def test_user_default_role(self):
         """TC-3.2.1: User has default role of USER."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -90,7 +90,7 @@ class TestRoleModel:
 
     def test_role_enum_values(self):
         """TC-3.2.1: Role enum has expected values."""
-        from auth.models import Role
+        from raghub_mcp.auth.models import Role
 
         assert Role.ADMIN.value == "admin"
         assert Role.MANAGER.value == "manager"
@@ -99,7 +99,7 @@ class TestRoleModel:
 
     def test_admin_has_all_permissions(self):
         """TC-3.2.1: Admin role has all permissions."""
-        from auth.models import Role
+        from raghub_mcp.auth.models import Role
 
         permissions = Role.ADMIN.get_permissions()
 
@@ -111,7 +111,7 @@ class TestRoleModel:
 
     def test_viewer_has_limited_permissions(self):
         """TC-3.2.1: Viewer role has limited permissions."""
-        from auth.models import Role
+        from raghub_mcp.auth.models import Role
 
         permissions = Role.VIEWER.get_permissions()
 
@@ -125,7 +125,7 @@ class TestTenantModel:
 
     def test_create_tenant(self):
         """TC-3.2.1: Tenant can be created."""
-        from auth.models import Tenant
+        from raghub_mcp.auth.models import Tenant
 
         tenant = Tenant.create(name="My Org", slug="my-org")
 
@@ -137,7 +137,7 @@ class TestTenantModel:
 
     def test_tenant_to_dict(self):
         """TC-3.2.1: Tenant can be converted to dictionary."""
-        from auth.models import Tenant
+        from raghub_mcp.auth.models import Tenant
 
         tenant = Tenant(
             id="tenant-1",
@@ -159,7 +159,7 @@ class TestPasswordHashing:
 
     def test_hash_password(self):
         """TC-3.2.2: Password can be hashed."""
-        from auth.security import hash_password
+        from raghub_mcp.auth.security import hash_password
 
         hashed = hash_password("my_password")
 
@@ -168,7 +168,7 @@ class TestPasswordHashing:
 
     def test_verify_password_correct(self):
         """TC-3.2.2: Correct password verifies."""
-        from auth.security import hash_password, verify_password
+        from raghub_mcp.auth.security import hash_password, verify_password
 
         hashed = hash_password("my_password")
 
@@ -176,7 +176,7 @@ class TestPasswordHashing:
 
     def test_verify_password_incorrect(self):
         """TC-3.2.2: Incorrect password fails verification."""
-        from auth.security import hash_password, verify_password
+        from raghub_mcp.auth.security import hash_password, verify_password
 
         hashed = hash_password("my_password")
 
@@ -184,7 +184,7 @@ class TestPasswordHashing:
 
     def test_different_passwords_different_hashes(self):
         """TC-3.2.2: Same password produces different hashes (salt)."""
-        from auth.security import hash_password
+        from raghub_mcp.auth.security import hash_password
 
         hash1 = hash_password("my_password")
         hash2 = hash_password("my_password")
@@ -201,7 +201,7 @@ class TestJWTToken:
 
     def test_create_access_token(self):
         """TC-3.2.3: Access token can be created."""
-        from auth.security import create_access_token
+        from raghub_mcp.auth.security import create_access_token
 
         token = create_access_token(data={"sub": "user-1", "email": "test@example.com"})
 
@@ -211,7 +211,7 @@ class TestJWTToken:
 
     def test_decode_access_token(self):
         """TC-3.2.3: Access token can be decoded."""
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         token = create_access_token(data={"sub": "user-1", "email": "test@example.com"})
 
@@ -222,7 +222,7 @@ class TestJWTToken:
 
     def test_decode_invalid_token_fails(self):
         """TC-3.2.3: Invalid token raises error."""
-        from auth.security import decode_access_token
+        from raghub_mcp.auth.security import decode_access_token
 
         with pytest.raises(ValueError):
             decode_access_token("invalid_token")
@@ -231,7 +231,7 @@ class TestJWTToken:
         """TC-3.2.3: Token can have custom expiry."""
         from datetime import timedelta
 
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         token = create_access_token(data={"sub": "user-1"}, expires_delta=timedelta(hours=1))
 
@@ -245,7 +245,7 @@ class TestPermissionChecking:
 
     def test_user_has_permission(self):
         """TC-3.2.4: User has_permission method works."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -261,7 +261,7 @@ class TestPermissionChecking:
 
     def test_admin_has_all_permissions(self):
         """TC-3.2.4: Admin has all permissions."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="admin-1",
@@ -276,7 +276,7 @@ class TestPermissionChecking:
 
     def test_superuser_has_all_permissions(self):
         """TC-3.2.4: Superuser has all permissions."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="super-1",
@@ -292,7 +292,7 @@ class TestPermissionChecking:
 
     def test_check_permission_raises_on_denied(self):
         """TC-3.2.4: check_permission raises PermissionError."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -311,7 +311,7 @@ class TestRoleChecker:
 
     def test_role_checker_allows_correct_role(self):
         """TC-3.2.4: RoleChecker allows user with correct role."""
-        from auth.dependencies import MockUser, RoleChecker
+        from raghub_mcp.auth.dependencies import MockUser, RoleChecker
 
         checker = RoleChecker(["admin", "user"])
         user = MockUser(role="user")
@@ -321,7 +321,7 @@ class TestRoleChecker:
 
     def test_role_checker_denies_wrong_role(self):
         """TC-3.2.4: RoleChecker denies user with wrong role."""
-        from auth.dependencies import MockUser, RoleChecker
+        from raghub_mcp.auth.dependencies import MockUser, RoleChecker
 
         checker = RoleChecker(["admin"])
         user = MockUser(role="viewer")
@@ -340,7 +340,7 @@ class TestPasswordValidator:
 
     def test_validate_good_password(self):
         """Good password passes validation."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         is_valid, errors = PasswordValidator.validate("GoodPass123")
 
@@ -349,7 +349,7 @@ class TestPasswordValidator:
 
     def test_validate_short_password(self):
         """Short password fails validation."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         is_valid, errors = PasswordValidator.validate("short")
 
@@ -358,7 +358,7 @@ class TestPasswordValidator:
 
     def test_validate_no_uppercase(self):
         """Password without uppercase fails."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         is_valid, errors = PasswordValidator.validate("goodpass123")
 
@@ -367,7 +367,7 @@ class TestPasswordValidator:
 
     def test_validate_no_digit(self):
         """Password without digit fails."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         is_valid, errors = PasswordValidator.validate("GoodPassword")
 
@@ -376,7 +376,7 @@ class TestPasswordValidator:
 
     def test_validate_no_lowercase(self):
         """Password without lowercase fails."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         is_valid, errors = PasswordValidator.validate("GOODPASS123")
 
@@ -391,7 +391,7 @@ class TestTokenPayload:
         """TokenPayload can be created."""
         from datetime import UTC, datetime
 
-        from auth.models import TokenPayload
+        from raghub_mcp.auth.models import TokenPayload
 
         exp = datetime.now(UTC)
         payload = TokenPayload(
@@ -411,7 +411,7 @@ class TestTokenPayload:
         """TokenPayload can be converted to dict for JWT."""
         from datetime import UTC, datetime
 
-        from auth.models import TokenPayload
+        from raghub_mcp.auth.models import TokenPayload
 
         exp = datetime.now(UTC)
         payload = TokenPayload(
@@ -437,7 +437,7 @@ class TestToken:
 
     def test_create_token(self):
         """Token can be created."""
-        from auth.models import Token
+        from raghub_mcp.auth.models import Token
 
         token = Token(access_token="my-jwt-token")
 
@@ -447,7 +447,7 @@ class TestToken:
 
     def test_token_to_dict(self):
         """Token can be converted to dictionary."""
-        from auth.models import Token
+        from raghub_mcp.auth.models import Token
 
         token = Token(
             access_token="my-jwt-token",
@@ -467,7 +467,7 @@ class TestUserToJson:
 
     def test_user_to_json(self):
         """User can be serialized to JSON."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -490,7 +490,7 @@ class TestManagerRole:
 
     def test_manager_permissions(self):
         """Manager has expected permissions."""
-        from auth.models import Role
+        from raghub_mcp.auth.models import Role
 
         permissions = Role.MANAGER.get_permissions()
 
@@ -508,7 +508,7 @@ class TestRefreshToken:
 
     def test_create_refresh_token(self):
         """Refresh token can be created."""
-        from auth.security import create_refresh_token
+        from raghub_mcp.auth.security import create_refresh_token
 
         token = create_refresh_token(data={"sub": "user-1", "email": "test@example.com"})
 
@@ -518,7 +518,11 @@ class TestRefreshToken:
 
     def test_refresh_token_longer_expiry(self):
         """Refresh token has longer expiry than access token."""
-        from auth.security import create_access_token, create_refresh_token, decode_access_token
+        from raghub_mcp.auth.security import (
+            create_access_token,
+            create_refresh_token,
+            decode_access_token,
+        )
 
         access_token = create_access_token(data={"sub": "user-1"})
         refresh_token = create_refresh_token(data={"sub": "user-1"})
@@ -535,7 +539,7 @@ class TestApiKeyGeneration:
 
     def test_generate_api_key(self):
         """API key can be generated."""
-        from auth.security import generate_api_key
+        from raghub_mcp.auth.security import generate_api_key
 
         key = generate_api_key()
 
@@ -545,7 +549,7 @@ class TestApiKeyGeneration:
 
     def test_api_keys_are_unique(self):
         """Each generated API key is unique."""
-        from auth.security import generate_api_key
+        from raghub_mcp.auth.security import generate_api_key
 
         key1 = generate_api_key()
         key2 = generate_api_key()
@@ -558,19 +562,19 @@ class TestConstantTimeCompare:
 
     def test_constant_time_compare_equal(self):
         """Equal strings compare as True."""
-        from auth.security import constant_time_compare
+        from raghub_mcp.auth.security import constant_time_compare
 
         assert constant_time_compare("hello", "hello") is True
 
     def test_constant_time_compare_not_equal(self):
         """Different strings compare as False."""
-        from auth.security import constant_time_compare
+        from raghub_mcp.auth.security import constant_time_compare
 
         assert constant_time_compare("hello", "world") is False
 
     def test_constant_time_compare_empty(self):
         """Empty strings compare correctly."""
-        from auth.security import constant_time_compare
+        from raghub_mcp.auth.security import constant_time_compare
 
         assert constant_time_compare("", "") is True
         assert constant_time_compare("a", "") is False
@@ -581,7 +585,7 @@ class TestSecurityAvailability:
 
     def test_is_bcrypt_available(self):
         """Can check if bcrypt is available."""
-        from auth.security import is_bcrypt_available
+        from raghub_mcp.auth.security import is_bcrypt_available
 
         result = is_bcrypt_available()
 
@@ -589,7 +593,7 @@ class TestSecurityAvailability:
 
     def test_is_jose_available(self):
         """Can check if python-jose is available."""
-        from auth.security import is_jose_available
+        from raghub_mcp.auth.security import is_jose_available
 
         result = is_jose_available()
 
@@ -603,7 +607,7 @@ class TestTokenErrorHandling:
         """Expired token raises error."""
         from datetime import timedelta
 
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         # Create token that's already expired
         token = create_access_token(data={"sub": "user-1"}, expires_delta=timedelta(seconds=-1))
@@ -613,7 +617,7 @@ class TestTokenErrorHandling:
 
     def test_decode_token_wrong_key(self):
         """Token with wrong key raises error."""
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         token = create_access_token(data={"sub": "user-1"}, secret_key="correct-secret")
 
@@ -622,7 +626,7 @@ class TestTokenErrorHandling:
 
     def test_decode_malformed_token(self):
         """Malformed token raises error."""
-        from auth.security import decode_access_token
+        from raghub_mcp.auth.security import decode_access_token
 
         with pytest.raises(ValueError):
             decode_access_token("not.a.valid.jwt")
@@ -635,7 +639,7 @@ class TestPermissionChecker:
         """PermissionChecker allows user with permission."""
         from unittest.mock import MagicMock
 
-        from auth.dependencies import PermissionChecker
+        from raghub_mcp.auth.dependencies import PermissionChecker
 
         checker = PermissionChecker("indexes:read")
         user = MagicMock()
@@ -649,7 +653,7 @@ class TestPermissionChecker:
         """PermissionChecker allows superuser."""
         from unittest.mock import MagicMock
 
-        from auth.dependencies import PermissionChecker
+        from raghub_mcp.auth.dependencies import PermissionChecker
 
         checker = PermissionChecker("any:permission")
         user = MagicMock()
@@ -662,7 +666,7 @@ class TestPermissionChecker:
         """PermissionChecker denies user without permission."""
         from unittest.mock import MagicMock
 
-        from auth.dependencies import PermissionChecker
+        from raghub_mcp.auth.dependencies import PermissionChecker
 
         checker = PermissionChecker("indexes:delete")
         user = MagicMock()
@@ -681,7 +685,7 @@ class TestTenantId:
 
     def test_get_tenant_id_from_user(self):
         """Tenant ID can be extracted from user."""
-        from auth.dependencies import MockUser, get_tenant_id
+        from raghub_mcp.auth.dependencies import MockUser, get_tenant_id
 
         user = MockUser(tenant_id="custom-tenant")
 
@@ -691,7 +695,7 @@ class TestTenantId:
 
     def test_get_tenant_id_no_user(self):
         """Default tenant returned when no user."""
-        from auth.dependencies import get_tenant_id
+        from raghub_mcp.auth.dependencies import get_tenant_id
 
         tenant_id = get_tenant_id(None)
 
@@ -703,7 +707,7 @@ class TestGetCurrentUser:
 
     def test_get_current_user_returns_mock(self):
         """get_current_user returns mock user without FastAPI."""
-        from auth.dependencies import get_current_user
+        from raghub_mcp.auth.dependencies import get_current_user
 
         user = get_current_user()
 
@@ -717,7 +721,7 @@ class TestGetCurrentActiveUser:
 
     def test_get_current_active_user_returns_user(self):
         """get_current_active_user returns user when active."""
-        from auth.dependencies import MockUser, get_current_active_user
+        from raghub_mcp.auth.dependencies import MockUser, get_current_active_user
 
         user = MockUser(is_active=True)
 
@@ -727,7 +731,7 @@ class TestGetCurrentActiveUser:
 
     def test_get_current_active_user_inactive_raises(self):
         """get_current_active_user raises for inactive user."""
-        from auth.dependencies import MockUser, get_current_active_user
+        from raghub_mcp.auth.dependencies import MockUser, get_current_active_user
 
         user = MockUser(is_active=False)
 
@@ -743,7 +747,7 @@ class TestFastApiAvailability:
 
     def test_is_fastapi_available(self):
         """Can check if FastAPI is available."""
-        from auth.dependencies import is_fastapi_available
+        from raghub_mcp.auth.dependencies import is_fastapi_available
 
         result = is_fastapi_available()
 
@@ -757,8 +761,8 @@ class TestRoleCheckerWithEnum:
         """RoleChecker handles Enum role correctly."""
         from unittest.mock import MagicMock
 
-        from auth.dependencies import RoleChecker
-        from auth.models import Role
+        from raghub_mcp.auth.dependencies import RoleChecker
+        from raghub_mcp.auth.models import Role
 
         checker = RoleChecker(["user"])
         user = MagicMock()
@@ -771,7 +775,7 @@ class TestRoleCheckerWithEnum:
         """RoleChecker handles role object with value attribute."""
         from unittest.mock import MagicMock
 
-        from auth.dependencies import RoleChecker
+        from raghub_mcp.auth.dependencies import RoleChecker
 
         class MockRole:
             value = "admin"
@@ -789,7 +793,7 @@ class TestPasswordValidatorEdgeCases:
 
     def test_validate_all_errors(self):
         """Password fails all validation rules."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         is_valid, errors = PasswordValidator.validate("x")
 
@@ -798,7 +802,7 @@ class TestPasswordValidatorEdgeCases:
 
     def test_validate_minimum_valid(self):
         """Minimum valid password passes."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         is_valid, errors = PasswordValidator.validate("Abcdefg1")
 
@@ -811,7 +815,7 @@ class TestModuleExports:
 
     def test_auth_module_exports(self):
         """Auth module exports expected symbols."""
-        from auth import (
+        from raghub_mcp.auth import (
             Role,
             Tenant,
             User,
@@ -837,7 +841,7 @@ class TestConvenienceExports:
 
     def test_require_admin_exists(self):
         """require_admin is available."""
-        from auth.dependencies import require_admin
+        from raghub_mcp.auth.dependencies import require_admin
 
         assert require_admin is not None
         assert hasattr(require_admin, "allowed_roles")
@@ -845,21 +849,21 @@ class TestConvenienceExports:
 
     def test_require_manager_exists(self):
         """require_manager is available."""
-        from auth.dependencies import require_manager
+        from raghub_mcp.auth.dependencies import require_manager
 
         assert require_manager is not None
         assert "manager" in require_manager.allowed_roles
 
     def test_require_user_exists(self):
         """require_user is available."""
-        from auth.dependencies import require_user
+        from raghub_mcp.auth.dependencies import require_user
 
         assert require_user is not None
         assert "user" in require_user.allowed_roles
 
     def test_require_viewer_exists(self):
         """require_viewer is available."""
-        from auth.dependencies import require_viewer
+        from raghub_mcp.auth.dependencies import require_viewer
 
         assert require_viewer is not None
         assert "viewer" in require_viewer.allowed_roles
@@ -870,7 +874,7 @@ class TestTokenWithCustomSecret:
 
     def test_create_token_with_custom_secret(self):
         """Token can be created with custom secret."""
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         custom_secret = "my-custom-secret-key-12345"
         token = create_access_token(data={"sub": "user-1"}, secret_key=custom_secret)
@@ -880,7 +884,7 @@ class TestTokenWithCustomSecret:
 
     def test_create_token_with_custom_algorithm(self):
         """Token can be created with custom algorithm."""
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         token = create_access_token(data={"sub": "user-1"}, algorithm="HS256")
 
@@ -893,7 +897,7 @@ class TestTenantMetadata:
 
     def test_tenant_with_metadata(self):
         """Tenant can have custom metadata."""
-        from auth.models import Tenant
+        from raghub_mcp.auth.models import Tenant
 
         tenant = Tenant(
             id="tenant-1",
@@ -907,7 +911,7 @@ class TestTenantMetadata:
 
     def test_tenant_inactive(self):
         """Tenant can be marked inactive."""
-        from auth.models import Tenant
+        from raghub_mcp.auth.models import Tenant
 
         tenant = Tenant(id="tenant-1", name="Test Org", slug="test-org", is_active=False)
 
@@ -919,7 +923,7 @@ class TestUserMetadata:
 
     def test_user_with_metadata(self):
         """User can have custom metadata."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -936,7 +940,7 @@ class TestUserMetadata:
         """User has created_at and updated_at timestamps."""
         from datetime import datetime
 
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="user-1",
@@ -955,7 +959,7 @@ class TestImportFallbacks:
 
     def test_password_validator_require_special(self):
         """Test PasswordValidator with special character requirement."""
-        from auth.security import PasswordValidator
+        from raghub_mcp.auth.security import PasswordValidator
 
         # Save original value
         original = PasswordValidator.REQUIRE_SPECIAL
@@ -982,7 +986,7 @@ class TestPasswordVerificationEdgeCases:
 
     def test_verify_password_with_bcrypt_hash(self):
         """Verify password works with bcrypt hashes."""
-        from auth.security import hash_password, verify_password
+        from raghub_mcp.auth.security import hash_password, verify_password
 
         password = "SecurePassword123"
         hashed = hash_password(password)
@@ -995,7 +999,7 @@ class TestPasswordVerificationEdgeCases:
 
     def test_hash_password_returns_different_hash_each_time(self):
         """Each hash_password call produces a unique hash (salt)."""
-        from auth.security import hash_password
+        from raghub_mcp.auth.security import hash_password
 
         password = "SamePassword123"
         hash1 = hash_password(password)
@@ -1010,7 +1014,7 @@ class TestJwtTokenEdgeCases:
 
     def test_token_contains_iat_claim(self):
         """Token contains issued-at timestamp."""
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         token = create_access_token(data={"sub": "user-1"})
         payload = decode_access_token(token)
@@ -1020,7 +1024,7 @@ class TestJwtTokenEdgeCases:
 
     def test_token_with_additional_claims(self):
         """Token can contain additional custom claims."""
-        from auth.security import create_access_token, decode_access_token
+        from raghub_mcp.auth.security import create_access_token, decode_access_token
 
         token = create_access_token(
             data={"sub": "user-1", "custom_claim": "custom_value", "role": "admin"}
@@ -1037,7 +1041,7 @@ class TestUserPermissionEdgeCases:
 
     def test_inactive_superuser_still_has_permissions(self):
         """Inactive superuser still has all permissions."""
-        from auth.models import Role, User
+        from raghub_mcp.auth.models import Role, User
 
         user = User(
             id="super-1",
@@ -1054,7 +1058,7 @@ class TestUserPermissionEdgeCases:
 
     def test_user_with_no_role_has_default_permissions(self):
         """User created without role gets default USER role."""
-        from auth.models import User
+        from raghub_mcp.auth.models import User
 
         user = User(
             id="user-1",
@@ -1076,7 +1080,7 @@ class TestRoleCheckerEdgeCases:
         """RoleChecker handles user without role attribute."""
         from unittest.mock import MagicMock
 
-        from auth.dependencies import RoleChecker
+        from raghub_mcp.auth.dependencies import RoleChecker
 
         checker = RoleChecker(["admin"])
         user = MagicMock(spec=[])  # User without 'role' attribute
@@ -1089,7 +1093,7 @@ class TestRoleCheckerEdgeCases:
 
     def test_role_checker_with_none_user(self):
         """RoleChecker handles None user."""
-        from auth.dependencies import RoleChecker
+        from raghub_mcp.auth.dependencies import RoleChecker
 
         checker = RoleChecker(["admin"])
 

@@ -64,9 +64,7 @@ class VectorScorer(BaseScorer):
         self._embedding_provider = embedding_provider
 
         if similarity_fn not in ("cosine", "dot", "euclidean"):
-            logger.warning(
-                f"Unknown similarity function '{similarity_fn}', using 'cosine'"
-            )
+            logger.warning(f"Unknown similarity function '{similarity_fn}', using 'cosine'")
             self.similarity_fn = "cosine"
 
     @property

@@ -190,9 +190,7 @@ class APIScorer(BaseScorer):
                     elif response.status_code == 429:
                         # Rate limited, wait longer
                         retry_after = float(response.headers.get("Retry-After", "60"))
-                        logger.warning(
-                            f"{self._provider} rate limited, waiting {retry_after}s"
-                        )
+                        logger.warning(f"{self._provider} rate limited, waiting {retry_after}s")
                         await asyncio.sleep(retry_after)
                         continue
 
@@ -243,7 +241,7 @@ class APIScorer(BaseScorer):
                 await asyncio.sleep(backoff)
 
         raise last_error or APIScorerError(
-            f"Max retries exceeded",
+            "Max retries exceeded",
             self._provider,
         )
 
@@ -504,7 +502,4 @@ def create_api_scorer(
             **kwargs,
         )
     else:
-        raise ValueError(
-            f"Unsupported API provider: {provider}. "
-            f"Supported providers: cohere, jina"
-        )
+        raise ValueError(f"Unsupported API provider: {provider}. Supported providers: cohere, jina")

@@ -21,7 +21,7 @@ class TestChunkDataclass:
 
     def test_chunk_creation(self):
         """Chunk can be created with required fields."""
-        from chunkers.base import Chunk
+        from raghub_mcp.chunkers.base import Chunk
 
         chunk = Chunk(text="Hello world", start=0, end=11)
 
@@ -32,7 +32,7 @@ class TestChunkDataclass:
 
     def test_chunk_with_metadata(self):
         """Chunk can include metadata."""
-        from chunkers.base import Chunk
+        from raghub_mcp.chunkers.base import Chunk
 
         chunk = Chunk(
             text="Test", start=0, end=4, metadata={"source": "test.txt", "lang": "python"}
@@ -43,7 +43,7 @@ class TestChunkDataclass:
 
     def test_chunk_len(self):
         """Chunk len() returns text length."""
-        from chunkers.base import Chunk
+        from raghub_mcp.chunkers.base import Chunk
 
         chunk = Chunk(text="Hello", start=0, end=5)
         assert len(chunk) == 5
@@ -54,14 +54,14 @@ class TestChunkerPlugin:
 
     def test_cannot_instantiate_abstract_class(self):
         """ChunkerPlugin cannot be instantiated directly."""
-        from chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.base import ChunkerPlugin
 
         with pytest.raises(TypeError):
             ChunkerPlugin(chunk_size=100)
 
     def test_invalid_chunk_size(self):
         """chunk_size must be positive."""
-        from chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.base import ChunkerPlugin
 
         class TestChunker(ChunkerPlugin):
             NAME = "test"
@@ -79,7 +79,7 @@ class TestChunkerPlugin:
 
     def test_invalid_overlap_negative(self):
         """overlap cannot be negative."""
-        from chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.base import ChunkerPlugin
 
         class TestChunker(ChunkerPlugin):
             NAME = "test"
@@ -93,7 +93,7 @@ class TestChunkerPlugin:
 
     def test_invalid_overlap_exceeds_size(self):
         """overlap must be less than chunk_size."""
-        from chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.base import ChunkerPlugin
 
         class TestChunker(ChunkerPlugin):
             NAME = "test"
@@ -111,7 +111,7 @@ class TestChunkerPlugin:
 
     def test_supports_language_empty_list(self):
         """Empty SUPPORTED_LANGUAGES means universal support."""
-        from chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.base import ChunkerPlugin
 
         class UniversalChunker(ChunkerPlugin):
             NAME = "universal"
@@ -127,7 +127,7 @@ class TestChunkerPlugin:
 
     def test_supports_language_specific_list(self):
         """Specific SUPPORTED_LANGUAGES limits support."""
-        from chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.base import ChunkerPlugin
 
         class SpecificChunker(ChunkerPlugin):
             NAME = "specific"

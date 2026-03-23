@@ -21,7 +21,7 @@ class TestDependencyAnalyzer:
 
     def test_analyze_simple_import(self):
         """TC-3.1.1: Simple 'import X' is analyzed correctly."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = "import os"
@@ -34,7 +34,7 @@ class TestDependencyAnalyzer:
 
     def test_analyze_import_with_alias(self):
         """TC-3.1.1: Import with alias is captured."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = "import numpy as np"
@@ -46,7 +46,7 @@ class TestDependencyAnalyzer:
 
     def test_analyze_from_import(self):
         """TC-3.1.1: 'from X import Y' is analyzed correctly."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = "from typing import List, Dict"
@@ -59,7 +59,7 @@ class TestDependencyAnalyzer:
 
     def test_analyze_relative_import(self):
         """TC-3.1.1: Relative imports are identified."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = "from .utils import helper"
@@ -73,7 +73,7 @@ class TestDependencyAnalyzer:
 
     def test_analyze_multiple_imports(self):
         """TC-3.1.1: Multiple imports are all captured."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = """
@@ -91,7 +91,7 @@ from pathlib import Path
 
     def test_analyze_empty_code(self):
         """TC-3.1.1: Empty code returns empty list."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         deps = analyzer.analyze("")
@@ -100,7 +100,7 @@ from pathlib import Path
 
     def test_analyze_invalid_syntax(self):
         """TC-3.1.1: Invalid syntax returns empty list without crash."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         deps = analyzer.analyze("this is not valid python")
@@ -109,7 +109,7 @@ from pathlib import Path
 
     def test_get_module_dependencies(self):
         """TC-3.1.1: get_module_dependencies returns top-level module names."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = """
@@ -127,7 +127,7 @@ from collections.abc import Mapping
 
     def test_exclude_stdlib(self):
         """TC-3.1.1: Can exclude standard library modules."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = """
@@ -147,7 +147,7 @@ class TestCallGraphBuilder:
 
     def test_build_python_function_nodes(self):
         """TC-3.1.2: Python functions are extracted as nodes."""
-        from graph.call_graph_builder import CallGraphBuilder, NodeType
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder, NodeType
 
         builder = CallGraphBuilder()
         code = """
@@ -166,7 +166,7 @@ def world():
 
     def test_build_python_class_nodes(self):
         """TC-3.1.2: Python classes are extracted as nodes."""
-        from graph.call_graph_builder import CallGraphBuilder, NodeType
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder, NodeType
 
         builder = CallGraphBuilder()
         code = """
@@ -183,7 +183,7 @@ class MyClass:
 
     def test_build_python_call_edges(self):
         """TC-3.1.2: Python function calls create edges."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         code = """
@@ -205,7 +205,7 @@ def main():
 
     def test_build_typescript_functions(self):
         """TC-3.1.2: TypeScript functions are extracted."""
-        from graph.call_graph_builder import CallGraphBuilder, NodeType
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder, NodeType
 
         builder = CallGraphBuilder()
         code = """
@@ -225,7 +225,7 @@ class Service {
 
     def test_build_go_functions(self):
         """TC-3.1.2: Go functions are extracted."""
-        from graph.call_graph_builder import CallGraphBuilder, NodeType
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder, NodeType
 
         builder = CallGraphBuilder()
         code = """package main
@@ -242,7 +242,7 @@ func hello() {
 
     def test_empty_code_returns_empty_graph(self):
         """TC-3.1.2: Empty code returns empty graph."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         graph = builder.build_from_code("", "python")
@@ -252,7 +252,7 @@ func hello() {
 
     def test_unsupported_language_returns_empty_graph(self):
         """TC-3.1.2: Unsupported language returns empty graph."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         graph = builder.build_from_code("def foo(): pass", "ruby")
@@ -261,7 +261,7 @@ func hello() {
 
     def test_get_callers_and_callees(self):
         """TC-3.1.2: Can get callers and callees for a node."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         code = """
@@ -283,7 +283,7 @@ def c():
 
     def test_line_numbers_extracted(self):
         """TC-3.1.2: Line numbers are extracted for nodes."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         code = """
@@ -306,8 +306,8 @@ class TestNetworkXStore:
 
     def test_add_and_get_node(self):
         """TC-3.1.3: Nodes can be added and retrieved."""
-        from graph.base import GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
         node = GraphNode(
@@ -328,8 +328,8 @@ class TestNetworkXStore:
 
     def test_add_and_get_edge(self):
         """TC-3.1.3: Edges can be added and retrieved."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -348,8 +348,8 @@ class TestNetworkXStore:
 
     def test_find_path(self):
         """TC-3.1.3: Can find path between nodes."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -370,8 +370,8 @@ class TestNetworkXStore:
 
     def test_find_path_no_path(self):
         """TC-3.1.3: No path returns empty list."""
-        from graph.base import GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -385,8 +385,8 @@ class TestNetworkXStore:
 
     def test_get_neighbors(self):
         """TC-3.1.3: Can get neighbors of a node."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -406,8 +406,8 @@ class TestNetworkXStore:
 
     def test_get_callers(self):
         """TC-3.1.3: Can get callers of a node."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -427,8 +427,8 @@ class TestNetworkXStore:
 
     def test_filter_by_node_type(self):
         """TC-3.1.3: Can filter nodes by type."""
-        from graph.base import GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -446,8 +446,8 @@ class TestNetworkXStore:
 
     def test_clear_graph(self):
         """TC-3.1.3: Can clear the graph."""
-        from graph.base import GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -461,8 +461,8 @@ class TestNetworkXStore:
 
     def test_to_dict_and_from_dict(self):
         """TC-3.1.3: Can serialize and deserialize graph."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -481,8 +481,8 @@ class TestNetworkXStore:
 
     def test_get_statistics(self):
         """TC-3.1.3: Can get graph statistics."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -502,9 +502,9 @@ class TestGraphIntegration:
 
     def test_full_pipeline(self):
         """Test full pipeline: analyze code -> build graph -> store."""
-        from graph.call_graph_builder import CallGraphBuilder
-        from graph.dependency_analyzer import DependencyAnalyzer
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         code = '''
 import os
@@ -551,8 +551,8 @@ class TestNetworkXStoreExtended:
 
     def test_find_all_paths_simple(self):
         """find_all_paths returns multiple paths when they exist."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -573,8 +573,8 @@ class TestNetworkXStoreExtended:
 
     def test_find_all_paths_with_cutoff(self):
         """find_all_paths respects cutoff parameter."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -593,8 +593,8 @@ class TestNetworkXStoreExtended:
 
     def test_find_all_paths_no_path(self):
         """find_all_paths returns empty list when no path exists."""
-        from graph.base import GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -607,8 +607,8 @@ class TestNetworkXStoreExtended:
 
     def test_find_all_paths_missing_node(self):
         """find_all_paths returns empty when source/target not in graph."""
-        from graph.base import GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
         store.add_node(GraphNode(id="a", name="a", node_type=NodeType.FUNCTION))
@@ -619,8 +619,8 @@ class TestNetworkXStoreExtended:
 
     def test_get_callees(self):
         """get_callees returns nodes called by the given node."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -640,7 +640,7 @@ class TestNetworkXStoreExtended:
 
     def test_get_callees_missing_node(self):
         """get_callees returns empty list for missing node."""
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
         callees = store.get_callees("nonexistent")
@@ -648,8 +648,8 @@ class TestNetworkXStoreExtended:
 
     def test_get_neighbors_with_edge_type_filter(self):
         """get_neighbors filters by edge type."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -667,8 +667,8 @@ class TestNetworkXStoreExtended:
 
     def test_get_all_edges_with_filter(self):
         """get_all_edges filters by edge type."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -686,8 +686,8 @@ class TestNetworkXStoreExtended:
 
     def test_save_and_load_file(self, tmp_path):
         """save_to_file and load_from_file work correctly."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -718,8 +718,8 @@ class TestNetworkXStoreExtended:
 
     def test_save_to_file_creates_directory(self, tmp_path):
         """save_to_file creates parent directories."""
-        from graph.base import GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
         store.add_node(GraphNode(id="a", name="a", node_type=NodeType.FUNCTION))
@@ -731,34 +731,34 @@ class TestNetworkXStoreExtended:
 
     def test_is_networkx_available(self):
         """is_networkx_available returns True when installed."""
-        from graph.graph_store import GraphStore
+        from raghub_mcp.graph.graph_store import GraphStore
 
         assert GraphStore.is_networkx_available() is True
 
     def test_is_neo4j_available(self):
         """is_neo4j_available returns boolean."""
-        from graph.graph_store import GraphStore
+        from raghub_mcp.graph.graph_store import GraphStore
 
         # Just verify it returns a boolean (may be True or False depending on install)
         assert isinstance(GraphStore.is_neo4j_available(), bool)
 
     def test_get_node_count_empty(self):
         """get_node_count returns 0 for empty graph."""
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
         assert store.get_node_count() == 0
 
     def test_get_edge_count_empty(self):
         """get_edge_count returns 0 for empty graph."""
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
         assert store.get_edge_count() == 0
 
     def test_get_statistics_empty_graph(self):
         """get_statistics works for empty graph."""
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
         stats = store.get_statistics()
@@ -770,8 +770,8 @@ class TestNetworkXStoreExtended:
 
     def test_get_statistics_with_cycle(self):
         """get_statistics detects cycles (not DAG)."""
-        from graph.base import EdgeType, GraphEdge, GraphNode, NodeType
-        from graph.graph_store import NetworkXStore
+        from raghub_mcp.graph.base import EdgeType, GraphEdge, GraphNode, NodeType
+        from raghub_mcp.graph.graph_store import NetworkXStore
 
         store = NetworkXStore()
 
@@ -795,7 +795,7 @@ class TestNeo4jStore:
 
     def test_init_neo4j_not_available(self):
         """Neo4jStore raises ImportError if driver not available."""
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         # Temporarily set availability to False
         original = graph_store._NEO4J_AVAILABLE
@@ -803,7 +803,7 @@ class TestNeo4jStore:
 
         try:
             with pytest.raises(ImportError, match="Neo4j driver is not installed"):
-                from graph.graph_store import Neo4jStore
+                from raghub_mcp.graph.graph_store import Neo4jStore
 
                 Neo4jStore()
         finally:
@@ -814,7 +814,7 @@ class TestNeo4jStore:
         import sys
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         # Create mock neo4j module
         mock_graph_db = MagicMock()
@@ -831,7 +831,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
 
@@ -853,7 +853,7 @@ class TestNeo4jStore:
         """Neo4jStore.close closes the driver."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -864,7 +864,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             store.close()
@@ -879,7 +879,7 @@ class TestNeo4jStore:
         """Neo4jStore works as context manager."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -890,7 +890,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             with Neo4jStore() as store:
                 assert store is not None
@@ -905,8 +905,8 @@ class TestNeo4jStore:
         """Neo4jStore.add_node executes correct query."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
-        from graph.base import GraphNode, NodeType
+        from raghub_mcp.graph import graph_store
+        from raghub_mcp.graph.base import GraphNode, NodeType
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -920,7 +920,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             node = GraphNode(
@@ -946,8 +946,8 @@ class TestNeo4jStore:
         """Neo4jStore.add_edge executes correct query."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
-        from graph.base import EdgeType, GraphEdge
+        from raghub_mcp.graph import graph_store
+        from raghub_mcp.graph.base import EdgeType, GraphEdge
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -961,7 +961,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             edge = GraphEdge(source="a", target="b", edge_type=EdgeType.CALLS, metadata={"line": 5})
@@ -979,7 +979,7 @@ class TestNeo4jStore:
         """Neo4jStore.get_node returns node when found."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1004,7 +1004,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             node = store.get_node("test.func")
@@ -1021,7 +1021,7 @@ class TestNeo4jStore:
         """Neo4jStore.get_node returns None when not found."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1038,7 +1038,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             node = store.get_node("nonexistent")
@@ -1053,7 +1053,7 @@ class TestNeo4jStore:
         """Neo4jStore.find_path returns shortest path."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1088,7 +1088,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             path = store.find_path("a", "b")
@@ -1105,7 +1105,7 @@ class TestNeo4jStore:
         """Neo4jStore.find_path returns empty when no path."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1122,7 +1122,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             path = store.find_path("a", "b")
@@ -1137,8 +1137,8 @@ class TestNeo4jStore:
         """Neo4jStore.get_neighbors filters by edge type."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
-        from graph.base import EdgeType
+        from raghub_mcp.graph import graph_store
+        from raghub_mcp.graph.base import EdgeType
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1166,7 +1166,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             neighbors = store.get_neighbors("a", EdgeType.CALLS)
@@ -1182,8 +1182,8 @@ class TestNeo4jStore:
         """Neo4jStore.get_all_nodes filters by node type."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
-        from graph.base import NodeType
+        from raghub_mcp.graph import graph_store
+        from raghub_mcp.graph.base import NodeType
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1211,7 +1211,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             nodes = store.get_all_nodes(NodeType.FUNCTION)
@@ -1227,8 +1227,8 @@ class TestNeo4jStore:
         """Neo4jStore.get_all_edges filters by edge type."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
-        from graph.base import EdgeType
+        from raghub_mcp.graph import graph_store
+        from raghub_mcp.graph.base import EdgeType
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1254,7 +1254,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             edges = store.get_all_edges(EdgeType.CALLS)
@@ -1270,7 +1270,7 @@ class TestNeo4jStore:
         """Neo4jStore.clear deletes all nodes."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1284,7 +1284,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             store.clear()
@@ -1300,7 +1300,7 @@ class TestNeo4jStore:
         """Neo4jStore.to_dict exports graph data."""
         from unittest.mock import MagicMock
 
-        from graph import graph_store
+        from raghub_mcp.graph import graph_store
 
         mock_graph_db = MagicMock()
         mock_driver = MagicMock()
@@ -1353,7 +1353,7 @@ class TestNeo4jStore:
         graph_store.GraphDatabase = mock_graph_db.GraphDatabase
 
         try:
-            from graph.graph_store import Neo4jStore
+            from raghub_mcp.graph.graph_store import Neo4jStore
 
             store = Neo4jStore()
             data = store.to_dict()
@@ -1372,7 +1372,7 @@ class TestCallGraphBuilderExtended:
 
     def test_build_from_file_python(self, tmp_path):
         """build_from_file reads and parses Python file."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
 
@@ -1393,7 +1393,7 @@ def world():
 
     def test_build_from_file_typescript(self, tmp_path):
         """build_from_file reads and parses TypeScript file."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
 
@@ -1411,7 +1411,7 @@ function greet(): void {
 
     def test_build_from_file_go(self, tmp_path):
         """build_from_file reads and parses Go file."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
 
@@ -1432,7 +1432,7 @@ func hello() {
         """build_from_file returns empty graph for missing file."""
         from pathlib import Path
 
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         missing_path = "/nonexistent/path/file.py"
@@ -1444,7 +1444,7 @@ func hello() {
 
     def test_build_from_file_unknown_extension(self, tmp_path):
         """build_from_file returns empty graph for unknown extension."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
 
@@ -1458,7 +1458,7 @@ func hello() {
     def test_build_from_file_read_error(self, tmp_path):
         """build_from_file handles read errors gracefully."""
 
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
 
@@ -1472,7 +1472,7 @@ func hello() {
 
     def test_build_from_code_whitespace_only(self):
         """build_from_code returns empty for whitespace-only code."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         graph = builder.build_from_code("   \n\t  \n  ", "python")
@@ -1487,7 +1487,7 @@ func hello() {
         but tree-sitter-go puts the name on type_spec child. This test verifies
         the current behavior.
         """
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         code = """package main
@@ -1506,7 +1506,7 @@ type Person struct {
 
     def test_go_method_declaration(self):
         """Go methods with receivers are extracted."""
-        from graph.call_graph_builder import CallGraphBuilder
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder
 
         builder = CallGraphBuilder()
         code = """package main
@@ -1525,7 +1525,7 @@ func (p Person) GetName() string {
 
     def test_typescript_method_definition(self):
         """TypeScript method definitions in classes are extracted."""
-        from graph.call_graph_builder import CallGraphBuilder, NodeType
+        from raghub_mcp.graph.call_graph_builder import CallGraphBuilder, NodeType
 
         builder = CallGraphBuilder()
         code = """
@@ -1548,7 +1548,7 @@ class Service {
 
     def test_call_graph_to_dict(self):
         """CallGraph.to_dict returns correct structure."""
-        from graph.call_graph_builder import CallEdge, CallGraph, CallNode, NodeType
+        from raghub_mcp.graph.call_graph_builder import CallEdge, CallGraph, CallNode, NodeType
 
         graph = CallGraph(file_path="test.py")
         graph.add_node(
@@ -1565,7 +1565,7 @@ class Service {
 
     def test_get_callers_empty(self):
         """CallGraph.get_callers returns empty for unknown node."""
-        from graph.call_graph_builder import CallGraph
+        from raghub_mcp.graph.call_graph_builder import CallGraph
 
         graph = CallGraph()
         callers = graph.get_callers("nonexistent")
@@ -1574,7 +1574,7 @@ class Service {
 
     def test_get_callees_empty(self):
         """CallGraph.get_callees returns empty for unknown node."""
-        from graph.call_graph_builder import CallGraph
+        from raghub_mcp.graph.call_graph_builder import CallGraph
 
         graph = CallGraph()
         callees = graph.get_callees("nonexistent")
@@ -1583,8 +1583,8 @@ class Service {
 
     def test_call_edge_to_graph_edge(self):
         """CallEdge.to_graph_edge creates correct GraphEdge."""
-        from graph.base import EdgeType
-        from graph.call_graph_builder import CallEdge
+        from raghub_mcp.graph.base import EdgeType
+        from raghub_mcp.graph.call_graph_builder import CallEdge
 
         edge = CallEdge(
             caller="main", callee="helper", call_site_line=10, metadata={"extra": "data"}
@@ -1604,7 +1604,7 @@ class TestDependencyAnalyzerExtended:
 
     def test_analyze_file(self, tmp_path):
         """analyze_file reads and analyzes Python file."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
 
@@ -1620,7 +1620,7 @@ class TestDependencyAnalyzerExtended:
 
     def test_analyze_file_not_found(self):
         """analyze_file returns empty for missing file."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         deps = analyzer.analyze_file("/nonexistent/path/file.py")
@@ -1629,7 +1629,7 @@ class TestDependencyAnalyzerExtended:
 
     def test_analyze_file_read_error(self, tmp_path):
         """analyze_file handles read errors gracefully."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
 
@@ -1643,7 +1643,7 @@ class TestDependencyAnalyzerExtended:
 
     def test_from_import_empty_module(self):
         """'from . import X' is handled correctly."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = "from . import helper"
@@ -1657,7 +1657,7 @@ class TestDependencyAnalyzerExtended:
 
     def test_exclude_relative_imports(self):
         """get_module_dependencies excludes relative imports when requested."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = """
@@ -1673,7 +1673,7 @@ from ..parent import thing
 
     def test_get_module_dependencies_empty_module_name(self):
         """get_module_dependencies handles empty module names."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = "from . import helper"
@@ -1684,7 +1684,7 @@ from ..parent import thing
 
     def test_import_with_alias_in_from_import(self):
         """'from X import Y as Z' captures alias."""
-        from graph.dependency_analyzer import DependencyAnalyzer
+        from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 
         analyzer = DependencyAnalyzer()
         code = "from typing import List as L"
@@ -1701,7 +1701,7 @@ class TestBaseModels:
 
     def test_dependency_info_to_dict(self):
         """DependencyInfo.to_dict returns correct structure."""
-        from graph.base import DependencyInfo
+        from raghub_mcp.graph.base import DependencyInfo
 
         dep = DependencyInfo(
             module_name="typing",
@@ -1723,7 +1723,7 @@ class TestBaseModels:
 
     def test_graph_node_to_dict_with_metadata(self):
         """GraphNode.to_dict includes metadata."""
-        from graph.base import GraphNode, NodeType
+        from raghub_mcp.graph.base import GraphNode, NodeType
 
         node = GraphNode(
             id="test.func",
@@ -1745,7 +1745,7 @@ class TestBaseModels:
 
     def test_graph_edge_to_dict_with_metadata(self):
         """GraphEdge.to_dict includes metadata."""
-        from graph.base import EdgeType, GraphEdge
+        from raghub_mcp.graph.base import EdgeType, GraphEdge
 
         edge = GraphEdge(source="a", target="b", edge_type=EdgeType.CALLS, metadata={"line": 5})
 
@@ -1758,7 +1758,7 @@ class TestBaseModels:
 
     def test_node_type_values(self):
         """NodeType enum has expected values."""
-        from graph.base import NodeType
+        from raghub_mcp.graph.base import NodeType
 
         assert NodeType.MODULE.value == "module"
         assert NodeType.CLASS.value == "class"
@@ -1769,7 +1769,7 @@ class TestBaseModels:
 
     def test_edge_type_values(self):
         """EdgeType enum has expected values."""
-        from graph.base import EdgeType
+        from raghub_mcp.graph.base import EdgeType
 
         assert EdgeType.IMPORTS.value == "imports"
         assert EdgeType.CALLS.value == "calls"

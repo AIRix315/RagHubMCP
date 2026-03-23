@@ -468,7 +468,11 @@ class TestQueryRewriterIntegration:
             result = await rewriter.rewrite(query)
             assert result.original_query == query
             assert len(result.rewritten_queries) >= 1
-            assert result.mode in [RewriteMode.IDENTITY, RewriteMode.NORMALIZE, RewriteMode.TEMPLATE]
+            assert result.mode in [
+                RewriteMode.IDENTITY,
+                RewriteMode.NORMALIZE,
+                RewriteMode.TEMPLATE,
+            ]
 
     @pytest.mark.asyncio
     async def test_normalize_then_template(self):

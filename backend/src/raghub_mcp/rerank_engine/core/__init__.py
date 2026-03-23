@@ -1,8 +1,8 @@
 """RerankEngine core module."""
 
-from .scorer import BaseScorer
-from .ranker import BaseRankStrategy, ScoredDocument
 from .processor import BasePostProcessor
+from .ranker import BaseRankStrategy, ScoredDocument
+from .scorer import BaseScorer
 
 __all__ = [
     "BaseScorer",

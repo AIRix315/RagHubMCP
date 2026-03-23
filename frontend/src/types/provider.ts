@@ -166,6 +166,8 @@ export interface ProviderStatusInfo {
   name: string
   type: string
   status: ProviderStatus
+  model?: string
+  config?: Record<string, unknown>
   is_default: boolean
   error_message?: string
   capabilities?: ProviderCapabilities

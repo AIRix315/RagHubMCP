@@ -20,11 +20,11 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class RewriteMode(str, Enum):
+class RewriteMode(StrEnum):
     """Query rewriting mode."""
 
     IDENTITY = "identity"  # No rewriting (passthrough)
@@ -184,12 +184,54 @@ class NormalizeRewriter(QueryRewriter):
 
     # Common English stop words to potentially remove from start/end
     STOP_WORDS = {
-        "a", "an", "the", "is", "are", "was", "were", "be", "been",
-        "being", "have", "has", "had", "do", "does", "did", "will",
-        "would", "could", "should", "may", "might", "must", "shall",
-        "can", "need", "dare", "ought", "used", "i", "you", "he",
-        "she", "it", "we", "they", "what", "which", "who", "whom",
-        "this", "that", "these", "those", "how", "why", "where", "when",
+        "a",
+        "an",
+        "the",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "must",
+        "shall",
+        "can",
+        "need",
+        "dare",
+        "ought",
+        "used",
+        "i",
+        "you",
+        "he",
+        "she",
+        "it",
+        "we",
+        "they",
+        "what",
+        "which",
+        "who",
+        "whom",
+        "this",
+        "that",
+        "these",
+        "those",
+        "how",
+        "why",
+        "where",
+        "when",
     }
 
     @property
@@ -313,19 +355,39 @@ class TemplateRewriter(QueryRewriter):
         },
         "howto": {
             # "how to X" template
-            "how to": ["{query}", "{term} tutorial", "{term} guide", "{term} steps", "{term} how to"],
+            "how to": [
+                "{query}",
+                "{term} tutorial",
+                "{term} guide",
+                "{term} steps",
+                "{term} how to",
+            ],
             "how do i": ["{query}", "{term} tutorial", "{term} guide"],
             "how can i": ["{query}", "{term} tutorial", "{term} guide"],
         },
         "comparison": {
             # "X vs Y" template
-            "vs": ["{query}", "{term1} compared to {term2}", "difference between {term1} and {term2}"],
-            "versus": ["{query}", "{term1} compared to {term2}", "difference between {term1} and {term2}"],
+            "vs": [
+                "{query}",
+                "{term1} compared to {term2}",
+                "difference between {term1} and {term2}",
+            ],
+            "versus": [
+                "{query}",
+                "{term1} compared to {term2}",
+                "difference between {term1} and {term2}",
+            ],
             "difference between": ["{query}", "{term1} vs {term2}", "{term1} compared to {term2}"],
         },
         "troubleshooting": {
             # "X not working" template
-            "not working": ["{query}", "{term} error", "{term} fix", "{term} debug", "{term} troubleshooting"],
+            "not working": [
+                "{query}",
+                "{term} error",
+                "{term} fix",
+                "{term} debug",
+                "{term} troubleshooting",
+            ],
             "error": ["{query}", "{term} error fix", "{term} debug"],
             "bug": ["{query}", "{term} bug fix", "{term} issue"],
         },

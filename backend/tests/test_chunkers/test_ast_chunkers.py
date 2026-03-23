@@ -20,7 +20,7 @@ class TestPythonASTChunker:
 
     def test_splits_functions(self):
         """TC-2.2.1: Functions are split as separate chunks."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -39,7 +39,7 @@ def world():
 
     def test_splits_classes(self):
         """TC-2.2.1: Classes are split as separate chunks."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -58,7 +58,7 @@ class OtherClass:
 
     def test_extracts_function_name(self):
         """TC-2.2.1: Function name is extracted in metadata."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -74,7 +74,7 @@ def my_function():
 
     def test_extracts_class_name(self):
         """TC-2.2.1: Class name is extracted in metadata."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -90,7 +90,7 @@ class MyClass:
 
     def test_line_positions_accurate(self):
         """TC-2.2.1: Line positions are accurate."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -109,7 +109,7 @@ def world():
 
     def test_empty_code_returns_empty_list(self):
         """Empty code returns empty list."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
         chunks = chunker.chunk("")
@@ -118,7 +118,7 @@ def world():
 
     def test_whitespace_only_returns_empty_list(self):
         """Whitespace-only code returns empty list."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
         chunks = chunker.chunk("   \n\n   ")
@@ -127,7 +127,7 @@ def world():
 
     def test_no_definitions_returns_single_chunk(self):
         """Code without functions/classes returns single chunk."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -143,7 +143,7 @@ y = 2
 
     def test_supports_language_check(self):
         """PythonASTChunker supports python and py languages."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -154,7 +154,7 @@ y = 2
 
     def test_nested_functions(self):
         """Nested functions are handled correctly."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -176,7 +176,7 @@ class TestTypeScriptASTChunker:
 
     def test_splits_functions(self):
         """TC-2.2.2: Functions are split as separate chunks."""
-        from chunkers.typescript_ast import TypeScriptASTChunker
+        from raghub_mcp.chunkers.typescript_ast import TypeScriptASTChunker
 
         chunker = TypeScriptASTChunker()
 
@@ -197,7 +197,7 @@ function world(): void {
 
     def test_splits_classes(self):
         """TC-2.2.2: Classes are split as separate chunks."""
-        from chunkers.typescript_ast import TypeScriptASTChunker
+        from raghub_mcp.chunkers.typescript_ast import TypeScriptASTChunker
 
         chunker = TypeScriptASTChunker()
 
@@ -219,7 +219,7 @@ class OtherClass {
 
     def test_extracts_function_name(self):
         """TC-2.2.2: Function name is extracted in metadata."""
-        from chunkers.typescript_ast import TypeScriptASTChunker
+        from raghub_mcp.chunkers.typescript_ast import TypeScriptASTChunker
 
         chunker = TypeScriptASTChunker()
 
@@ -236,7 +236,7 @@ function myFunction(): string {
 
     def test_splits_methods(self):
         """TC-2.2.2: Methods are split as separate chunks."""
-        from chunkers.typescript_ast import TypeScriptASTChunker
+        from raghub_mcp.chunkers.typescript_ast import TypeScriptASTChunker
 
         chunker = TypeScriptASTChunker()
 
@@ -254,7 +254,7 @@ class Service {
 
     def test_supports_language_check(self):
         """TypeScriptASTChunker supports typescript, ts, tsx languages."""
-        from chunkers.typescript_ast import TypeScriptASTChunker
+        from raghub_mcp.chunkers.typescript_ast import TypeScriptASTChunker
 
         chunker = TypeScriptASTChunker()
 
@@ -265,7 +265,7 @@ class Service {
 
     def test_empty_code_returns_empty_list(self):
         """Empty code returns empty list."""
-        from chunkers.typescript_ast import TypeScriptASTChunker
+        from raghub_mcp.chunkers.typescript_ast import TypeScriptASTChunker
 
         chunker = TypeScriptASTChunker()
         chunks = chunker.chunk("")
@@ -278,7 +278,7 @@ class TestGoASTChunker:
 
     def test_splits_functions(self):
         """TC-2.2.3: Functions are split as separate chunks."""
-        from chunkers.go_ast import GoASTChunker
+        from raghub_mcp.chunkers.go_ast import GoASTChunker
 
         chunker = GoASTChunker()
 
@@ -300,7 +300,7 @@ func world() {
 
     def test_splits_methods(self):
         """TC-2.2.3: Methods are split as separate chunks."""
-        from chunkers.go_ast import GoASTChunker
+        from raghub_mcp.chunkers.go_ast import GoASTChunker
 
         chunker = GoASTChunker()
 
@@ -321,7 +321,7 @@ func (s *Service) Method2() {}
 
     def test_splits_types(self):
         """TC-2.2.3: Type declarations are split as separate chunks."""
-        from chunkers.go_ast import GoASTChunker
+        from raghub_mcp.chunkers.go_ast import GoASTChunker
 
         chunker = GoASTChunker()
 
@@ -343,7 +343,7 @@ type MyInterface interface {
 
     def test_extracts_function_name(self):
         """TC-2.2.3: Function name is extracted in metadata."""
-        from chunkers.go_ast import GoASTChunker
+        from raghub_mcp.chunkers.go_ast import GoASTChunker
 
         chunker = GoASTChunker()
 
@@ -361,7 +361,7 @@ func myFunction() string {
 
     def test_supports_language_check(self):
         """GoASTChunker supports go and golang languages."""
-        from chunkers.go_ast import GoASTChunker
+        from raghub_mcp.chunkers.go_ast import GoASTChunker
 
         chunker = GoASTChunker()
 
@@ -372,7 +372,7 @@ func myFunction() string {
 
     def test_empty_code_returns_empty_list(self):
         """Empty code returns empty list."""
-        from chunkers.go_ast import GoASTChunker
+        from raghub_mcp.chunkers.go_ast import GoASTChunker
 
         chunker = GoASTChunker()
         chunks = chunker.chunk("")
@@ -385,49 +385,49 @@ class TestASTChunkerRegistry:
 
     def test_python_ast_registered(self):
         """TC-2.2.4: PythonASTChunker is registered."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         assert registry.is_registered("python-ast")
 
     def test_typescript_ast_registered(self):
         """TC-2.2.4: TypeScriptASTChunker is registered."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         assert registry.is_registered("typescript-ast")
 
     def test_go_ast_registered(self):
         """TC-2.2.4: GoASTChunker is registered."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         assert registry.is_registered("go-ast")
 
     def test_get_for_language_python(self):
         """TC-2.2.4: get_for_language returns PythonASTChunker for python."""
-        from chunkers.python_ast import PythonASTChunker
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.registry import registry
 
         chunker_cls = registry.get_for_language("python")
         assert chunker_cls == PythonASTChunker
 
     def test_get_for_language_typescript(self):
         """TC-2.2.4: get_for_language returns TypeScriptASTChunker for typescript."""
-        from chunkers.registry import registry
-        from chunkers.typescript_ast import TypeScriptASTChunker
+        from raghub_mcp.chunkers.registry import registry
+        from raghub_mcp.chunkers.typescript_ast import TypeScriptASTChunker
 
         chunker_cls = registry.get_for_language("typescript")
         assert chunker_cls == TypeScriptASTChunker
 
     def test_get_for_language_go(self):
         """TC-2.2.4: get_for_language returns GoASTChunker for go."""
-        from chunkers.go_ast import GoASTChunker
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.go_ast import GoASTChunker
+        from raghub_mcp.chunkers.registry import registry
 
         chunker_cls = registry.get_for_language("go")
         assert chunker_cls == GoASTChunker
 
     def test_list_chunkers_includes_ast(self):
         """TC-2.2.4: list_chunkers includes AST chunkers."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         chunkers = registry.list_chunkers()
 
@@ -441,13 +441,13 @@ class TestASTChunkerBase:
 
     def test_is_tree_sitter_available(self):
         """is_tree_sitter_available returns True when tree-sitter is installed."""
-        from chunkers.ast_base import ASTChunkerBase
+        from raghub_mcp.chunkers.ast_base import ASTChunkerBase
 
         assert ASTChunkerBase.is_tree_sitter_available() is True
 
     def test_metadata_passed_to_chunks(self):
         """Base metadata is passed to chunks."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -463,7 +463,7 @@ def hello():
 
     def test_chunk_index_increments(self):
         """chunk_index increments correctly."""
-        from chunkers.python_ast import PythonASTChunker
+        from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
         chunker = PythonASTChunker()
 
@@ -490,7 +490,7 @@ class TestExistingChunkersStillWork:
 
     def test_simple_chunker_works(self):
         """SimpleChunker still works."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=10, overlap=0)
         text = "a" * 25
@@ -500,7 +500,7 @@ class TestExistingChunkersStillWork:
 
     def test_markdown_chunker_works(self):
         """MarkdownChunker still works."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500)
         text = "# Title\n\nContent.\n\n## Section\n\nMore content."
@@ -510,7 +510,7 @@ class TestExistingChunkersStillWork:
 
     def test_line_chunker_works(self):
         """LineChunker still works."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=2, overlap=0)
         text = "Line 1\nLine 2\nLine 3"
@@ -520,7 +520,7 @@ class TestExistingChunkersStillWork:
 
     def test_registry_still_has_builtin_chunkers(self):
         """Registry still has all built-in chunkers."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         assert registry.is_registered("simple")
         assert registry.is_registered("line")

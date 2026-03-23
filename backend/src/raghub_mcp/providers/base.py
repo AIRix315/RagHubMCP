@@ -11,11 +11,11 @@ from __future__ import annotations
 import inspect
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class ProviderCategory(str, Enum):
+class ProviderCategory(StrEnum):
     """Provider category enumeration.
 
     Defines the main categories of providers in RagHubMCP:

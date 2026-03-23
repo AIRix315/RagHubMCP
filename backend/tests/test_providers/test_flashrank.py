@@ -28,6 +28,7 @@ class TestFlashRankProviderBasic:
         """FlashRank 提供者已注册到 registry"""
         from raghub_mcp.providers.base import ProviderCategory
         from raghub_mcp.providers.registry import registry
+
         # Import the provider to trigger registration
         from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 

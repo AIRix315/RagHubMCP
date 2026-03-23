@@ -165,9 +165,7 @@ class DefaultIndexPipeline(IndexPipeline):
             from raghub_mcp.providers.factory import factory as provider_factory
 
             vectorstore = provider_factory.get_vectorstore_provider()
-            embedding_provider = provider_factory.get_embedding_provider(
-                options.embedding_provider
-            )
+            embedding_provider = provider_factory.get_embedding_provider(options.embedding_provider)
 
             # Ensure collection exists
             if not vectorstore.collection_exists(options.collection_name):

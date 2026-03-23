@@ -153,7 +153,7 @@ async function handleSearch() {
       </div>
       <div class="rounded-lg border bg-card">
         <div
-          v-for="(result, index) in searchResults"
+          v-for="result in searchResults"
           :key="result.id"
           class="border-b p-4 last:border-b-0"
         >

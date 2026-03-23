@@ -101,8 +101,7 @@ class FallbackManager:
 
         # Use fallback
         logger.warning(
-            f"Provider {primary} is {health.status.value}, "
-            f"using fallback {self._fallback_provider}"
+            f"Provider {primary} is {health.status.value}, using fallback {self._fallback_provider}"
         )
         return self._fallback_provider
 
@@ -158,9 +157,7 @@ class FallbackManager:
         elif health.consecutive_failures >= 1:
             if health.status != ProviderStatus.DEGRADED:
                 health.status = ProviderStatus.DEGRADED
-                logger.warning(
-                    f"Provider {provider} marked as DEGRADED: {error}"
-                )
+                logger.warning(f"Provider {provider} marked as DEGRADED: {error}")
 
     def _can_recover(self, health: ProviderHealth) -> bool:
         """Check if provider can attempt recovery.
@@ -220,9 +217,7 @@ class FallbackManager:
 
         for name, health in self._health.items():
             failure_rate = (
-                health.total_failures / health.total_requests
-                if health.total_requests > 0
-                else 0.0
+                health.total_failures / health.total_requests if health.total_requests > 0 else 0.0
             )
             provider_stats[name] = {
                 "status": health.status.value,

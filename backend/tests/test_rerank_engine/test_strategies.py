@@ -28,28 +28,28 @@ class TestStandardRankStrategy:
 
     def test_standard_strategy_import(self):
         """TC-1.4.1: StandardRankStrategy can be imported."""
-        from rerank_engine.strategies.standard import StandardRankStrategy
+        from raghub_mcp.rerank_engine.strategies.standard import StandardRankStrategy
 
         assert StandardRankStrategy is not None
 
     def test_standard_strategy_is_base_strategy(self):
         """TC-1.4.1: StandardRankStrategy is a BaseRankStrategy."""
-        from rerank_engine.core.ranker import BaseRankStrategy
-        from rerank_engine.strategies.standard import StandardRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy
+        from raghub_mcp.rerank_engine.strategies.standard import StandardRankStrategy
 
         assert issubclass(StandardRankStrategy, BaseRankStrategy)
 
     def test_standard_strategy_name(self):
         """TC-1.4.1: StandardRankStrategy has correct name."""
-        from rerank_engine.strategies.standard import StandardRankStrategy
+        from raghub_mcp.rerank_engine.strategies.standard import StandardRankStrategy
 
         strategy = StandardRankStrategy()
         assert strategy.name == "standard"
 
     def test_standard_strategy_sorts_by_score_descending(self):
         """TC-1.4.1: StandardRankStrategy sorts by score descending."""
-        from rerank_engine.core.ranker import ScoredDocument
-        from rerank_engine.strategies.standard import StandardRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.strategies.standard import StandardRankStrategy
 
         strategy = StandardRankStrategy()
 
@@ -67,8 +67,8 @@ class TestStandardRankStrategy:
 
     def test_standard_strategy_respects_top_k(self):
         """TC-1.4.1: StandardRankStrategy respects top_k parameter."""
-        from rerank_engine.core.ranker import ScoredDocument
-        from rerank_engine.strategies.standard import StandardRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.strategies.standard import StandardRankStrategy
 
         strategy = StandardRankStrategy()
 
@@ -83,8 +83,8 @@ class TestStandardRankStrategy:
 
     def test_standard_strategy_preserves_metadata(self):
         """TC-1.4.1: StandardRankStrategy preserves document metadata."""
-        from rerank_engine.core.ranker import ScoredDocument
-        from rerank_engine.strategies.standard import StandardRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.strategies.standard import StandardRankStrategy
 
         strategy = StandardRankStrategy()
 
@@ -97,7 +97,7 @@ class TestStandardRankStrategy:
 
     def test_standard_strategy_empty_documents(self):
         """TC-1.4.1: StandardRankStrategy handles empty list."""
-        from rerank_engine.strategies.standard import StandardRankStrategy
+        from raghub_mcp.rerank_engine.strategies.standard import StandardRankStrategy
 
         strategy = StandardRankStrategy()
         ranked = strategy.rank([])
@@ -114,27 +114,27 @@ class TestDiversityRankStrategy:
 
     def test_diversity_strategy_import(self):
         """TC-1.4.2: DiversityRankStrategy can be imported."""
-        from rerank_engine.strategies.diversity import DiversityRankStrategy
+        from raghub_mcp.rerank_engine.strategies.diversity import DiversityRankStrategy
 
         assert DiversityRankStrategy is not None
 
     def test_diversity_strategy_is_base_strategy(self):
         """TC-1.4.2: DiversityRankStrategy is a BaseRankStrategy."""
-        from rerank_engine.core.ranker import BaseRankStrategy
-        from rerank_engine.strategies.diversity import DiversityRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy
+        from raghub_mcp.rerank_engine.strategies.diversity import DiversityRankStrategy
 
         assert issubclass(DiversityRankStrategy, BaseRankStrategy)
 
     def test_diversity_strategy_name(self):
         """TC-1.4.2: DiversityRankStrategy has correct name."""
-        from rerank_engine.strategies.diversity import DiversityRankStrategy
+        from raghub_mcp.rerank_engine.strategies.diversity import DiversityRankStrategy
 
         strategy = DiversityRankStrategy()
         assert strategy.name == "diversity"
 
     def test_diversity_strategy_lambda_parameter(self):
         """TC-1.4.2: DiversityRankStrategy accepts lambda parameter."""
-        from rerank_engine.strategies.diversity import DiversityRankStrategy
+        from raghub_mcp.rerank_engine.strategies.diversity import DiversityRankStrategy
 
         # Default lambda
         strategy_default = DiversityRankStrategy()
@@ -146,8 +146,8 @@ class TestDiversityRankStrategy:
 
     def test_diversity_strategy_promotes_diversity(self):
         """TC-1.4.2: DiversityRankStrategy promotes document diversity."""
-        from rerank_engine.core.ranker import ScoredDocument
-        from rerank_engine.strategies.diversity import DiversityRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.strategies.diversity import DiversityRankStrategy
 
         strategy = DiversityRankStrategy(lambda_param=0.5)
 
@@ -165,8 +165,8 @@ class TestDiversityRankStrategy:
 
     def test_diversity_strategy_respects_top_k(self):
         """TC-1.4.2: DiversityRankStrategy respects top_k parameter."""
-        from rerank_engine.core.ranker import ScoredDocument
-        from rerank_engine.strategies.diversity import DiversityRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.strategies.diversity import DiversityRankStrategy
 
         strategy = DiversityRankStrategy()
 

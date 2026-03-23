@@ -99,7 +99,7 @@ class ONNXScorer(BaseScorer):
             self._tokenizer = None
             logger.debug("Tokenizer resources released")
 
-    def __enter__(self) -> "ONNXScorer":
+    def __enter__(self) -> ONNXScorer:
         """Context manager entry."""
         return self
 
@@ -127,9 +127,7 @@ class ONNXScorer(BaseScorer):
 
             # Create session
             sess_options = ort.SessionOptions()
-            sess_options.graph_optimization_level = (
-                ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-            )
+            sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
             self._session = ort.InferenceSession(
                 str(self._model_path),
@@ -141,8 +139,7 @@ class ONNXScorer(BaseScorer):
 
         except ImportError:
             raise ImportError(
-                "onnxruntime is required for ONNXScorer. "
-                "Install with: pip install onnxruntime"
+                "onnxruntime is required for ONNXScorer. Install with: pip install onnxruntime"
             )
 
         try:
@@ -157,8 +154,7 @@ class ONNXScorer(BaseScorer):
 
         except ImportError:
             raise ImportError(
-                "tokenizers is required for ONNXScorer. "
-                "Install with: pip install tokenizers"
+                "tokenizers is required for ONNXScorer. Install with: pip install tokenizers"
             )
 
     def compute_scores(
@@ -295,8 +291,7 @@ class ONNXScorer(BaseScorer):
         warmup_ms = (time.time() - start_time) * 1000
 
         logger.info(
-            f"ONNX model warmed up ({self.name}): "
-            f"{num_warmup} iterations, {warmup_ms:.2f}ms"
+            f"ONNX model warmed up ({self.name}): {num_warmup} iterations, {warmup_ms:.2f}ms"
         )
 
         return warmup_ms

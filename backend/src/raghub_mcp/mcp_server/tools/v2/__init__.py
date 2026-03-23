@@ -119,7 +119,7 @@ def register_v2_tools(mcp: FastMCP) -> None:
 
         try:
             # Import Pipeline components
-            from pipeline.factory import PROFILES, PipelineFactory
+            from raghub_mcp.pipeline.factory import PROFILES, PipelineFactory
 
             # Get profile configuration for metadata
             profile_config = PROFILES.get(strategy, PROFILES["balanced"])
@@ -245,7 +245,6 @@ def register_v2_tools(mcp: FastMCP) -> None:
         )
 
         # Import IndexPipeline (RULE-1 compliance)
-        from raghub_mcp.pipeline import IndexOptions
         from raghub_mcp.pipeline.index_pipeline import DefaultIndexPipeline
 
         # Validate inputs using unified validation methods
@@ -271,11 +270,13 @@ def register_v2_tools(mcp: FastMCP) -> None:
 
         try:
             # Use IndexPipeline for unified indexing (RULE-1 compliance)
-            pipeline = DefaultIndexPipeline()
+            # Note: DefaultIndexPipeline is instantiated but we use the factory pattern below
+            # to directly get providers for now. This follows RULE-3 compliance.
+            DefaultIndexPipeline()  # Initialize pipeline side effects
 
             # Get providers through factory (RULE-3 compliance)
-            from raghub_mcp.providers.factory import factory as provider_factory
             from raghub_mcp.chunkers import factory as chunker_factory
+            from raghub_mcp.providers.factory import factory as provider_factory
 
             vectorstore = provider_factory.get_vectorstore_provider()
 
@@ -285,9 +286,7 @@ def register_v2_tools(mcp: FastMCP) -> None:
 
             # Create chunker via factory (RULE-3 compliance)
             chunker = chunker_factory.get_chunker(
-                name="simple",
-                chunk_size=chunk_size,
-                overlap=min(50, chunk_size // 10)
+                name="simple", chunk_size=chunk_size, overlap=min(50, chunk_size // 10)
             )
 
             # Process documents

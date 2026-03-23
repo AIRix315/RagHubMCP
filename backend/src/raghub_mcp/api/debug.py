@@ -23,7 +23,7 @@ router = APIRouter(prefix="/debug", tags=["debug"])
 # In production, use Redis or similar
 # =============================================================================
 
-_debug_store: dict[str, "PipelineDebugInfo"] = {}
+_debug_store: dict[str, PipelineDebugInfo] = {}
 
 
 # =============================================================================
@@ -233,9 +233,7 @@ async def simulate_pipeline_execution(query_id: str) -> dict[str, Any]:
     }
 
     # Update total latency
-    debug_info.total_latency_ms = (
-        retrieval_latency + rerank_latency + context_latency
-    )
+    debug_info.total_latency_ms = retrieval_latency + rerank_latency + context_latency
 
     return {
         "query_id": query_id,

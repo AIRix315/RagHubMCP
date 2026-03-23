@@ -116,7 +116,7 @@ class BM25Scorer(BaseScorer):
             doc_freqs[term] = sum(1 for tf in doc_term_freqs if term in tf)
 
         # Number of documents
-        N = len(documents)
+        num_docs = len(documents)
 
         # Compute scores
         scores = np.zeros(len(documents))
@@ -131,7 +131,7 @@ class BM25Scorer(BaseScorer):
 
                 # Compute IDF with smoothing
                 df = doc_freqs.get(term, 0)
-                idf = self._compute_idf(df, N)
+                idf = self._compute_idf(df, num_docs)
 
                 # BM25 term score
                 numerator = tf * (self.k1 + 1)

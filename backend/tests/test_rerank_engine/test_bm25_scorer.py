@@ -222,11 +222,11 @@ class TestBM25Scorer:
         # IDF = log((N - n + 0.5) / (n + 0.5) + 1)
         # = log((4 - 2 + 0.5) / (2 + 0.5) + 1)
         # = log(2.5 / 2.5 + 1) = log(2) ≈ 0.693
-        N = 4
+        num_docs = 4
         n = 2
-        expected_idf = math.log((N - n + 0.5) / (n + 0.5) + 1)
+        expected_idf = math.log((num_docs - n + 0.5) / (n + 0.5) + 1)
 
-        idf = bm25_scorer._compute_idf(n, N)
+        idf = bm25_scorer._compute_idf(n, num_docs)
         assert abs(idf - expected_idf) < 0.001
 
     # =========================================================================

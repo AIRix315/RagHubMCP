@@ -22,9 +22,10 @@ class TestOllamaEmbeddingProviderRegistration:
     def test_provider_is_registered(self):
         """Ollama embedding provider is registered in registry."""
         from raghub_mcp.providers.base import ProviderCategory
-        from raghub_mcp.providers.registry import registry
+
         # Import the provider to trigger registration
         from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.registry import registry
 
         assert registry.is_registered(ProviderCategory.EMBEDDING, "ollama")
 

@@ -29,7 +29,7 @@ class TestQueryTool:
     @pytest.fixture(autouse=True)
     def reset_tools_flag(self):
         """Reset the _tools_registered flag before each test."""
-        import mcp_server.tools.v2 as v2_module
+        import raghub_mcp.mcp_server.tools.v2 as v2_module
 
         v2_module._tools_registered = False
         yield
@@ -37,7 +37,7 @@ class TestQueryTool:
 
     def get_query_func(self):
         """Helper to get query function."""
-        from mcp_server.tools.v2 import register_v2_tools
+        from raghub_mcp.mcp_server.tools.v2 import register_v2_tools
 
         mock_mcp = MagicMock()
         captured_tools = {}
@@ -75,7 +75,9 @@ class TestQueryTool:
         mock_pipeline = MagicMock()
         mock_pipeline.run = AsyncMock(return_value=mock_result)
 
-        with patch("pipeline.factory.PipelineFactory.create", return_value=mock_pipeline):
+        with patch(
+            "raghub_mcp.pipeline.factory.PipelineFactory.create", return_value=mock_pipeline
+        ):
             result = await query(query="test", strategy="invalid_strategy")
             data = json.loads(result)
 
@@ -96,7 +98,9 @@ class TestQueryTool:
         mock_pipeline = MagicMock()
         mock_pipeline.run = AsyncMock(return_value=mock_result)
 
-        with patch("pipeline.factory.PipelineFactory.create", return_value=mock_pipeline):
+        with patch(
+            "raghub_mcp.pipeline.factory.PipelineFactory.create", return_value=mock_pipeline
+        ):
             result = await query(query="test", top_k=-1)
             data = json.loads(result)
 
@@ -123,7 +127,9 @@ class TestQueryTool:
         mock_pipeline = MagicMock()
         mock_pipeline.run = AsyncMock(return_value=mock_result)
 
-        with patch("pipeline.factory.PipelineFactory.create", return_value=mock_pipeline):
+        with patch(
+            "raghub_mcp.pipeline.factory.PipelineFactory.create", return_value=mock_pipeline
+        ):
             result = await query(
                 query="test query", collection="test_collection", strategy="accurate", top_k=5
             )
@@ -142,7 +148,7 @@ class TestQueryTool:
         query = self.get_query_func()
 
         with patch(
-            "pipeline.factory.PipelineFactory.create",
+            "raghub_mcp.pipeline.factory.PipelineFactory.create",
             side_effect=ValueError("Collection not found"),
         ):
             result = await query(query="test", collection="invalid")
@@ -157,7 +163,8 @@ class TestQueryTool:
         query = self.get_query_func()
 
         with patch(
-            "pipeline.factory.PipelineFactory.create", side_effect=Exception("Pipeline error")
+            "raghub_mcp.pipeline.factory.PipelineFactory.create",
+            side_effect=Exception("Pipeline error"),
         ):
             result = await query(query="test")
             data = json.loads(result)
@@ -179,7 +186,9 @@ class TestQueryTool:
         mock_pipeline = MagicMock()
         mock_pipeline.run = AsyncMock(return_value=mock_result)
 
-        with patch("pipeline.factory.PipelineFactory.create", return_value=mock_pipeline):
+        with patch(
+            "raghub_mcp.pipeline.factory.PipelineFactory.create", return_value=mock_pipeline
+        ):
             result = await query(query="fast query", strategy="fast")
             data = json.loads(result)
 
@@ -199,7 +208,9 @@ class TestQueryTool:
         mock_pipeline = MagicMock()
         mock_pipeline.run = AsyncMock(return_value=mock_result)
 
-        with patch("pipeline.factory.PipelineFactory.create", return_value=mock_pipeline):
+        with patch(
+            "raghub_mcp.pipeline.factory.PipelineFactory.create", return_value=mock_pipeline
+        ):
             result = await query(query="test", collection="")
             data = json.loads(result)
 
@@ -212,7 +223,7 @@ class TestIngestTool:
     @pytest.fixture(autouse=True)
     def reset_tools_flag(self):
         """Reset the _tools_registered flag before each test."""
-        import mcp_server.tools.v2 as v2_module
+        import raghub_mcp.mcp_server.tools.v2 as v2_module
 
         v2_module._tools_registered = False
         yield
@@ -220,7 +231,7 @@ class TestIngestTool:
 
     def get_ingest_func(self):
         """Helper to get ingest function."""
-        from mcp_server.tools.v2 import register_v2_tools
+        from raghub_mcp.mcp_server.tools.v2 import register_v2_tools
 
         mock_mcp = MagicMock()
         captured_tools = {}
@@ -266,9 +277,10 @@ class TestIngestTool:
         mock_chunker.chunk.return_value = [mock_chunk]
 
         with patch(
-            "raghub_mcp.providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
+            "raghub_mcp.providers.factory.factory.get_vectorstore_provider",
+            return_value=mock_vectorstore,
         ):
-            with patch("chunkers.SimpleChunker", return_value=mock_chunker):
+            with patch("raghub_mcp.chunkers.SimpleChunker", return_value=mock_chunker):
                 result = await ingest(
                     documents=[
                         {"text": "Document 1", "metadata": {"source": "test"}},
@@ -303,9 +315,10 @@ class TestIngestTool:
         mock_chunker.chunk.return_value = [mock_chunk]
 
         with patch(
-            "raghub_mcp.providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
+            "raghub_mcp.providers.factory.factory.get_vectorstore_provider",
+            return_value=mock_vectorstore,
         ):
-            with patch("chunkers.SimpleChunker", return_value=mock_chunker):
+            with patch("raghub_mcp.chunkers.SimpleChunker", return_value=mock_chunker):
                 result = await ingest(
                     documents=[
                         {"text": "Valid document"},
@@ -336,9 +349,10 @@ class TestIngestTool:
         mock_chunker.chunk.return_value = [mock_chunk]
 
         with patch(
-            "raghub_mcp.providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
+            "raghub_mcp.providers.factory.factory.get_vectorstore_provider",
+            return_value=mock_vectorstore,
         ):
-            with patch("chunkers.SimpleChunker", return_value=mock_chunker):
+            with patch("raghub_mcp.chunkers.SimpleChunker", return_value=mock_chunker):
                 result = await ingest(documents=[{"text": "test"}], collection="")
                 data = json.loads(result)
 
@@ -366,7 +380,7 @@ class TestV2ToolRegistration:
     @pytest.fixture(autouse=True)
     def reset_tools_flag(self):
         """Reset the _tools_registered flag before each test."""
-        import mcp_server.tools.v2 as v2_module
+        import raghub_mcp.mcp_server.tools.v2 as v2_module
 
         v2_module._tools_registered = False
         yield
@@ -374,7 +388,7 @@ class TestV2ToolRegistration:
 
     def test_all_tools_registered(self):
         """Test all V2 tools are registered."""
-        from mcp_server.tools.v2 import register_v2_tools
+        from raghub_mcp.mcp_server.tools.v2 import register_v2_tools
 
         mock_mcp = MagicMock()
         captured_tools = {}
@@ -391,7 +405,7 @@ class TestV2ToolRegistration:
 
     def test_tools_registered_only_once(self):
         """Test tools are only registered once."""
-        from mcp_server.tools.v2 import register_v2_tools
+        from raghub_mcp.mcp_server.tools.v2 import register_v2_tools
 
         mock_mcp = MagicMock()
         call_count = [0]
@@ -421,7 +435,7 @@ class TestDeprecatedTools:
     @pytest.fixture(autouse=True)
     def reset_tools_flag(self):
         """Reset the _tools_registered flag before each test."""
-        import mcp_server.tools.v2 as v2_module
+        import raghub_mcp.mcp_server.tools.v2 as v2_module
 
         v2_module._tools_registered = False
         yield
@@ -430,7 +444,7 @@ class TestDeprecatedTools:
     @pytest.mark.skip(reason="register_deprecated_tools has broken relative imports in source")
     def test_register_deprecated_tools(self):
         """Test register_deprecated_tools function."""
-        from mcp_server.tools.v2 import register_deprecated_tools
+        from raghub_mcp.mcp_server.tools.v2 import register_deprecated_tools
 
         mock_mcp = MagicMock()
 

@@ -17,7 +17,7 @@ class TestLineChunker:
 
     def test_line_based_splitting(self):
         """TC-1.9.3: Text is split by lines, not characters."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=5, overlap=0)
 
@@ -36,7 +36,7 @@ class TestLineChunker:
 
     def test_line_count_respected(self):
         """TC-1.9.3: chunk_size limits lines, not characters."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=3, overlap=0)
 
@@ -55,7 +55,7 @@ class TestLineChunker:
 
     def test_preserves_line_boundaries(self):
         """TC-1.9.3: Line boundaries are preserved."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=3, overlap=0)
 
@@ -75,7 +75,7 @@ class TestLineChunker:
 
     def test_empty_text_returns_empty_list(self):
         """Empty text returns empty chunk list."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=5, overlap=1)
         chunks = chunker.chunk("")
@@ -84,7 +84,7 @@ class TestLineChunker:
 
     def test_single_line_text(self):
         """Single line text returns one chunk."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=5, overlap=1)
         text = "single line without newline"
@@ -95,7 +95,7 @@ class TestLineChunker:
 
     def test_line_overlap(self):
         """TC-1.9.3: Overlap works with lines."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         # chunk_size=5, overlap=2 -> step=3
         chunker = LineChunker(chunk_size=5, overlap=2)
@@ -116,7 +116,7 @@ class TestLineChunker:
 
     def test_positions_accurate(self):
         """TC-1.9.3: Character positions are accurate."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=2, overlap=0)
 
@@ -130,7 +130,7 @@ class TestLineChunker:
 
     def test_metadata_includes_line_info(self):
         """TC-1.9.3: Metadata includes line numbers."""
-        from chunkers.line import LineChunker
+        from raghub_mcp.chunkers.line import LineChunker
 
         chunker = LineChunker(chunk_size=3, overlap=0)
 

@@ -18,7 +18,7 @@ class TestSimpleChunker:
 
     def test_chunk_size_respected(self):
         """TC-1.9.1: Each chunk does not exceed chunk_size."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=100, overlap=0)
 
@@ -32,7 +32,7 @@ class TestSimpleChunker:
 
     def test_chunk_size_with_overlap(self):
         """TC-1.9.1: chunk_size respected even with overlap."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=100, overlap=20)
         text = "a" * 500
@@ -43,7 +43,7 @@ class TestSimpleChunker:
 
     def test_small_text_returns_single_chunk(self):
         """Text smaller than chunk_size returns one chunk."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=100, overlap=10)
         text = "Hello world"
@@ -56,7 +56,7 @@ class TestSimpleChunker:
 
     def test_empty_text_returns_empty_list(self):
         """Empty text returns empty chunk list."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=100, overlap=10)
         chunks = chunker.chunk("")
@@ -65,7 +65,7 @@ class TestSimpleChunker:
 
     def test_exact_boundary(self):
         """Text exactly matching chunk_size boundaries."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=10, overlap=0)
         text = "a" * 30  # Exactly 3 chunks
@@ -81,7 +81,7 @@ class TestSimpleChunkerOverlap:
 
     def test_overlap_creates_redundancy(self):
         """TC-1.9.2: Overlap creates overlapping content."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=10, overlap=4)
         text = "abcdefghij" * 3  # 30 characters
@@ -111,7 +111,7 @@ class TestSimpleChunkerOverlap:
 
     def test_overlap_preserves_content(self):
         """TC-1.9.2: With overlap, content is preserved across boundaries."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=20, overlap=5)
         text = "abcdefghijklmnopqrstuvwxyz"
@@ -132,7 +132,7 @@ class TestSimpleChunkerOverlap:
 
     def test_no_overlap(self):
         """Zero overlap means no redundant content."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=10, overlap=0)
         text = "a" * 25
@@ -148,7 +148,7 @@ class TestSimpleChunkerPositions:
 
     def test_positions_are_accurate(self):
         """Chunk start/end positions are accurate."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=10, overlap=0)
         text = "0123456789abcdefghij"
@@ -164,7 +164,7 @@ class TestSimpleChunkerPositions:
 
     def test_metadata_included(self):
         """Chunks include metadata."""
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker = SimpleChunker(chunk_size=10, overlap=0)
         text = "a" * 25

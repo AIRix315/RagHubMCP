@@ -15,11 +15,11 @@ Available Scorers:
 Reference: Docs/20-RerankEngine-Architecture.md Section 4.4
 """
 
-from .onnx_scorer import ONNXScorer
-from .bm25_scorer import BM25Scorer
-from .vector_scorer import VectorScorer
-from .hybrid_scorer import HybridFusionScorer
 from .api_scorer import APIScorer, CohereScorer, JinaScorer, create_api_scorer
+from .bm25_scorer import BM25Scorer
+from .hybrid_scorer import HybridFusionScorer
+from .onnx_scorer import ONNXScorer
+from .vector_scorer import VectorScorer
 
 __all__ = [
     "ONNXScorer",

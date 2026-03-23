@@ -75,8 +75,8 @@ class TestEvaluationRunner:
     @pytest.mark.asyncio
     async def test_run_single_query(self, mock_pipeline, sample_result):
         """Test running a single evaluation query."""
-        from scripts.evaluate import EvaluationRunner
         from raghub_mcp.pipeline import RAGResult
+        from scripts.evaluate import EvaluationRunner
 
         mock_pipeline.run.return_value = sample_result
 
@@ -113,8 +113,8 @@ class TestEvaluationRunner:
 
     def test_calculate_metrics(self, sample_result):
         """Test metrics calculation."""
-        from scripts.evaluate import EvaluationRunner
         from raghub_mcp.pipeline import Document
+        from scripts.evaluate import EvaluationRunner
 
         runner = EvaluationRunner(profile="balanced")
 
@@ -182,8 +182,8 @@ class TestEvaluationResult:
 
     def test_result_creation(self):
         """Test creating EvaluationResult."""
-        from scripts.evaluate import EvaluationResult
         from raghub_mcp.pipeline import Document
+        from scripts.evaluate import EvaluationResult
 
         result = EvaluationResult(
             query_id=1,
@@ -200,8 +200,8 @@ class TestEvaluationResult:
 
     def test_result_to_dict(self):
         """Test EvaluationResult serialization."""
-        from scripts.evaluate import EvaluationResult
         from raghub_mcp.pipeline import Document
+        from scripts.evaluate import EvaluationResult
 
         result = EvaluationResult(
             query_id=1,
@@ -258,7 +258,10 @@ class TestMain:
         """Test argument parsing with custom values."""
         from scripts.evaluate import parse_args
 
-        with patch("sys.argv", ["evaluate", "--profile", "accurate", "--top-k", "5", "--format", "markdown"]):
+        with patch(
+            "sys.argv",
+            ["evaluate", "--profile", "accurate", "--top-k", "5", "--format", "markdown"],
+        ):
             args = parse_args()
             assert args.profile == "accurate"
             assert args.top_k == 5
@@ -279,8 +282,8 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_results(self):
         """Test handling empty results."""
-        from scripts.evaluate import EvaluationRunner
         from raghub_mcp.pipeline import RAGResult
+        from scripts.evaluate import EvaluationRunner
 
         runner = EvaluationRunner(profile="balanced")
 

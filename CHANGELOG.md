@@ -2,6 +2,77 @@
 
 ---
 
+## [2.6.7] - 2026-03-24
+
+### fix(ci): 全面修复 CI/CD 代码质量问题
+
+- **时间**: 2026-03-24 06:57
+- **内容**: 修复所有 backend 和 frontend CI 检查问题，更新执行规范
+
+#### Backend Fixed
+
+- **Ruff Linter**: 修复 180+ 处代码质量问题
+  - 导入排序 (I001): 16 处
+  - 文件末尾换行 (W292): 52 处
+  - 空行空白 (W293): 83 处
+  - 尾部空白 (W291): 1 处
+  - 类型注解引号 (UP037): 3 处
+  - 未使用导入 (F401): 7 处
+  - 未使用变量 (F841): 2 处
+  - f-string 无占位符 (F541): 6 处
+  - 变量命名 (N806): 2 处
+  - 枚举类型 (UP042): 13 处 `str, Enum` → `StrEnum`
+
+- **测试导入路径**: 修复 200+ 处错误导入
+  - `from auth.` → `from raghub_mcp.auth.`
+  - `from chunkers.` → `from raghub_mcp.chunkers.`
+  - `from pipeline.` → `from raghub_mcp.pipeline.`
+  - `from rerank_engine.` → `from raghub_mcp.rerank_engine.`
+  - `from providers.` → `from raghub_mcp.providers.`
+  - `from graph.` → `from raghub_mcp.graph.`
+  - `from webhook.` → `from raghub_mcp.webhook.`
+  - `from mcp_server.` → `from raghub_mcp.mcp_server.`
+
+- **测试 Mock 路径**: 修复 15+ 处 mock 路径
+  - `patch("pipeline.factory.")` → `patch("raghub_mcp.pipeline.factory.")`
+  - `patch("chunkers.")` → `patch("raghub_mcp.chunkers.")`
+  - `patch("webhook.")` → `patch("raghub_mcp.webhook.")`
+
+- **源码导入**: 修复 `mcp_server/tools/v2/__init__.py` 导入路径
+  - `from pipeline.factory` → `from raghub_mcp.pipeline.factory`
+
+- **依赖安装**: 安装缺失的可选依赖
+  - `networkx` (已声明但未安装)
+  - `python-jose` (enterprise 依赖)
+  - `passlib` (enterprise 依赖)
+  - `types-PyYAML` (类型检查依赖)
+
+- **pre-commit**: 正确安装到虚拟环境 `backend/venv/`
+
+#### Frontend Fixed
+
+- **TypeScript 类型错误**: 修复 8 处
+  - `ProviderStatusInfo` 缺少 `model` 和 `config` 属性
+  - `useRerankStore` 缺少 `testProvider`, `setDefault`, `deleteProvider` 方法
+  - `i18n.ts` 对象字面量重复属性 (3 处)
+  - `SearchTest.vue` 未使用变量 `index`
+
+- **i18n 重复属性**: 移除 `zh-CN` locale 中的重复 `pipeline` 和 `profile` 键
+
+#### RULE.md Updated
+
+- 新增 "十 CI/CD 环境规范" 章节
+- 明确禁止使用系统 Python 环境
+- 要求所有操作使用虚拟环境
+- 完整 CI 验证流程文档
+
+#### Tests
+
+- 1279 passed, 8 skipped
+- 跳过的 8 个测试为 ONNX 相关（需要模型文件）
+
+---
+
 ## [2.6.6] - 2026-03-24
 
 ### fix(ci): 修复 GitHub CI/CD 配置问题

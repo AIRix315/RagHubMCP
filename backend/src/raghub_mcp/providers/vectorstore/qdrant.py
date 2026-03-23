@@ -19,7 +19,7 @@ ID Requirements:
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from ..base import ProviderCategory
 from ..registry import registry
@@ -27,7 +27,7 @@ from .base import BaseVectorStoreProvider, QueryResult, SearchResult
 
 if TYPE_CHECKING:
     from qdrant_client import QdrantClient
-    from qdrant_client.http.models import Filter, FieldCondition, PointStruct
+    from qdrant_client.http.models import Filter
 
 logger = logging.getLogger(__name__)
 
@@ -532,7 +532,9 @@ class QdrantProvider(BaseVectorStoreProvider):
             if metadatas and i < len(metadatas):
                 payload.update(metadatas[i])
 
-            vector: list[float] | None = embeddings[i] if embeddings and i < len(embeddings) else None
+            vector: list[float] | None = (
+                embeddings[i] if embeddings and i < len(embeddings) else None
+            )
             point_kwargs: dict[str, Any] = {
                 "id": doc_id,
                 "payload": payload if payload else None,

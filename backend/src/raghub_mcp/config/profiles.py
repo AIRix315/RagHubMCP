@@ -8,8 +8,6 @@ Reference: Docs/22-Config-API-Design.md Section 2.3.2
 
 from __future__ import annotations
 
-from typing import Any, Literal
-
 from pydantic import BaseModel, Field
 
 
@@ -37,7 +35,9 @@ class ContextProfileConfig(BaseModel):
     enabled: bool = Field(default=True, description="Enable context builder")
     max_tokens: int = Field(default=4000, description="Maximum tokens")
     deduplicate: bool = Field(default=True, description="Enable deduplication")
-    deduplication_threshold: float = Field(default=0.9, ge=0.5, le=1.0, description="Dedup threshold")
+    deduplication_threshold: float = Field(
+        default=0.9, ge=0.5, le=1.0, description="Dedup threshold"
+    )
     merge_continuous: bool = Field(default=True, description="Merge continuous chunks")
 
 

@@ -14,13 +14,13 @@ import json
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     """Supported GitHub webhook event types."""
 
     PUSH = "push"
@@ -264,7 +264,9 @@ class WebhookHandler:
             "message": "Webhook received successfully",
         }
 
-    def register_handler(self, event_type: EventType, handler: Callable[[WebhookPayload], dict[str, Any]]) -> None:
+    def register_handler(
+        self, event_type: EventType, handler: Callable[[WebhookPayload], dict[str, Any]]
+    ) -> None:
         """Register a custom handler for an event type.
 
         Args:

@@ -105,9 +105,7 @@ class EvaluationRunner:
             ValueError: If profile is invalid.
         """
         if profile not in self.VALID_PROFILES:
-            raise ValueError(
-                f"Invalid profile '{profile}'. Must be one of: {self.VALID_PROFILES}"
-            )
+            raise ValueError(f"Invalid profile '{profile}'. Must be one of: {self.VALID_PROFILES}")
         self.profile = profile
         self.top_k = top_k
         self._pipeline = None
@@ -498,8 +496,11 @@ async def main():
         results = await runner.run_evaluation()
 
     # Output results
-    output_content = runner.format_output(results, args.format) if args.compare else \
-        EvaluationRunner(profile=args.profile).format_output(results, args.format)
+    output_content = (
+        runner.format_output(results, args.format)
+        if args.compare
+        else EvaluationRunner(profile=args.profile).format_output(results, args.format)
+    )
 
     if args.output:
         output_path = Path(args.output)

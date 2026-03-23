@@ -26,9 +26,9 @@ from raghub_mcp.providers.factory import factory
 from raghub_mcp.utils.config import get_config
 
 from .schemas import (
-    ErrorResponse,
     EngineComparison,
     EngineMetrics,
+    ErrorResponse,
     ProviderCreateRequest,
     ProviderDeleteResponse,
     ProviderInfo,
@@ -331,7 +331,10 @@ async def compare_rerank_engines(request: RerankCompareRequest) -> RerankCompare
         except Exception as e:
             raise HTTPException(
                 status_code=404,
-                detail={"error": "provider_not_found", "message": f"Engine '{engine_name}' not found: {str(e)}"},
+                detail={
+                    "error": "provider_not_found",
+                    "message": f"Engine '{engine_name}' not found: {str(e)}",
+                },
             )
 
         engine_start = time.time()

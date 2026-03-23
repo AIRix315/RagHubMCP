@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class NodeType(str, Enum):
+class NodeType(StrEnum):
     """Types of nodes in code graph."""
 
     MODULE = "module"
@@ -18,7 +18,7 @@ class NodeType(str, Enum):
     IMPORT = "import"
 
 
-class EdgeType(str, Enum):
+class EdgeType(StrEnum):
     """Types of edges in code graph."""
 
     IMPORTS = "imports"

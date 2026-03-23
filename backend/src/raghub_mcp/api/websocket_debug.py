@@ -62,7 +62,9 @@ class DebugWebSocketHandler:
                     except ValueError:
                         # WebSocket was not in the subscriber list - this is normal
                         # if connection was closed unexpectedly
-                        logger.debug(f"WebSocket {websocket.client} not in subscribers list for query {query_id}")
+                        logger.debug(
+                            f"WebSocket {websocket.client} not in subscribers list for query {query_id}"
+                        )
             del self._subscriptions[websocket]
         logger.info("WebSocket debug connection closed")
 
@@ -77,12 +79,15 @@ class DebugWebSocketHandler:
             self._subscribers[query_id] = []
         self._subscribers[query_id].append(websocket)
         self._subscriptions[websocket].add(query_id)
-        
-        await self._send_message(websocket, {
-            "event": "subscribed",
-            "query_id": query_id,
-            "timestamp": datetime.now().isoformat(),
-        })
+
+        await self._send_message(
+            websocket,
+            {
+                "event": "subscribed",
+                "query_id": query_id,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
     async def _send_message(self, websocket: WebSocket, data: dict[str, Any]) -> None:
         """Send JSON message to WebSocket.
@@ -143,47 +148,71 @@ class DebugWebSocketHandler:
         """
         query_id = str(uuid.uuid4())[:8]
         config = config or {}
-        
+
         try:
             # Notify start
-            await self._send_message(websocket, {
-                "event": "started",
-                "query_id": query_id,
-                "query": query,
-                "timestamp": datetime.now().isoformat(),
-            })
+            await self._send_message(
+                websocket,
+                {
+                    "event": "started",
+                    "query_id": query_id,
+                    "query": query,
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
 
             # Stage 1: Retrieval
-            await self._stream_stage(websocket, query_id, "retrieval", {
-                "query": query,
-                "top_k": config.get("top_k", 100),
-            })
+            await self._stream_stage(
+                websocket,
+                query_id,
+                "retrieval",
+                {
+                    "query": query,
+                    "top_k": config.get("top_k", 100),
+                },
+            )
 
             # Stage 2: Rerank
-            await self._stream_stage(websocket, query_id, "rerank", {
-                "input_count": len(documents),
-            })
+            await self._stream_stage(
+                websocket,
+                query_id,
+                "rerank",
+                {
+                    "input_count": len(documents),
+                },
+            )
 
             # Stage 3: Context Builder
-            await self._stream_stage(websocket, query_id, "context", {
-                "input_count": min(len(documents), 10),
-            })
+            await self._stream_stage(
+                websocket,
+                query_id,
+                "context",
+                {
+                    "input_count": min(len(documents), 10),
+                },
+            )
 
             # Notify completion
-            await self._send_message(websocket, {
-                "event": "completed",
-                "query_id": query_id,
-                "timestamp": datetime.now().isoformat(),
-            })
+            await self._send_message(
+                websocket,
+                {
+                    "event": "completed",
+                    "query_id": query_id,
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
 
         except Exception as e:
             logger.error(f"Pipeline execution failed: {e}")
-            await self._send_message(websocket, {
-                "event": "error",
-                "query_id": query_id,
-                "error": str(e),
-                "timestamp": datetime.now().isoformat(),
-            })
+            await self._send_message(
+                websocket,
+                {
+                    "event": "error",
+                    "query_id": query_id,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
 
     async def _stream_stage(
         self,
@@ -203,30 +232,36 @@ class DebugWebSocketHandler:
         import random
 
         # Stage started
-        await self._send_message(websocket, {
-            "event": "stage_started",
-            "query_id": query_id,
-            "stage": stage_name,
-            "input": input_data,
-            "timestamp": datetime.now().isoformat(),
-        })
+        await self._send_message(
+            websocket,
+            {
+                "event": "stage_started",
+                "query_id": query_id,
+                "stage": stage_name,
+                "input": input_data,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
         # Simulate processing
         await asyncio.sleep(0.1)
 
         # Stage progress (for rerank, show individual scores)
         if stage_name == "rerank":
-            await self._send_message(websocket, {
-                "event": "stage_progress",
-                "query_id": query_id,
-                "stage": stage_name,
-                "data": {
-                    "message": "Scoring documents...",
-                    "processed": 0,
-                    "total": input_data.get("input_count", 10),
+            await self._send_message(
+                websocket,
+                {
+                    "event": "stage_progress",
+                    "query_id": query_id,
+                    "stage": stage_name,
+                    "data": {
+                        "message": "Scoring documents...",
+                        "processed": 0,
+                        "total": input_data.get("input_count", 10),
+                    },
+                    "timestamp": datetime.now().isoformat(),
                 },
-                "timestamp": datetime.now().isoformat(),
-            })
+            )
 
         # Simulate latency
         latency = random.uniform(0.03, 0.08)
@@ -234,14 +269,17 @@ class DebugWebSocketHandler:
 
         # Stage completed
         output_data = self._get_stage_output(stage_name, input_data)
-        await self._send_message(websocket, {
-            "event": "stage_completed",
-            "query_id": query_id,
-            "stage": stage_name,
-            "output": output_data,
-            "latency_ms": round(latency * 1000, 2),
-            "timestamp": datetime.now().isoformat(),
-        })
+        await self._send_message(
+            websocket,
+            {
+                "event": "stage_completed",
+                "query_id": query_id,
+                "stage": stage_name,
+                "output": output_data,
+                "latency_ms": round(latency * 1000, 2),
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
     def _get_stage_output(
         self,
@@ -306,7 +344,7 @@ async def websocket_debug_endpoint(websocket: WebSocket) -> None:
         while True:
             # Receive message from client
             data = await websocket.receive_text()
-            
+
             try:
                 message = json.loads(data)
                 action = message.get("action")
@@ -317,10 +355,12 @@ async def websocket_debug_endpoint(websocket: WebSocket) -> None:
                     if query_id:
                         await debug_handler.subscribe(websocket, query_id)
                     else:
-                        await websocket.send_json({
-                            "event": "error",
-                            "message": "Missing query_id for subscribe action",
-                        })
+                        await websocket.send_json(
+                            {
+                                "event": "error",
+                                "message": "Missing query_id for subscribe action",
+                            }
+                        )
 
                 elif action == "execute":
                     # Execute pipeline with streaming
@@ -329,34 +369,40 @@ async def websocket_debug_endpoint(websocket: WebSocket) -> None:
                     config = message.get("config")
 
                     if not query:
-                        await websocket.send_json({
-                            "event": "error",
-                            "message": "Missing query for execute action",
-                        })
+                        await websocket.send_json(
+                            {
+                                "event": "error",
+                                "message": "Missing query for execute action",
+                            }
+                        )
                         continue
 
                     if not documents:
-                        await websocket.send_json({
-                            "event": "error",
-                            "message": "Missing documents for execute action",
-                        })
+                        await websocket.send_json(
+                            {
+                                "event": "error",
+                                "message": "Missing documents for execute action",
+                            }
+                        )
                         continue
 
-                    await debug_handler.execute_with_streaming(
-                        websocket, query, documents, config
-                    )
+                    await debug_handler.execute_with_streaming(websocket, query, documents, config)
 
                 else:
-                    await websocket.send_json({
-                        "event": "error",
-                        "message": f"Unknown action: {action}",
-                    })
+                    await websocket.send_json(
+                        {
+                            "event": "error",
+                            "message": f"Unknown action: {action}",
+                        }
+                    )
 
             except json.JSONDecodeError:
-                await websocket.send_json({
-                    "event": "error",
-                    "message": "Invalid JSON message",
-                })
+                await websocket.send_json(
+                    {
+                        "event": "error",
+                        "message": "Invalid JSON message",
+                    }
+                )
 
     except WebSocketDisconnect:
         await debug_handler.disconnect(websocket)

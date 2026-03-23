@@ -178,9 +178,7 @@ class QueryCache:
         with self._lock:
             now = time.time()
             expired_keys = [
-                key
-                for key, entry in self._cache.items()
-                if now - entry.created_at > entry.ttl
+                key for key, entry in self._cache.items() if now - entry.created_at > entry.ttl
             ]
 
             for key in expired_keys:

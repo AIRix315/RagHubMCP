@@ -100,9 +100,7 @@ class DiversityRankStrategy(BaseRankStrategy):
 
         return selected
 
-    def _max_similarity(
-        self, doc: ScoredDocument, selected: list[ScoredDocument]
-    ) -> float:
+    def _max_similarity(self, doc: ScoredDocument, selected: list[ScoredDocument]) -> float:
         """Calculate maximum similarity to selected documents.
 
         Uses simple word overlap for text similarity.

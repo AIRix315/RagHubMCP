@@ -9,9 +9,9 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from collections.abc import AsyncIterator
 from typing import Any
 
 import uvicorn

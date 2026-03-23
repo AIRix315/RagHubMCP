@@ -2,11 +2,11 @@
 
 import pytest
 
-# Import the adapters module to trigger registration decorator
-from raghub_mcp.providers.rerank import adapters  # noqa: F401
-
 from raghub_mcp.providers.base import ProviderCategory
 from raghub_mcp.providers.registry import registry
+
+# Import the adapters module to trigger registration decorator
+from raghub_mcp.providers.rerank import adapters  # noqa: F401
 
 
 def test_rerank_engine_adapter_registered():

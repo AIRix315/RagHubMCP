@@ -194,9 +194,7 @@ class HybridFusionScorer(BaseScorer):
             # Default to minmax
             return self._normalize(scores, method="minmax")
 
-    def _linear_fusion(
-        self, vector_scores: np.ndarray, bm25_scores: np.ndarray
-    ) -> np.ndarray:
+    def _linear_fusion(self, vector_scores: np.ndarray, bm25_scores: np.ndarray) -> np.ndarray:
         """Linear weighted fusion of scores.
 
         Formula: fused = vector_weight * vector + (1 - vector_weight) * bm25
@@ -239,9 +237,7 @@ class HybridFusionScorer(BaseScorer):
         """
         return 1.0 / (self.k + vector_ranks) + 1.0 / (self.k + bm25_ranks)
 
-    def _weighted_rrf_fusion(
-        self, vector_ranks: np.ndarray, bm25_ranks: np.ndarray
-    ) -> np.ndarray:
+    def _weighted_rrf_fusion(self, vector_ranks: np.ndarray, bm25_ranks: np.ndarray) -> np.ndarray:
         """Weighted Reciprocal Rank Fusion.
 
         Formula: RRF(d) = w/(k + rank1) + (1-w)/(k + rank2)

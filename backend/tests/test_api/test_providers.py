@@ -35,10 +35,12 @@ def test_client():
 def mock_rerank_provider():
     """Create a mock rerank provider for testing."""
     provider = MagicMock()
-    provider.rerank = AsyncMock(return_value=[
-        {"index": 0, "text": "doc1", "score": 0.95, "rank": 1},
-        {"index": 1, "text": "doc2", "score": 0.85, "rank": 2},
-    ])
+    provider.rerank = AsyncMock(
+        return_value=[
+            {"index": 0, "text": "doc1", "score": 0.95, "rank": 1},
+            {"index": 1, "text": "doc2", "score": 0.85, "rank": 2},
+        ]
+    )
     provider.type = "onnx"
     provider.model = "test-model"
     return provider
@@ -164,7 +166,7 @@ class TestProviderSchemas:
 
     def test_rerank_test_response_schema(self):
         """Test RerankTestResponse model."""
-        from raghub_mcp.api.schemas import RerankTestResponse, RerankResult
+        from raghub_mcp.api.schemas import RerankResult, RerankTestResponse
 
         result = RerankResult(
             index=0,

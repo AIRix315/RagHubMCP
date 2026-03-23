@@ -2,7 +2,7 @@
 
 Test cases for V2.1:
 - TC-1.1.1: BaseScorer interface contract
-- TC-1.1.2: BaseRankStrategy interface contract  
+- TC-1.1.2: BaseRankStrategy interface contract
 - TC-1.1.3: BasePostProcessor interface contract
 - ScoredDocument dataclass
 
@@ -30,14 +30,14 @@ class TestBaseScorer:
 
     def test_base_scorer_is_abstract(self):
         """TC-1.1.1: BaseScorer cannot be instantiated directly."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         with pytest.raises(TypeError):
             BaseScorer()
 
     def test_base_scorer_requires_name_property(self):
         """TC-1.1.1: Concrete scorer must implement name property."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         with pytest.raises(TypeError):
 
@@ -53,7 +53,7 @@ class TestBaseScorer:
 
     def test_base_scorer_requires_supports_batch_property(self):
         """TC-1.1.1: Concrete scorer must implement supports_batch property."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         with pytest.raises(TypeError):
 
@@ -69,7 +69,7 @@ class TestBaseScorer:
 
     def test_base_scorer_requires_compute_scores_method(self):
         """TC-1.1.1: Concrete scorer must implement compute_scores method."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         with pytest.raises(TypeError):
 
@@ -86,7 +86,7 @@ class TestBaseScorer:
 
     def test_concrete_scorer_implementation(self):
         """TC-1.1.1: A properly implemented scorer works correctly."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         class MockScorer(BaseScorer):
             @property
@@ -110,7 +110,7 @@ class TestBaseScorer:
 
     def test_compute_scores_batch_default_implementation(self):
         """TC-1.1.1: Default batch implementation delegates to single compute_scores."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         class MockScorer(BaseScorer):
             @property
@@ -133,7 +133,7 @@ class TestBaseScorer:
 
     def test_empty_documents_returns_empty_array(self):
         """TC-1.1.1: Scorer handles empty document list correctly."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         class MockScorer(BaseScorer):
             @property
@@ -153,7 +153,7 @@ class TestBaseScorer:
 
     def test_scorer_get_config(self):
         """TC-1.1.1: Scorer provides configuration info."""
-        from rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
 
         class MockScorer(BaseScorer):
             @property
@@ -184,7 +184,7 @@ class TestScoredDocument:
 
     def test_scored_document_creation(self):
         """ScoredDocument can be created with all fields."""
-        from rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
 
         doc = ScoredDocument(
             document_id="doc1",
@@ -202,7 +202,7 @@ class TestScoredDocument:
 
     def test_scored_document_default_metadata(self):
         """ScoredDocument uses empty dict as default metadata."""
-        from rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
 
         doc = ScoredDocument(document_id="doc1", text="text", score=0.5)
 
@@ -211,7 +211,7 @@ class TestScoredDocument:
 
     def test_scored_document_comparison_descending(self):
         """ScoredDocument sorts by score descending (higher score first)."""
-        from rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
 
         doc_high = ScoredDocument("d1", "text", 0.9, {}, 0)
         doc_low = ScoredDocument("d2", "text", 0.5, {}, 1)
@@ -222,7 +222,7 @@ class TestScoredDocument:
 
     def test_scored_document_sorting(self):
         """ScoredDocument can be sorted by score."""
-        from rerank_engine.core.ranker import ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import ScoredDocument
 
         docs = [
             ScoredDocument("d1", "", 0.3, {}, 0),
@@ -246,14 +246,14 @@ class TestBaseRankStrategy:
 
     def test_base_strategy_is_abstract(self):
         """TC-1.1.2: BaseRankStrategy cannot be instantiated directly."""
-        from rerank_engine.core.ranker import BaseRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy
 
         with pytest.raises(TypeError):
             BaseRankStrategy()
 
     def test_base_strategy_requires_name_property(self):
         """TC-1.1.2: Concrete strategy must implement name property."""
-        from rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
 
         with pytest.raises(TypeError):
 
@@ -270,7 +270,7 @@ class TestBaseRankStrategy:
 
     def test_base_strategy_requires_rank_method(self):
         """TC-1.1.2: Concrete strategy must implement rank method."""
-        from rerank_engine.core.ranker import BaseRankStrategy
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy
 
         with pytest.raises(TypeError):
 
@@ -283,7 +283,7 @@ class TestBaseRankStrategy:
 
     def test_concrete_strategy_implementation(self):
         """TC-1.1.2: A properly implemented strategy works correctly."""
-        from rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
 
         class MockStrategy(BaseRankStrategy):
             @property
@@ -317,7 +317,7 @@ class TestBaseRankStrategy:
 
     def test_strategy_get_config(self):
         """TC-1.1.2: Strategy provides configuration info."""
-        from rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
 
         class MockStrategy(BaseRankStrategy):
             @property
@@ -348,28 +348,26 @@ class TestBasePostProcessor:
 
     def test_base_processor_is_abstract(self):
         """TC-1.1.3: BasePostProcessor cannot be instantiated directly."""
-        from rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
 
         with pytest.raises(TypeError):
             BasePostProcessor()
 
     def test_base_processor_requires_name_property(self):
         """TC-1.1.3: Concrete processor must implement name property."""
-        from rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
 
         with pytest.raises(TypeError):
 
             class IncompleteProcessor(BasePostProcessor):
-                def process(
-                    self, scores: np.ndarray, documents: list[str], **kwargs
-                ) -> np.ndarray:
+                def process(self, scores: np.ndarray, documents: list[str], **kwargs) -> np.ndarray:
                     return scores
 
             IncompleteProcessor()
 
     def test_base_processor_requires_process_method(self):
         """TC-1.1.3: Concrete processor must implement process method."""
-        from rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
 
         with pytest.raises(TypeError):
 
@@ -382,16 +380,14 @@ class TestBasePostProcessor:
 
     def test_concrete_processor_implementation(self):
         """TC-1.1.3: A properly implemented processor works correctly."""
-        from rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
 
         class MockProcessor(BasePostProcessor):
             @property
             def name(self) -> str:
                 return "mock"
 
-            def process(
-                self, scores: np.ndarray, documents: list[str], **kwargs
-            ) -> np.ndarray:
+            def process(self, scores: np.ndarray, documents: list[str], **kwargs) -> np.ndarray:
                 return scores * 2
 
         processor = MockProcessor()
@@ -404,16 +400,14 @@ class TestBasePostProcessor:
 
     def test_processor_preserves_shape(self):
         """TC-1.1.3: Processor should preserve array shape."""
-        from rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
 
         class IdentityProcessor(BasePostProcessor):
             @property
             def name(self) -> str:
                 return "identity"
 
-            def process(
-                self, scores: np.ndarray, documents: list[str], **kwargs
-            ) -> np.ndarray:
+            def process(self, scores: np.ndarray, documents: list[str], **kwargs) -> np.ndarray:
                 return scores
 
         processor = IdentityProcessor()
@@ -424,16 +418,14 @@ class TestBasePostProcessor:
 
     def test_processor_get_config(self):
         """TC-1.1.3: Processor provides configuration info."""
-        from rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
 
         class MockProcessor(BasePostProcessor):
             @property
             def name(self) -> str:
                 return "mock"
 
-            def process(
-                self, scores: np.ndarray, documents: list[str], **kwargs
-            ) -> np.ndarray:
+            def process(self, scores: np.ndarray, documents: list[str], **kwargs) -> np.ndarray:
                 return scores
 
         processor = MockProcessor()
@@ -452,7 +444,7 @@ class TestRerankModels:
 
     def test_rerank_request_creation(self):
         """RerankRequest can be created with required fields."""
-        from rerank_engine.models import RerankRequest
+        from raghub_mcp.rerank_engine.models import RerankRequest
 
         request = RerankRequest(
             query="test query",
@@ -465,7 +457,7 @@ class TestRerankModels:
 
     def test_rerank_request_with_options(self):
         """RerankRequest accepts optional configuration."""
-        from rerank_engine.models import RerankRequest
+        from raghub_mcp.rerank_engine.models import RerankRequest
 
         request = RerankRequest(
             query="test",
@@ -479,7 +471,7 @@ class TestRerankModels:
 
     def test_rerank_result_creation(self):
         """RerankResult can be created with all fields."""
-        from rerank_engine.models import RerankResult
+        from raghub_mcp.rerank_engine.models import RerankResult
 
         result = RerankResult(
             document_id="doc1",
@@ -496,7 +488,7 @@ class TestRerankModels:
 
     def test_rerank_result_to_dict(self):
         """RerankResult can be converted to dictionary."""
-        from rerank_engine.models import RerankResult
+        from raghub_mcp.rerank_engine.models import RerankResult
 
         result = RerankResult(
             document_id="doc1",
@@ -514,7 +506,7 @@ class TestRerankModels:
 
     def test_rerank_context_creation(self):
         """RerankContext can be created and tracks processing."""
-        from rerank_engine.models import RerankContext, RerankRequest
+        from raghub_mcp.rerank_engine.models import RerankContext, RerankRequest
 
         request = RerankRequest(query="test", documents=[])
         context = RerankContext(request=request)
@@ -526,7 +518,7 @@ class TestRerankModels:
 
     def test_rerank_context_add_step(self):
         """RerankContext can record processing steps."""
-        from rerank_engine.models import RerankContext, RerankRequest
+        from raghub_mcp.rerank_engine.models import RerankContext, RerankRequest
 
         request = RerankRequest(query="test", documents=[])
         context = RerankContext(request=request)
@@ -539,7 +531,7 @@ class TestRerankModels:
 
     def test_rerank_context_to_dict(self):
         """RerankContext can be converted to dictionary."""
-        from rerank_engine.models import RerankContext, RerankRequest
+        from raghub_mcp.rerank_engine.models import RerankContext, RerankRequest
 
         request = RerankRequest(query="test", documents=[])
         context = RerankContext(

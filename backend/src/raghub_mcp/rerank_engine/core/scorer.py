@@ -114,10 +114,7 @@ class BaseScorer(ABC):
             ... )
             [array([0.5, 0.8]), array([0.3])]
         """
-        return [
-            self.compute_scores(q, docs)
-            for q, docs in zip(queries, documents_list)
-        ]
+        return [self.compute_scores(q, docs) for q, docs in zip(queries, documents_list)]
 
     def get_config(self) -> dict[str, Any]:
         """Get scorer configuration for logging/debugging.

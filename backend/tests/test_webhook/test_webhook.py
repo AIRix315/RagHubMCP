@@ -13,7 +13,7 @@ class TestWebhookHandler:
 
     def test_handle_ping_event(self):
         """Ping event returns accepted status."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         result = handler.handle("ping", {"zen": "Keep it simple"}, None)
@@ -23,7 +23,7 @@ class TestWebhookHandler:
 
     def test_handle_push_event(self):
         """Push event extracts files changed."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         payload = {
@@ -43,7 +43,7 @@ class TestWebhookHandler:
 
     def test_handle_pull_request_event(self):
         """Pull request event extracts action and branch."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         payload = {
@@ -64,7 +64,7 @@ class TestWebhookHandler:
         """Valid signature passes verification."""
         import json
 
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         secret = "my_secret"
         handler = WebhookHandler(secret=secret)
@@ -83,7 +83,7 @@ class TestWebhookHandler:
 
     def test_verify_signature_invalid(self):
         """Invalid signature fails verification."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler(secret="my_secret")
 
@@ -91,7 +91,7 @@ class TestWebhookHandler:
 
     def test_verify_signature_no_secret_configured(self):
         """No secret configured skips verification."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler(secret=None)
 
@@ -99,7 +99,7 @@ class TestWebhookHandler:
 
     def test_handle_invalid_json(self):
         """Invalid JSON returns error."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         result = handler.handle("push", b"not json", None)
@@ -108,7 +108,7 @@ class TestWebhookHandler:
 
     def test_handle_unknown_event(self):
         """Unknown event type returns ignored."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         result = handler.handle("unknown_event", {}, None)
@@ -122,7 +122,7 @@ class TestWebhookPayload:
 
     def test_parse_push_payload(self):
         """Push payload is parsed correctly."""
-        from webhook.handler import EventType, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookPayload
 
         data = {
             "repository": {"full_name": "owner/repo"},
@@ -141,7 +141,7 @@ class TestWebhookPayload:
 
     def test_parse_ping_payload(self):
         """Ping payload is parsed correctly."""
-        from webhook.handler import EventType, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookPayload
 
         data = {"zen": "Keep it simple"}
 
@@ -151,7 +151,7 @@ class TestWebhookPayload:
 
     def test_parse_pull_request_payload(self):
         """Pull request payload is parsed correctly."""
-        from webhook.handler import EventType, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookPayload
 
         data = {
             "repository": {"full_name": "owner/repo"},
@@ -168,7 +168,7 @@ class TestWebhookPayload:
 
     def test_parse_release_payload(self):
         """Release payload is parsed correctly (lines 93-102)."""
-        from webhook.handler import EventType, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookPayload
 
         data = {
             "repository": {"full_name": "owner/repo"},
@@ -190,7 +190,7 @@ class TestWebhookHandlerRelease:
 
     def test_handle_release_event(self):
         """Release event is handled correctly."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         payload = {
@@ -209,7 +209,7 @@ class TestWebhookHandlerRelease:
 
     def test_handle_release_event_with_dict_payload(self):
         """Release event with dict payload."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         result = handler.handle("release", {"repository": {"full_name": "test/repo"}}, None)
@@ -222,7 +222,7 @@ class TestSignatureVerification:
 
     def test_verify_signature_missing_header(self):
         """Missing signature header returns False (lines 147-148)."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler(secret="my_secret")
 
@@ -233,7 +233,7 @@ class TestSignatureVerification:
 
     def test_handle_with_invalid_signature(self):
         """Handle returns error when signature verification fails (line 193)."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler(secret="my_secret")
 
@@ -248,7 +248,7 @@ class TestPayloadParsingErrors:
 
     def test_handle_string_payload_invalid_json(self):
         """String payload with invalid JSON returns error (lines 182-186)."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         result = handler.handle("push", "not valid json string", None)
@@ -258,7 +258,7 @@ class TestPayloadParsingErrors:
 
     def test_handle_bytes_payload_invalid_json(self):
         """Bytes payload with invalid JSON returns error."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
         result = handler.handle("push", b"not valid json bytes", None)
@@ -272,7 +272,7 @@ class TestHandlerErrors:
 
     def test_handle_handler_exception(self):
         """Handler exception is caught and returns error (lines 207-209)."""
-        from webhook.handler import EventType, WebhookHandler, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookHandler, WebhookPayload
 
         handler = WebhookHandler()
 
@@ -289,7 +289,7 @@ class TestHandlerErrors:
 
     def test_handle_no_handler_for_event(self):
         """No handler for event type returns ignored (lines 210-211)."""
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
 
@@ -307,7 +307,7 @@ class TestRegisterHandler:
 
     def test_register_handler(self):
         """Custom handler can be registered (line 281)."""
-        from webhook.handler import EventType, WebhookHandler, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookHandler, WebhookPayload
 
         handler = WebhookHandler()
 
@@ -326,7 +326,7 @@ class TestRegisterHandler:
 
     def test_register_handler_overrides_default(self):
         """Registered handler overrides default handler."""
-        from webhook.handler import EventType, WebhookHandler, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookHandler, WebhookPayload
 
         handler = WebhookHandler()
 
@@ -350,7 +350,7 @@ class TestCreateWebhookRouter:
 
     def test_create_webhook_router_returns_router(self):
         """create_webhook_router returns an APIRouter (lines 294-333)."""
-        from webhook.handler import WebhookHandler, create_webhook_router
+        from raghub_mcp.webhook.handler import WebhookHandler, create_webhook_router
 
         handler = WebhookHandler()
         router = create_webhook_router(handler)
@@ -361,7 +361,7 @@ class TestCreateWebhookRouter:
 
     def test_create_webhook_router_routes(self):
         """Router has github webhook route."""
-        from webhook.handler import WebhookHandler, create_webhook_router
+        from raghub_mcp.webhook.handler import WebhookHandler, create_webhook_router
 
         handler = WebhookHandler()
         router = create_webhook_router(handler)
@@ -377,7 +377,7 @@ class TestCreateWebhookRouter:
         # We can verify the code path exists by checking the function source
         import inspect
 
-        from webhook.handler import create_webhook_router
+        from raghub_mcp.webhook.handler import create_webhook_router
 
         source = inspect.getsource(create_webhook_router)
         assert "FastAPI is required" in source
@@ -385,7 +385,7 @@ class TestCreateWebhookRouter:
 
     def test_webhook_endpoint_missing_event_header(self):
         """Webhook endpoint raises 400 when X-GitHub-Event missing."""
-        from webhook.handler import WebhookHandler, create_webhook_router
+        from raghub_mcp.webhook.handler import WebhookHandler, create_webhook_router
 
         handler = WebhookHandler()
         router = create_webhook_router(handler)
@@ -403,7 +403,7 @@ class TestCreateWebhookRouter:
 
     def test_webhook_endpoint_success(self):
         """Webhook endpoint processes request successfully."""
-        from webhook.handler import WebhookHandler, create_webhook_router
+        from raghub_mcp.webhook.handler import WebhookHandler, create_webhook_router
 
         handler = WebhookHandler()
         router = create_webhook_router(handler)
@@ -418,7 +418,7 @@ class TestEventTypeEnum:
 
     def test_event_type_invalid_defaults_to_push(self):
         """Invalid event type defaults to PUSH."""
-        from webhook.handler import EventType, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookPayload
 
         payload = WebhookPayload.from_github_event("unknown_event_type", {})
 
@@ -431,7 +431,7 @@ class TestFallbackHandler:
 
     def test_fallback_handler_for_unmatched_event(self):
         """Fallback handler for events that fall through (line 102)."""
-        from webhook.handler import EventType, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookPayload
 
         # This tests the final return statement in from_github_event
         # When event doesn't match any specific case
@@ -444,11 +444,11 @@ class TestFallbackHandler:
         """Test fallback return when event type doesn't match any case (line 102)."""
         from unittest.mock import patch
 
-        from webhook.handler import EventType, WebhookPayload
+        from raghub_mcp.webhook.handler import EventType, WebhookPayload
 
         # Create a scenario where event falls through all if/elif branches
         # by mocking the EventType constructor to return a non-matching type
-        with patch("webhook.handler.EventType") as mock_event_type:
+        with patch("raghub_mcp.webhook.handler.EventType") as mock_event_type:
             # Create a mock that returns a valid EventType but not PUSH/PULL_REQUEST/RELEASE/PING
             mock_event = mock_event_type.return_value
             mock_event_type.__call__ = lambda x: mock_event
@@ -469,7 +469,7 @@ class TestImportErrorHandling:
         """Verify ImportError handling code structure exists (lines 297-298)."""
         import inspect
 
-        from webhook.handler import create_webhook_router
+        from raghub_mcp.webhook.handler import create_webhook_router
 
         # Get the source code of the function
         source = inspect.getsource(create_webhook_router)
@@ -489,12 +489,12 @@ class TestPayloadParsingException:
         """Exception in from_github_event is caught and returns error."""
         from unittest.mock import patch
 
-        from webhook.handler import WebhookHandler
+        from raghub_mcp.webhook.handler import WebhookHandler
 
         handler = WebhookHandler()
 
         # Mock WebhookPayload.from_github_event to raise an exception
-        with patch("webhook.handler.WebhookPayload.from_github_event") as mock_parse:
+        with patch("raghub_mcp.webhook.handler.WebhookPayload.from_github_event") as mock_parse:
             mock_parse.side_effect = RuntimeError("Parsing failed!")
 
             result = handler.handle("push", {"test": "data"}, None)
@@ -508,7 +508,7 @@ class TestFastAPIEndpoint:
 
     def test_router_configuration(self):
         """Verify router configuration is correct."""
-        from webhook.handler import WebhookHandler, create_webhook_router
+        from raghub_mcp.webhook.handler import WebhookHandler, create_webhook_router
 
         handler = WebhookHandler()
         router = create_webhook_router(handler)

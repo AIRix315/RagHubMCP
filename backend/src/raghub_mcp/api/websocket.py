@@ -9,7 +9,7 @@ import asyncio
 import json
 import logging
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from fastapi import WebSocket
@@ -17,7 +17,7 @@ from fastapi import WebSocket
 logger = logging.getLogger(__name__)
 
 
-class MessageType(str, Enum):
+class MessageType(StrEnum):
     """WebSocket message types."""
 
     PROGRESS = "progress"

@@ -23,13 +23,13 @@ class TestRerankEngineInit:
 
     def test_rerank_engine_import(self):
         """TC-1.3.2: RerankEngine can be imported."""
-        from rerank_engine.engine import RerankEngine
+        from raghub_mcp.rerank_engine.engine import RerankEngine
 
         assert RerankEngine is not None
 
     def test_rerank_engine_config_dataclass(self):
         """TC-1.3.2: RerankConfig can be created."""
-        from rerank_engine.engine import RerankConfig
+        from raghub_mcp.rerank_engine.engine import RerankConfig
 
         config = RerankConfig()
 
@@ -38,7 +38,7 @@ class TestRerankEngineInit:
 
     def test_rerank_engine_config_with_options(self):
         """TC-1.3.2: RerankConfig accepts all options."""
-        from rerank_engine.engine import RerankConfig
+        from raghub_mcp.rerank_engine.engine import RerankConfig
 
         config = RerankConfig(
             scorer_type="onnx",
@@ -78,7 +78,7 @@ class TestRerankEngineMock:
     @pytest.fixture
     def mock_strategy(self):
         """Create a mock rank strategy for testing."""
-        from rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
+        from raghub_mcp.rerank_engine.core.ranker import BaseRankStrategy, ScoredDocument
 
         class MockStrategy(BaseRankStrategy):
             @property
@@ -100,8 +100,8 @@ class TestRerankEngineMock:
 
     def test_rerank_engine_rerank_basic(self, mock_scorer, mock_strategy):
         """TC-1.3.1: RerankEngine performs basic reranking."""
-        from rerank_engine.engine import RerankConfig, RerankEngine
-        from rerank_engine.models import RerankRequest
+        from raghub_mcp.rerank_engine.engine import RerankConfig, RerankEngine
+        from raghub_mcp.rerank_engine.models import RerankRequest
 
         # Create engine with mock components (use private attributes)
         config = RerankConfig(post_processors=[])

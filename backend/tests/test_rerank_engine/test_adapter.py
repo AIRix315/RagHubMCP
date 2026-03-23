@@ -28,8 +28,8 @@ class TestRerankEngineAdapter:
 
     def test_adapter_is_base_provider(self):
         """TC-1.6.1: RerankEngineAdapter is a BaseRerankProvider."""
-        from raghub_mcp.providers.rerank.base import BaseRerankProvider
         from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
+        from raghub_mcp.providers.rerank.base import BaseRerankProvider
 
         assert issubclass(RerankEngineAdapter, BaseRerankProvider)
 
@@ -38,7 +38,7 @@ class TestRerankEngineAdapter:
         from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
 
         assert hasattr(RerankEngineAdapter, "NAME")
-        assert RerankEngineAdapter.NAME == "rerank_engine"
+        assert RerankEngineAdapter.NAME == "rerank-engine"
 
     def test_adapter_rerank_method_signature(self):
         """TC-1.6.1: Adapter has rerank method with correct signature."""
@@ -123,7 +123,7 @@ class TestAdapterIntegration:
 
         class MockEngine:
             def rerank(self, request):
-                from rerank_engine.models import RerankResult
+                from raghub_mcp.rerank_engine.models import RerankResult
 
                 return [
                     RerankResult(

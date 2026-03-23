@@ -14,8 +14,6 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-import numpy as np
-
 from .core.processor import BasePostProcessor
 from .core.ranker import BaseRankStrategy, ScoredDocument
 from .core.scorer import BaseScorer
@@ -124,9 +122,7 @@ class RerankEngine:
         if self.config.rank_strategy == "standard":
             return StandardRankStrategy()
         elif self.config.rank_strategy == "diversity":
-            return DiversityRankStrategy(
-                **self.config.rank_strategy_config
-            )
+            return DiversityRankStrategy(**self.config.rank_strategy_config)
         else:
             raise ValueError(f"Unknown rank strategy: {self.config.rank_strategy}")
 
@@ -203,9 +199,7 @@ class RerankEngine:
             # 5. Rank
             logger.debug(f"Ranking {len(scored_docs)} documents")
             ranked = self.rank_strategy.rank(
-                scored_docs,
-                top_k=request.top_k,
-                **request.rank_strategy_config
+                scored_docs, top_k=request.top_k, **request.rank_strategy_config
             )
             context.add_step("ranking", {"strategy": self.rank_strategy.name})
 
@@ -231,10 +225,7 @@ class RerankEngine:
             context.scorer_name = self.scorer.name
             context.rank_strategy_name = self.rank_strategy.name
 
-            logger.info(
-                f"Rerank completed: {len(results)} results in "
-                f"{context.latency_ms:.2f}ms"
-            )
+            logger.info(f"Rerank completed: {len(results)} results in {context.latency_ms:.2f}ms")
 
             return results
 
@@ -254,7 +245,5 @@ class RerankEngine:
                 "type": self.config.rank_strategy,
                 "name": self.rank_strategy.name,
             },
-            "post_processors": [
-                {"type": p.name} for p in self.post_processors
-            ],
+            "post_processors": [{"type": p.name} for p in self.post_processors],
         }

@@ -28,41 +28,41 @@ class TestThresholdProcessor:
 
     def test_threshold_processor_import(self):
         """TC-1.5.1: ThresholdProcessor can be imported."""
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         assert ThresholdProcessor is not None
 
     def test_threshold_processor_is_base_processor(self):
         """TC-1.5.1: ThresholdProcessor is a BasePostProcessor."""
-        from rerank_engine.core.processor import BasePostProcessor
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         assert issubclass(ThresholdProcessor, BasePostProcessor)
 
     def test_threshold_processor_name(self):
         """TC-1.5.1: ThresholdProcessor has correct name."""
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         processor = ThresholdProcessor()
         assert processor.name == "threshold"
 
     def test_threshold_processor_default_min_score(self):
         """TC-1.5.1: ThresholdProcessor has default min_score."""
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         processor = ThresholdProcessor()
         assert processor.min_score == 0.0
 
     def test_threshold_processor_custom_min_score(self):
         """TC-1.5.1: ThresholdProcessor accepts custom min_score."""
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         processor = ThresholdProcessor(min_score=0.3)
         assert processor.min_score == 0.3
 
     def test_threshold_processor_filters_low_scores(self):
         """TC-1.5.1: ThresholdProcessor filters scores below threshold."""
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         processor = ThresholdProcessor(min_score=0.5)
 
@@ -80,7 +80,7 @@ class TestThresholdProcessor:
 
     def test_threshold_processor_preserves_shape(self):
         """TC-1.5.1: ThresholdProcessor preserves array shape."""
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         processor = ThresholdProcessor(min_score=0.5)
 
@@ -101,34 +101,34 @@ class TestNormalizeProcessor:
 
     def test_normalize_processor_import(self):
         """TC-1.5.2: NormalizeProcessor can be imported."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         assert NormalizeProcessor is not None
 
     def test_normalize_processor_is_base_processor(self):
         """TC-1.5.2: NormalizeProcessor is a BasePostProcessor."""
-        from rerank_engine.core.processor import BasePostProcessor
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.core.processor import BasePostProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         assert issubclass(NormalizeProcessor, BasePostProcessor)
 
     def test_normalize_processor_name(self):
         """TC-1.5.2: NormalizeProcessor has correct name."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         processor = NormalizeProcessor()
         assert processor.name == "normalize"
 
     def test_normalize_processor_default_method(self):
         """TC-1.5.2: NormalizeProcessor has default method."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         processor = NormalizeProcessor()
         assert processor.method == "minmax"
 
     def test_normalize_processor_minmax(self):
         """TC-1.5.2: NormalizeProcessor performs minmax normalization."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         processor = NormalizeProcessor(method="minmax")
 
@@ -143,7 +143,7 @@ class TestNormalizeProcessor:
 
     def test_normalize_processor_softmax(self):
         """TC-1.5.2: NormalizeProcessor performs softmax normalization."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         processor = NormalizeProcessor(method="softmax")
 
@@ -160,7 +160,7 @@ class TestNormalizeProcessor:
 
     def test_normalize_processor_handles_constant_scores(self):
         """TC-1.5.2: NormalizeProcessor handles constant scores."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         processor = NormalizeProcessor(method="minmax")
 
@@ -175,7 +175,7 @@ class TestNormalizeProcessor:
 
     def test_normalize_processor_preserves_shape(self):
         """TC-1.5.2: NormalizeProcessor preserves array shape."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
 
         processor = NormalizeProcessor()
 
@@ -191,8 +191,8 @@ class TestProcessorChaining:
 
     def test_threshold_then_normalize(self):
         """Processors can be chained: threshold then normalize."""
-        from rerank_engine.processors.normalize import NormalizeProcessor
-        from rerank_engine.processors.threshold import ThresholdProcessor
+        from raghub_mcp.rerank_engine.processors.normalize import NormalizeProcessor
+        from raghub_mcp.rerank_engine.processors.threshold import ThresholdProcessor
 
         threshold = ThresholdProcessor(min_score=0.3)
         normalize = NormalizeProcessor(method="minmax")

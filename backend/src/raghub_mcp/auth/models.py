@@ -8,7 +8,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
@@ -17,7 +17,7 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
-class Role(str, Enum):
+class Role(StrEnum):
     """User roles for RBAC."""
 
     ADMIN = "admin"

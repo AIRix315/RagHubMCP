@@ -3,7 +3,7 @@
 This module provides utility scripts for evaluation, benchmarking, and maintenance.
 """
 
-from .evaluate import EvaluationRunner, EvaluationResult, main
+from .evaluate import EvaluationResult, EvaluationRunner, main
 
 __all__ = [
     "EvaluationRunner",

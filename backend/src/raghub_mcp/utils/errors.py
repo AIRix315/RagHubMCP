@@ -13,14 +13,14 @@ Reference:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 
-class ErrorCode(str, Enum):
+class ErrorCode(StrEnum):
     """Standardized error codes for RAG operations."""
 
     # Validation errors (400)

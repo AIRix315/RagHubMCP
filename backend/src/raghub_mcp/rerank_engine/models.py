@@ -9,13 +9,13 @@ Reference: Docs/20-RerankEngine-Architecture.md Section 4.3
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import numpy as np
 
 
-class ScorerType(str, Enum):
+class ScorerType(StrEnum):
     """Scorer type enumeration."""
 
     ONNX = "onnx"
@@ -25,7 +25,7 @@ class ScorerType(str, Enum):
     CUSTOM = "custom"
 
 
-class RankStrategyType(str, Enum):
+class RankStrategyType(StrEnum):
     """Rank strategy type enumeration."""
 
     STANDARD = "standard"

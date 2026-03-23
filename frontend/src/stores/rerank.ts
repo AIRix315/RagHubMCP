@@ -56,8 +56,34 @@ export const useRerankStore = defineStore('rerank', () => {
   }
 
   /**
-   * 清除 provider 列表
+   * 测试 Rerank Provider
    */
+  async function testProvider(name: string): Promise<{ success: boolean; latency_ms: number; message: string }> {
+    const { testRerankProvider } = await import('@/api/providers')
+    const result = await testRerankProvider(name, 'test query', ['doc1', 'doc2'], 5)
+    return {
+      success: true,
+      latency_ms: result.latency_ms,
+      message: 'Test completed successfully',
+    }
+  }
+
+  /**
+   * 设置默认 Rerank Provider
+   */
+  async function setDefault(name: string): Promise<void> {
+    const { setDefaultProvider } = await import('@/api/providers')
+    return setDefaultProvider('rerank', name)
+  }
+
+  /**
+   * 删除 Rerank Provider
+   */
+  async function deleteProvider(name: string): Promise<void> {
+    const { deleteProvider } = await import('@/api/providers')
+    return deleteProvider('rerank', name)
+  }
+
   function clearProviders() {
     providers.value = []
     error.value = null
@@ -69,5 +95,8 @@ export const useRerankStore = defineStore('rerank', () => {
     error,
     loadProviders,
     clearProviders,
+    testProvider,
+    setDefault,
+    deleteProvider,
   }
 })

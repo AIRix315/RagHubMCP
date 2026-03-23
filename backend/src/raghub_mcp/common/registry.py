@@ -26,11 +26,11 @@ class Registry(Generic[T, K]):
     """
 
     # Per-subclass singleton storage
-    _instances: dict[type, "Registry[Any, Any]"] = {}
+    _instances: dict[type, Registry[Any, Any]] = {}
     # Instance-level items storage (set in __new__)
     _items: dict[K, dict[str, type[T]]]
 
-    def __new__(cls) -> "Registry[Any, Any]":
+    def __new__(cls) -> Registry[Any, Any]:
         """Ensure singleton pattern per subclass."""
         if cls not in cls._instances:
             instance = super().__new__(cls)

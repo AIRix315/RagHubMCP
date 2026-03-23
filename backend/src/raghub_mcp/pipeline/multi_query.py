@@ -19,11 +19,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class QueryGenerationMode(str, Enum):
+class QueryGenerationMode(StrEnum):
     """Query generation mode for multi-query."""
 
     NONE = "none"  # No multi-query (single query only)
@@ -196,25 +196,47 @@ class TemplateQueryGenerator(MultiQueryGenerator):
     QUERY_TEMPLATES: dict[str, dict[str, list[str]]] = {
         "clarification": {
             # "what is X" variations
-            "what is": ["{query}", "{term} definition", "{term} explained", "how does {term} work", "{term} meaning"],
+            "what is": [
+                "{query}",
+                "{term} definition",
+                "{term} explained",
+                "how does {term} work",
+                "{term} meaning",
+            ],
             "what are": ["{query}", "{term} definition", "{term} explained", "{term} types"],
             "define": ["{query}", "{term} definition", "what is {term}", "{term} meaning"],
         },
         "howto": {
             # "how to X" variations
-            "how to": ["{query}", "{term} tutorial", "{term} guide", "{term} steps", "{term} example"],
+            "how to": [
+                "{query}",
+                "{term} tutorial",
+                "{term} guide",
+                "{term} steps",
+                "{term} example",
+            ],
             "how do i": ["{query}", "{term} tutorial", "{term} guide", "{term} how to"],
             "how can i": ["{query}", "{term} tutorial", "{term} guide", "{term} how to"],
         },
         "comparison": {
             # "X vs Y" variations
-            "vs": ["{query}", "{term1} vs {term2} comparison", "difference between {term1} and {term2}"],
+            "vs": [
+                "{query}",
+                "{term1} vs {term2} comparison",
+                "difference between {term1} and {term2}",
+            ],
             "versus": ["{query}", "{term1} vs {term2}", "{term1} compared to {term2}"],
             "difference between": ["{query}", "{term1} vs {term2}", "{term1} compared to {term2}"],
         },
         "troubleshooting": {
             # "X not working/ error" variations
-            "not working": ["{query}", "{term} fix", "{term} error solution", "{term} troubleshooting", "{term} debug"],
+            "not working": [
+                "{query}",
+                "{term} fix",
+                "{term} error solution",
+                "{term} troubleshooting",
+                "{term} debug",
+            ],
             "error": ["{query}", "{term} error fix", "{term} debug", "{term} troubleshooting"],
             "bug": ["{query}", "{term} bug fix", "{term} issue", "{term} solution"],
         },

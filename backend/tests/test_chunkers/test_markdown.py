@@ -17,7 +17,7 @@ class TestMarkdownChunker:
 
     def test_splits_by_headings(self):
         """TC-1.9.4: Text is split at heading boundaries."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500, overlap=50)
 
@@ -49,7 +49,7 @@ Content for section 2.
 
     def test_heading_metadata(self):
         """TC-1.9.4: Chunks include heading metadata."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500, overlap=50)
 
@@ -71,7 +71,7 @@ Subsection content.
 
     def test_no_headings_single_chunk(self):
         """Text without headings returns single chunk."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500, overlap=50)
 
@@ -83,7 +83,7 @@ Subsection content.
 
     def test_empty_text_returns_empty_list(self):
         """Empty text returns empty chunk list."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500, overlap=50)
         chunks = chunker.chunk("")
@@ -92,7 +92,7 @@ Subsection content.
 
     def test_atx_headings_level_1_to_6(self):
         """TC-1.9.4: ATX-style headings (1-6 #) are recognized."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500, overlap=50)
 
@@ -118,7 +118,7 @@ Content 6
 
     def test_large_section_split(self):
         """Large sections are split using fallback."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         # Small chunk size to trigger fallback
         chunker = MarkdownChunker(chunk_size=50, overlap=10)
@@ -142,7 +142,7 @@ Content 6
 
     def test_supports_language_check(self):
         """MarkdownChunker supports markdown and md languages."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=100, overlap=10)
 
@@ -153,7 +153,7 @@ Content 6
 
     def test_positions_accurate(self):
         """TC-1.9.4: Chunk positions are accurate."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500, overlap=50)
 
@@ -173,7 +173,7 @@ More content.
 
     def test_consecutive_headings(self):
         """Consecutive headings create empty sections."""
-        from chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
 
         chunker = MarkdownChunker(chunk_size=500, overlap=50)
 

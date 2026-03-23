@@ -209,16 +209,6 @@ export function createTestI18n(locale: 'zh-CN' | 'en-US' = 'zh-CN') {
           excludeDirs: '排除目录',
         },
       },
-      // Pipeline
-      pipeline: {
-        title: 'Pipeline 配置',
-        description: '配置 RAG Pipeline 参数',
-      },
-      // Profile
-      profile: {
-        title: '配置方案',
-        selectProfile: '选择配置方案',
-      },
       // Provider
       provider: {
         embedding: 'Embedding',
@@ -253,16 +243,6 @@ export function createTestI18n(locale: 'zh-CN' | 'en-US' = 'zh-CN') {
           chroma: 'Chroma 本地存储',
           qdrant: 'Qdrant 向量数据库',
         },
-      },
-      // Pipeline
-      pipeline: {
-        title: 'Pipeline 配置',
-        description: '配置 RAG Pipeline 参数',
-      },
-      // Profile
-      profile: {
-        title: '配置方案',
-        selectProfile: '选择配置方案',
       },
       // Benchmark
       benchmark: {
@@ -378,41 +358,6 @@ export function createTestI18n(locale: 'zh-CN' | 'en-US' = 'zh-CN') {
           },
         },
       },
-      // Provider
-      provider: {
-        embedding: 'Embedding',
-        rerank: 'Rerank',
-        llm: 'LLM',
-        vectordb: 'VectorDB',
-        add: '添加',
-        edit: '编辑',
-        delete: '删除',
-        setDefault: '设为默认',
-        test: '测试连接',
-        testSuccess: '连接成功',
-        testError: '连接失败',
-        saveSuccess: '保存成功',
-        saveError: '保存失败',
-        deleteConfirm: '确定要删除此 Provider 吗？',
-        isDefault: '默认',
-        status: {
-          active: '运行中',
-          inactive: '未激活',
-          error: '错误',
-          testing: '测试中',
-        },
-        types: {
-          ollama: 'Ollama 本地模型',
-          openai: 'OpenAI API',
-          custom: '自定义',
-          onnx: 'ONNX 本地推理',
-          api: 'API 远程调用',
-          hybrid: '混合搜索',
-          vector: '纯向量',
-          chroma: 'Chroma 本地存储',
-          qdrant: 'Qdrant 向量数据库',
-        },
-      },
     },
     'en-US': {
       // Minimal English translations for testing
@@ -471,14 +416,6 @@ export function createTestI18n(locale: 'zh-CN' | 'en-US' = 'zh-CN') {
       settings: {
         title: 'Settings',
         subtitle: 'System information and MCP configuration export',
-      },
-      provider: {
-        embedding: 'Embedding',
-        rerank: 'Rerank',
-        vectordb: 'VectorDB',
-        status: {
-          active: 'Active',
-        },
       },
     },
   }

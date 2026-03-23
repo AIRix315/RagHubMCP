@@ -1,6 +1,6 @@
 [project]
 name = "raghub-mcp"
-version = "2.6.0"
+version = "2.6.7"
 description = "通用代码 RAG 中枢 - MCP Server + FlashRank Rerank"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -26,14 +26,14 @@ class TestONNXScorerInterface:
 
     def test_onnx_scorer_is_base_scorer(self):
         """TC-1.2.1: ONNXScorer is a BaseScorer subclass."""
-        from rerank_engine.core.scorer import BaseScorer
-        from rerank_engine.scorers.onnx_scorer import ONNXScorer
+        from raghub_mcp.rerank_engine.core.scorer import BaseScorer
+        from raghub_mcp.rerank_engine.scorers.onnx_scorer import ONNXScorer
 
         assert issubclass(ONNXScorer, BaseScorer)
 
     def test_onnx_scorer_has_required_attributes(self):
         """TC-1.2.1: ONNXScorer has required class attributes."""
-        from rerank_engine.scorers.onnx_scorer import ONNXScorer
+        from raghub_mcp.rerank_engine.scorers.onnx_scorer import ONNXScorer
 
         # Check class exists and has expected structure
         assert hasattr(ONNXScorer, "__init__")
@@ -50,7 +50,7 @@ class TestONNXScorerScoreConversion:
 
     def test_sigmoid_conversion_single_output(self):
         """TC-1.2.4: Sigmoid converts single-output logits correctly."""
-        from rerank_engine.scorers.onnx_scorer import ONNXScorer
+        from raghub_mcp.rerank_engine.scorers.onnx_scorer import ONNXScorer
 
         # Single output: use sigmoid
         logits = np.array([[-2.0], [0.0], [2.0]])
@@ -63,7 +63,7 @@ class TestONNXScorerScoreConversion:
 
     def test_softmax_conversion_multi_output(self):
         """TC-1.2.4: Softmax converts multi-output logits correctly."""
-        from rerank_engine.scorers.onnx_scorer import ONNXScorer
+        from raghub_mcp.rerank_engine.scorers.onnx_scorer import ONNXScorer
 
         # Multi output (2 classes): use softmax, take positive class
         logits = np.array([[0.5, 1.5], [1.0, 2.0]])
@@ -76,7 +76,7 @@ class TestONNXScorerScoreConversion:
 
     def test_score_range_single_output(self):
         """TC-1.2.4: Single-output scores are in valid range [0, 1]."""
-        from rerank_engine.scorers.onnx_scorer import ONNXScorer
+        from raghub_mcp.rerank_engine.scorers.onnx_scorer import ONNXScorer
 
         test_cases = [
             np.array([[-5.0], [0.0], [5.0]]),
@@ -91,7 +91,7 @@ class TestONNXScorerScoreConversion:
 
     def test_score_range_multi_output(self):
         """TC-1.2.4: Multi-output scores are in valid range [0, 1]."""
-        from rerank_engine.scorers.onnx_scorer import ONNXScorer
+        from raghub_mcp.rerank_engine.scorers.onnx_scorer import ONNXScorer
 
         test_cases = [
             np.array([[0.0, 0.0], [1.0, 2.0], [-1.0, -2.0]]),

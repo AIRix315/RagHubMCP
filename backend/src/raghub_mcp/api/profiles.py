@@ -14,8 +14,6 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from raghub_mcp.config.profiles import (
-    Profile,
-    ProfileMetadata,
     get_all_profiles,
     get_default_profile,
     get_profile,

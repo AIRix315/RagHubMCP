@@ -20,14 +20,14 @@ class TestChunkerRegistry:
 
     def test_registry_is_singleton(self):
         """Registry is a singleton."""
-        from chunkers.registry import registry
-        from chunkers.registry import registry as registry2
+        from raghub_mcp.chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry as registry2
 
         assert registry is registry2
 
     def test_builtin_chunkers_registered(self):
         """Built-in chunkers are auto-registered."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         assert registry.is_registered("simple")
         assert registry.is_registered("line")
@@ -35,15 +35,15 @@ class TestChunkerRegistry:
 
     def test_get_chunker_by_name(self):
         """Can retrieve chunker by name."""
-        from chunkers.registry import registry
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.registry import registry
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker_cls = registry.get("simple")
         assert chunker_cls is SimpleChunker
 
     def test_get_unregistered_chunker_fails(self):
         """Getting unregistered chunker raises KeyError."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         with pytest.raises(KeyError) as exc_info:
             registry.get("nonexistent-chunker")
@@ -52,8 +52,8 @@ class TestChunkerRegistry:
 
     def test_register_custom_chunker(self):
         """Can register custom chunker."""
-        from chunkers.base import ChunkerPlugin
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.registry import registry
 
         # Save original state
         original_chunkers = registry._chunkers.copy()
@@ -78,8 +78,8 @@ class TestChunkerRegistry:
 
     def test_register_duplicate_fails(self):
         """Cannot register duplicate chunker name."""
-        from chunkers.base import ChunkerPlugin
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.base import ChunkerPlugin
+        from raghub_mcp.chunkers.registry import registry
 
         # Create a unique test name first
         test_name = "test-duplicate-check-unique"
@@ -110,31 +110,31 @@ class TestRegistryLanguageSelection:
 
     def test_get_for_markdown_language(self):
         """TC-1.9.5: Registry returns MarkdownChunker for markdown."""
-        from chunkers.markdown import MarkdownChunker
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.registry import registry
 
         chunker_cls = registry.get_for_language("markdown")
         assert chunker_cls is MarkdownChunker
 
     def test_get_for_md_language(self):
         """TC-1.9.5: Registry returns MarkdownChunker for md."""
-        from chunkers.markdown import MarkdownChunker
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.registry import registry
 
         chunker_cls = registry.get_for_language("md")
         assert chunker_cls is MarkdownChunker
 
     def test_get_for_unknown_language(self):
         """TC-1.9.6: Unknown language falls back to SimpleChunker."""
-        from chunkers.registry import registry
-        from chunkers.simple import SimpleChunker
+        from raghub_mcp.chunkers.registry import registry
+        from raghub_mcp.chunkers.simple import SimpleChunker
 
         chunker_cls = registry.get_for_language("unknown-language-xyz")
         assert chunker_cls is SimpleChunker
 
     def test_get_for_python_language(self):
         """TC-1.9.6: Python uses PythonASTChunker when tree-sitter is available."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         # Python has a special AST chunker registered
         chunker_cls = registry.get_for_language("python")
@@ -143,19 +143,19 @@ class TestRegistryLanguageSelection:
         try:
             import tree_sitter_python
 
-            from chunkers.python_ast import PythonASTChunker
+            from raghub_mcp.chunkers.python_ast import PythonASTChunker
 
             assert chunker_cls is PythonASTChunker
         except ImportError:
             # Fallback to SimpleChunker if tree-sitter not available
-            from chunkers.simple import SimpleChunker
+            from raghub_mcp.chunkers.simple import SimpleChunker
 
             assert chunker_cls is SimpleChunker
 
     def test_language_case_insensitive(self):
         """Language matching is case-insensitive."""
-        from chunkers.markdown import MarkdownChunker
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.markdown import MarkdownChunker
+        from raghub_mcp.chunkers.registry import registry
 
         chunker_cls = registry.get_for_language("MARKDOWN")
         assert chunker_cls is MarkdownChunker
@@ -169,7 +169,7 @@ class TestRegistryListAndCheck:
 
     def test_list_chunkers(self):
         """Can list all registered chunkers."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         chunkers = registry.list_chunkers()
 
@@ -179,7 +179,7 @@ class TestRegistryListAndCheck:
 
     def test_is_registered_true(self):
         """is_registered returns True for registered chunkers."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         assert registry.is_registered("simple") is True
         assert registry.is_registered("line") is True
@@ -187,13 +187,13 @@ class TestRegistryListAndCheck:
 
     def test_is_registered_false(self):
         """is_registered returns False for unregistered chunkers."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         assert registry.is_registered("nonexistent") is False
 
     def test_clear_removes_registrations(self):
         """clear() removes all registrations."""
-        from chunkers.registry import registry
+        from raghub_mcp.chunkers.registry import registry
 
         # Save original state
         original_chunkers = registry._chunkers.copy()

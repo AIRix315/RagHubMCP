@@ -89,7 +89,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     if _BCRYPT_AVAILABLE:
         try:
-            result: bool = _bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+            result: bool = _bcrypt.checkpw(
+                plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+            )
             return result
         except Exception as e:
             logger.warning(f"bcrypt verification failed: {e}")

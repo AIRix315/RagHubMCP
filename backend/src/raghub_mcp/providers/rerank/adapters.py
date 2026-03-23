@@ -64,10 +64,7 @@ class RerankEngineAdapter(BaseRerankProvider):
         # Build request for engine
         request = RerankRequest(
             query=query,
-            documents=[
-                {"id": str(i), "text": doc}
-                for i, doc in enumerate(documents)
-            ],
+            documents=[{"id": str(i), "text": doc} for i, doc in enumerate(documents)],
             top_k=top_k,
         )
 

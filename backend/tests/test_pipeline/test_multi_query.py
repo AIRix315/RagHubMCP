@@ -13,9 +13,9 @@ Reference:
 - RULE.md (测试优先原则)
 """
 
-import pytest
-
 from typing import Any
+
+import pytest
 
 
 class TestMultiQueryGeneratorInterface:
@@ -30,27 +30,30 @@ class TestMultiQueryGeneratorInterface:
 
     def test_interface_has_required_methods(self):
         """Test interface has generate method."""
-        from raghub_mcp.pipeline.multi_query import MultiQueryGenerator
         from abc import ABC
+
+        from raghub_mcp.pipeline.multi_query import MultiQueryGenerator
 
         # Check it's an abstract class
         assert issubclass(MultiQueryGenerator, ABC)
 
         # Check abstract methods exist
         import inspect
+
         methods = inspect.getmembers(MultiQueryGenerator, predicate=inspect.ismethod)
         method_names = [m[0] for m in methods]
 
         # generate should be abstract
-        assert 'generate' in method_names or hasattr(MultiQueryGenerator, 'generate')
+        assert "generate" in method_names or hasattr(MultiQueryGenerator, "generate")
 
     def test_interface_has_name_property(self):
         """Test interface has name property."""
-        from raghub_mcp.pipeline.multi_query import MultiQueryGenerator
         from abc import abstractmethod
 
+        from raghub_mcp.pipeline.multi_query import MultiQueryGenerator
+
         # Name property should be defined (either abstract or implemented)
-        assert hasattr(MultiQueryGenerator, 'name')
+        assert hasattr(MultiQueryGenerator, "name")
 
 
 class TestTemplateQueryGenerator:
@@ -60,6 +63,7 @@ class TestTemplateQueryGenerator:
     def generator(self):
         """Create TemplateQueryGenerator instance."""
         from raghub_mcp.pipeline.multi_query import TemplateQueryGenerator
+
         return TemplateQueryGenerator()
 
     def test_name_property(self, generator):
@@ -118,11 +122,7 @@ class TestTemplateQueryGenerator:
     @pytest.mark.asyncio
     async def test_generate_include_original(self, generator):
         """Test include_original parameter."""
-        result = await generator.generate(
-            "What is Docker",
-            n=5,
-            include_original=False
-        )
+        result = await generator.generate("What is Docker", n=5, include_original=False)
 
         # Original might not be in any position if variations exist
         if len(result.queries) > 0:
@@ -225,7 +225,10 @@ class TestCreateMultiQueryGenerator:
 
     def test_create_none_generator(self):
         """Test creating generator with NONE mode."""
-        from raghub_mcp.pipeline.multi_query import create_multi_query_generator, QueryGenerationMode
+        from raghub_mcp.pipeline.multi_query import (
+            QueryGenerationMode,
+            create_multi_query_generator,
+        )
 
         generator = create_multi_query_generator(QueryGenerationMode.NONE)
 
@@ -235,9 +238,9 @@ class TestCreateMultiQueryGenerator:
     def test_create_template_generator(self):
         """Test creating generator with TEMPLATE mode."""
         from raghub_mcp.pipeline.multi_query import (
-            create_multi_query_generator,
             QueryGenerationMode,
             TemplateQueryGenerator,
+            create_multi_query_generator,
         )
 
         generator = create_multi_query_generator(QueryGenerationMode.TEMPLATE)
@@ -247,8 +250,8 @@ class TestCreateMultiQueryGenerator:
     def test_create_from_string(self):
         """Test creating generator from string mode."""
         from raghub_mcp.pipeline.multi_query import (
-            create_multi_query_generator,
             TemplateQueryGenerator,
+            create_multi_query_generator,
         )
 
         generator = create_multi_query_generator("template")
@@ -257,14 +260,17 @@ class TestCreateMultiQueryGenerator:
 
     def test_create_with_config(self):
         """Test creating generator with config."""
-        from raghub_mcp.pipeline.multi_query import create_multi_query_generator, QueryGenerationMode
+        from raghub_mcp.pipeline.multi_query import (
+            QueryGenerationMode,
+            create_multi_query_generator,
+        )
 
         generator = create_multi_query_generator(
             QueryGenerationMode.TEMPLATE,
             config={
                 "max_variations": 5,
                 "include_original": False,
-            }
+            },
         )
 
         assert generator is not None
@@ -294,10 +300,7 @@ class TestMultiQueryPipelineIntegration:
 
         # Test with different options
         result = await generator.generate(
-            "What is Docker",
-            n=3,
-            include_original=True,
-            options={"max_variations": 2}
+            "What is Docker", n=3, include_original=True, options={"max_variations": 2}
         )
 
         assert len(result.queries) <= 4  # max_variations + original
@@ -305,7 +308,11 @@ class TestMultiQueryPipelineIntegration:
     @pytest.mark.asyncio
     async def test_generators_are_independent(self):
         """Test that multiple generators can coexist."""
-        from raghub_mcp.pipeline.multi_query import TemplateQueryGenerator, create_multi_query_generator, QueryGenerationMode
+        from raghub_mcp.pipeline.multi_query import (
+            QueryGenerationMode,
+            TemplateQueryGenerator,
+            create_multi_query_generator,
+        )
 
         gen1 = TemplateQueryGenerator()
         gen2 = create_multi_query_generator(QueryGenerationMode.TEMPLATE)
@@ -325,6 +332,7 @@ class TestTemplateVariations:
     def generator(self):
         """Create TemplateQueryGenerator instance."""
         from raghub_mcp.pipeline.multi_query import TemplateQueryGenerator
+
         return TemplateQueryGenerator()
 
     @pytest.mark.asyncio
@@ -348,8 +356,7 @@ class TestTemplateVariations:
 
         # Common patterns for 'what is' queries
         assert any(
-            pattern in queries_lower
-            for pattern in ["kubernetes", "definition", "explained"]
+            pattern in queries_lower for pattern in ["kubernetes", "definition", "explained"]
         )
 
     @pytest.mark.asyncio
@@ -361,10 +368,7 @@ class TestTemplateVariations:
 
         # Should include comparison-related patterns
         queries_lower = " ".join(result.queries).lower()
-        assert any(
-            pattern in queries_lower
-            for pattern in ["difference", "compared", "vs"]
-        )
+        assert any(pattern in queries_lower for pattern in ["difference", "compared", "vs"])
 
     @pytest.mark.asyncio
     async def test_error_troubleshooting_templates(self, generator):
@@ -376,8 +380,7 @@ class TestTemplateVariations:
 
         queries_lower = " ".join(result.queries).lower()
         assert any(
-            pattern in queries_lower
-            for pattern in ["error", "fix", "debug", "troubleshoot"]
+            pattern in queries_lower for pattern in ["error", "fix", "debug", "troubleshoot"]
         )
 
     @pytest.mark.asyncio
@@ -408,6 +411,7 @@ class TestEdgeCases:
     def generator(self):
         """Create TemplateQueryGenerator instance."""
         from raghub_mcp.pipeline.multi_query import TemplateQueryGenerator
+
         return TemplateQueryGenerator()
 
     @pytest.mark.asyncio
@@ -440,10 +444,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_sql_injection_attempt(self, generator):
         """Test handling of potential injection queries."""
-        result = await generator.generate(
-            "'; DROP TABLE users; --",
-            n=3
-        )
+        result = await generator.generate("'; DROP TABLE users; --", n=3)
 
         # Should handle without error (treat as normal query)
         assert result.original_query == "'; DROP TABLE users; --"
@@ -467,6 +468,7 @@ class TestPerformance:
     def generator(self):
         """Create TemplateQueryGenerator instance."""
         from raghub_mcp.pipeline.multi_query import TemplateQueryGenerator
+
         return TemplateQueryGenerator()
 
     @pytest.mark.asyncio

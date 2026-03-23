@@ -7,7 +7,7 @@ Configuration models are imported from utils/config.py to avoid duplication.
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -92,7 +92,7 @@ class ConfigUpdateRequest(BaseModel):
 # =============================================================================
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     """Index task status."""
 
     PENDING = "pending"
@@ -251,7 +251,7 @@ class CollectionDeleteResponse(BaseModel):
 # =============================================================================
 
 
-class ProviderStatus(str, Enum):
+class ProviderStatus(StrEnum):
     """Provider status values."""
 
     ACTIVE = "active"

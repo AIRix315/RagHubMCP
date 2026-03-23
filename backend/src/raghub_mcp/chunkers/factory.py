@@ -14,7 +14,7 @@ from typing import Any
 from raghub_mcp.utils.config import get_config
 
 from .base import ChunkerPlugin
-from .registry import ChunkerRegistry, registry
+from .registry import registry
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,9 @@ class ChunkerFactory:
             return self._get_by_file_type(file_type, **config)
         else:
             # Default chunker from configuration or "simple"
-            default_name = self._config.indexer.chunk_size if hasattr(self._config, 'indexer') else "simple"
+            default_name = (
+                self._config.indexer.chunk_size if hasattr(self._config, "indexer") else "simple"
+            )
             if isinstance(default_name, int):
                 default_name = "simple"
             return self._get_by_name(default_name, **config)
