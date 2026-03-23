@@ -250,6 +250,7 @@ settings:
     system: "系统信息"
     mcp: "MCP 配置导出"
     logs: "系统日志"
+    devtools: "开发工具"
   
   # System
   system:
@@ -299,6 +300,26 @@ settings:
       lastDay: "最近24小时"
       lastWeek: "最近一周"
       all: "全部"
+  
+  # DevTools
+  devtools:
+    title: "开发工具"
+    description: "用于调试和测试的开发辅助功能"
+    demoData:
+      title: "演示数据"
+      description: "加载示例数据用于功能测试和学习，数据存储在 demodata/ 目录"
+      load: "导入演示数据"
+      rerankProviders: "Rerank Provider 示例配置"
+      testDocuments: "Rerank 测试文档"
+      loadSuccess: "演示数据已加载"
+      loadError: "加载失败: {error}"
+      alreadyLoaded: "已加载"
+    clearData:
+      title: "清除演示数据"
+      description: "清除已加载的演示数据，恢复空白状态"
+      button: "清除演示数据"
+      confirm: "确定要清除所有演示数据吗？"
+      success: "演示数据已清除"
 
 # Provider
 provider:

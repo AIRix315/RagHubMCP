@@ -51,6 +51,9 @@ import { useRerankStore } from '@/stores/rerank'
 const { t } = useI18n()
 const rerankStore = useRerankStore()
 
+// Demo data availability flag
+const demoDataAvailable = ref(false)
+
 // ============================================================================
 // Tab Management
 // ============================================================================
@@ -64,24 +67,41 @@ const tabs = computed(() => [
 ])
 
 // ============================================================================
+// Demo Data Loader
+// ============================================================================
+/**
+ * Load demo data if available (demodata/ folder exists)
+ * Demo data is not tracked in git - users can create it manually or
+ * import via Settings > DevTools
+ */
+async function loadDemoData() {
+  try {
+    const demoModule = await import('@/demodata/demo-rerank')
+    demoDataAvailable.value = true
+    
+    // Load demo data into refs
+    testQuery.value = demoModule.DEMO_RANK_SAMPLE_QUERIES[0] || ''
+    testDocuments.value = [...demoModule.DEMO_RANK_TEST_DOCUMENTS]
+    sampleQueries.value = [...demoModule.DEMO_RANK_SAMPLE_QUERIES]
+    compareDocuments.value = [...demoModule.DEMO_RANK_COMPARE_DOCUMENTS]
+    debugDocuments.value = [...demoModule.DEMO_RANK_DEBUG_DOCUMENTS]
+    
+    console.log('Demo data loaded successfully')
+  } catch {
+    // Demo data not available - use empty defaults
+    demoDataAvailable.value = false
+    console.log('Demo data not available, using empty defaults')
+  }
+}
+
+// ============================================================================
 // Engine Test Tab
 // ============================================================================
-const testQuery = ref('machine learning algorithms')
-const testDocuments = ref<string[]>([
-  'Machine learning is a subset of artificial intelligence that enables systems to learn from data.',
-  'Deep learning uses neural networks with multiple layers to process complex patterns.',
-  'Python is a popular programming language for machine learning and data science.',
-  'Natural language processing combines linguistics and machine learning to understand text.',
-  'Computer vision enables machines to interpret and understand visual information.',
-])
+const testQuery = ref('')
+const testDocuments = ref<string[]>([''])
 
-// Smart defaults: sample documents for quick testing
-const sampleQueries = [
-  'machine learning algorithms',
-  'neural network architecture',
-  'data preprocessing techniques',
-  'model evaluation metrics',
-]
+// Smart defaults: sample queries for quick testing (loaded from demo data)
+const sampleQueries = ref<string[]>([])
 
 const selectedEngine = ref<string>('')
 const testTopK = ref(5)
@@ -91,6 +111,12 @@ const showAdvanced = ref(false)
 const testLoading = ref(false)
 const testResult = ref<TestResult | null>(null)
 const testError = ref<string | null>(null)
+
+// ============================================================================
+// Comparison Tab
+// ============================================================================
+const compareQuery = ref('')
+const compareDocuments = ref<string[]>([''])
 
 interface TestResultItem {
   index: number
@@ -165,16 +191,6 @@ function useSampleQuery(query: string) {
   testQuery.value = query
 }
 
-// ============================================================================
-// Comparison Tab
-// ============================================================================
-const compareQuery = ref('')
-const compareDocuments = ref<string[]>([
-  'Machine learning is a subset of artificial intelligence.',
-  'Deep learning uses neural networks with multiple layers.',
-  'Python is popular for machine learning.',
-])
-
 const selectedEngines = ref<string[]>([])
 const compareLoading = ref(false)
 const compareResult = ref<CompareResult | null>(null)
@@ -240,11 +256,7 @@ function toggleEngine(name: string) {
 // Debug Tab
 // ============================================================================
 const debugQuery = ref('')
-const debugDocuments = ref<string[]>([
-  'Machine learning is transforming industries.',
-  'Deep learning uses neural networks.',
-  'Python is popular for data science.',
-])
+const debugDocuments = ref<string[]>([''])
 const debugQueryId = ref('')
 const debugInfo = ref<DebugInfo | null>(null)
 const debugLoading = ref(false)
@@ -427,8 +439,9 @@ async function runDebugPipeline() {
 }
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
   rerankStore.loadProviders()
+  await loadDemoData()
 })
 
 // Connect WebSocket when debug tab is active

@@ -3,16 +3,16 @@
  * Settings Page
  * 
  * 基于 simple.html 原型设计
- * 包含系统信息、MCP 配置导出、日志查看
+ * 包含系统信息、MCP 配置导出、日志查看、开发工具
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Server, Database, FileText, Link, Download, Copy, Check, X } from 'lucide-vue-next'
+import { Server, Database, FileText, Link, Download, Copy, Check, X, Wrench, Play } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
 // State
-const activeTab = ref<'system' | 'mcp' | 'logs'>('system')
+const activeTab = ref<'system' | 'mcp' | 'logs' | 'devtools'>('system')
 const copied = ref(false)
 
 // 模拟系统信息
@@ -132,6 +132,66 @@ function handleClearLogs() {
   if (!confirm(t('settings.logs.clearConfirm'))) return
   logs.value = []
 }
+
+// ============================================================================
+// DevTools Tab - Demo Data Import
+// ============================================================================
+const demoDataTypes = ref({
+  rerankProviders: true,
+  testDocuments: true,
+})
+
+const demoDataLoading = ref(false)
+const demoDataLoaded = ref(false)
+const demoDataMessage = ref<string | null>(null)
+
+async function handleLoadDemoData() {
+  demoDataLoading.value = true
+  demoDataMessage.value = null
+  
+  try {
+    // Dynamically import demo data
+    const demoModule = await import('@/demodata/demo-rerank')
+    
+    // Here we would typically dispatch to stores or save to local storage
+    // For now, we just show a success message
+    demoDataLoaded.value = true
+    demoDataMessage.value = t('settings.devtools.demoData.loadSuccess')
+    
+    console.log('Demo data loaded:', {
+      testDocuments: demoModule.DEMO_RANK_TEST_DOCUMENTS.length,
+      sampleQueries: demoModule.DEMO_RANK_SAMPLE_QUERIES.length,
+      providers: demoModule.DEMO_RERANK_PROVIDERS.length,
+    })
+  } catch (e) {
+    demoDataMessage.value = t('settings.devtools.demoData.loadError', { 
+      error: e instanceof Error ? e.message : 'Unknown error' 
+    })
+  } finally {
+    demoDataLoading.value = false
+  }
+}
+
+async function handleClearDemoData() {
+  if (!confirm(t('settings.devtools.clearData.confirm'))) return
+  
+  // Clear demo data loaded flag
+  demoDataLoaded.value = false
+  demoDataMessage.value = t('settings.devtools.clearData.success')
+  
+  // In a real implementation, this would clear data from stores/local storage
+  console.log('Demo data cleared')
+}
+
+// Check if demo data is available on mount
+onMounted(async () => {
+  try {
+    await import('@/demodata/demo-rerank')
+    demoDataLoaded.value = true
+  } catch {
+    demoDataLoaded.value = false
+  }
+})
 </script>
 
 <template>
@@ -146,7 +206,7 @@ function handleClearLogs() {
     <div class="border-b">
       <div class="flex gap-4">
         <button
-          v-for="tab in ['system', 'mcp', 'logs']"
+          v-for="tab in ['system', 'mcp', 'logs', 'devtools']"
           :key="tab"
           :class="[
             'px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px',
@@ -156,6 +216,7 @@ function handleClearLogs() {
           ]"
           @click="activeTab = tab as typeof activeTab"
         >
+          <component :is="tab === 'system' ? Server : tab === 'mcp' ? Link : tab === 'logs' ? FileText : Wrench" class="h-4 w-4 inline-block mr-1.5" />
           {{ t(`settings.tabs.${tab}`) }}
         </button>
       </div>
@@ -318,6 +379,73 @@ function handleClearLogs() {
           </div>
           <div v-if="filteredLogs.length === 0" class="p-8 text-center text-muted-foreground">
             {{ t('common.noData') }}
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- DevTools Tab -->
+    <template v-else-if="activeTab === 'devtools'">
+      <div class="rounded-lg border bg-card">
+        <div class="p-4 border-b">
+          <h3 class="font-semibold">{{ t('settings.devtools.title') }}</h3>
+          <p class="text-sm text-muted-foreground mt-1">{{ t('settings.devtools.description') }}</p>
+        </div>
+        <div class="p-4 space-y-4">
+          <!-- Demo Data Import -->
+          <div class="rounded-lg border p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-medium">{{ t('settings.devtools.demoData.title') }}</h4>
+                <p class="text-sm text-muted-foreground mt-1">{{ t('settings.devtools.demoData.description') }}</p>
+              </div>
+              <button
+                :disabled="demoDataLoading"
+                :class="[
+                  'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                  demoDataLoading || demoDataLoaded
+                    ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                ]"
+                @click="handleLoadDemoData"
+              >
+                <Download class="h-4 w-4" />
+                {{ demoDataLoading ? t('common.loading') : demoDataLoaded ? t('settings.devtools.demoData.alreadyLoaded') : t('settings.devtools.demoData.load') }}
+              </button>
+            </div>
+            
+            <!-- Data types selection -->
+            <div class="mt-4 space-y-2">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" v-model="demoDataTypes.rerankProviders" :disabled="demoDataLoaded" class="rounded" />
+                <span class="text-sm">{{ t('settings.devtools.demoData.rerankProviders') }}</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" v-model="demoDataTypes.testDocuments" :disabled="demoDataLoaded" class="rounded" />
+                <span class="text-sm">{{ t('settings.devtools.demoData.testDocuments') }}</span>
+              </label>
+            </div>
+
+            <!-- Status message -->
+            <div v-if="demoDataMessage" :class="[
+              'mt-3 text-sm rounded p-2',
+              demoDataLoaded ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            ]">
+              {{ demoDataMessage }}
+            </div>
+          </div>
+          
+          <!-- Clear Demo Data -->
+          <div class="rounded-lg border border-destructive/50 p-4">
+            <h4 class="font-medium text-destructive">{{ t('settings.devtools.clearData.title') }}</h4>
+            <p class="text-sm text-muted-foreground mt-1">{{ t('settings.devtools.clearData.description') }}</p>
+            <button
+              class="mt-2 inline-flex items-center gap-1.5 rounded-md border border-destructive bg-background px-3 py-1.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
+              @click="handleClearDemoData"
+            >
+              <X class="h-4 w-4" />
+              {{ t('settings.devtools.clearData.button') }}
+            </button>
           </div>
         </div>
       </div>

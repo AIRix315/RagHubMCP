@@ -250,6 +250,7 @@ settings:
     system: "System Information"
     mcp: "MCP Config Export"
     logs: "System Logs"
+    devtools: "DevTools"
   
   # System
   system:
@@ -299,6 +300,26 @@ settings:
       lastDay: "Last 24 Hours"
       lastWeek: "Last Week"
       all: "All"
+  
+  # DevTools
+  devtools:
+    title: "Developer Tools"
+    description: "Development utilities for testing and debugging"
+    demoData:
+      title: "Demo Data"
+      description: "Load sample data for testing and learning, stored in demodata/ directory"
+      load: "Load Demo Data"
+      rerankProviders: "Rerank Provider Samples"
+      testDocuments: "Rerank Test Documents"
+      loadSuccess: "Demo data loaded successfully"
+      loadError: "Failed to load: {error}"
+      alreadyLoaded: "Already Loaded"
+    clearData:
+      title: "Clear Demo Data"
+      description: "Clear loaded demo data and restore to blank state"
+      button: "Clear Demo Data"
+      confirm: "Are you sure you want to clear all demo data?"
+      success: "Demo data cleared"
 
 # Provider
 provider:

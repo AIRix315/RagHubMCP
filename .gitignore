@@ -83,6 +83,10 @@ Thumbs.db
 *.pyc
 .chroma/
 
+# Demo data - not tracked in git, for development only
+frontend/demodata/
+demodata/
+
 # FlashRank model cache
 temp_test_cache/
 
