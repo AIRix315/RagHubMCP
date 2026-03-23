@@ -75,6 +75,10 @@ dist-ssr/
 .DS_Store
 Thumbs.db
 
+# Build artifacts
+*.exe
+*.tsbuildinfo
+
 # Project specific
 *.pyc
 .chroma/
