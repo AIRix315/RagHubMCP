@@ -2,6 +2,20 @@
 
 ---
 
+## [2.6.12] - 2026-03-24
+
+### fix(ci): 简化 CI 测试命令
+
+- **时间**: 2026-03-24 07:40
+- **内容**: 移除 pytest-cov 相关参数，避免 CI 中 coverage 相关问题
+
+#### Fixed
+
+- **CI workflow**: 移除 `--cov=src --cov-report=xml --cov-report=term-missing`
+- 简化测试命令为 `python -m pytest tests/ -v --tb=short`
+
+---
+
 ## [2.6.11] - 2026-03-24
 
 ### fix(tests): 修复 CI 测试失败
