@@ -2,6 +2,22 @@
 
 ---
 
+## [2.6.8] - 2026-03-24
+
+### fix(ci): 修复 GitHub Actions workflow 版本
+
+- **时间**: 2026-03-24 10:15
+- **内容**: 修复 CI workflow 中 actions/checkout@v5 等不存在的版本，统一使用 v4
+
+#### Fixed
+
+- **actions/checkout**: v5 → v4 (v5 不存在)
+- **actions/setup-node**: v5 → v4 (v5 不存在)
+- **aquasecurity/trivy-action**: v0.35.0 → master
+- **Frontend setup-node**: 修复重复的 `with` 块导致的 YAML 语法错误
+
+---
+
 ## [2.6.7] - 2026-03-24
 
 ### fix(ci): 全面修复 CI/CD 代码质量问题
