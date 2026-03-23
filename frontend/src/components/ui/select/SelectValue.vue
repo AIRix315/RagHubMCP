@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
+import type { HTMLAttributes } from 'vue'
 import { SelectValue as RadixSelectValue, type SelectValueProps } from 'radix-vue'
 
 const props = defineProps<SelectValueProps & { class?: HTMLAttributes['class'] }>()

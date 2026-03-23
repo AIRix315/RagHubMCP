@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
+import type { HTMLAttributes } from 'vue'
 import { SelectContent as RadixSelectContent, SelectPortal, type SelectContentProps, useForwardProps } from 'radix-vue'
 
 const props = defineProps<SelectContentProps & { class?: HTMLAttributes['class'] }>()

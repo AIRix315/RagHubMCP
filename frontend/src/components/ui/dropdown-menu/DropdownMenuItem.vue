@@ -9,7 +9,6 @@ interface Props {
 
 const props = defineProps<Props>()
 const close = inject<() => void>('dropdown-close')
-const open = inject<ReturnType<typeof ref<boolean>>>('dropdown-open')
 </script>
 
 <template>

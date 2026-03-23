@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, provide, computed } from 'vue'
+import { ref, provide, type Ref } from 'vue'
 
-const open = ref(false)
+const open = ref<boolean>(false)
 
-provide('dropdown-open', open)
+provide<Ref<boolean>>('dropdown-open', open)
 
 function toggle() {
   open.value = !open.value

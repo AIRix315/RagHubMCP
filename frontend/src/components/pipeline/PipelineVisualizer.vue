@@ -7,7 +7,6 @@
  * Reference: Docs/21-UI-Design-System.md Section 4.2
  */
 
-import { computed } from 'vue'
 import { ArrowRight, CheckCircle, XCircle, Loader2 } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 
@@ -19,7 +18,7 @@ interface Stage {
   config: Record<string, any>
 }
 
-const props = defineProps<{
+defineProps<{
   stages: Stage[]
 }>()
 

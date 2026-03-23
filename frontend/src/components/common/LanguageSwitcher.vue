@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Languages } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -36,7 +36,7 @@ function switchLanguage(code: string) {
       <DropdownMenuItem
         v-for="lang in languages"
         :key="lang.code"
-        :class="{ 'bg-accent': currentLang === lang.code }"
+        :class="currentLang === lang.code ? 'bg-accent' : ''"
         role="menuitem"
         @click="switchLanguage(lang.code)"
       >

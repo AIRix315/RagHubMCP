@@ -2,6 +2,32 @@
 
 ---
 
+## [2.6.2] - 2026-03-23
+
+### Fixed
+- fix(pack): 托盘图标不显示 - 重构为多平台嵌入方案
+  - Windows: `icons/icon.ico` (多分辨率ICO)
+  - macOS: `icons/icon_64.png` (Retina适配)
+  - Linux: `icons/icon_32.png` (标准托盘尺寸)
+- fix(frontend): API连接失败 - `.env` 端口从8000改为`/api`(代理路径)
+- fix(frontend): 添加 `@rollup/plugin-yaml` 解决YAML导入错误
+- fix(frontend): 修复 Slider v-model 数组语法错误
+- fix(frontend): 修复 Textarea rows 属性类型错误
+
+### Added
+- feat(pack/go/config.go): 用户配置持久化系统
+  - 首次启动引导
+  - 浏览器自动打开偏好设置
+- feat(pack/go/tray.go): 跨平台图标加载器 (`getPlatformIcon()`)
+- feat(frontend/src/i18n/yaml.d.ts): YAML模块类型声明
+- feat(frontend/src/components/ui/card/index.ts): 导出 CardDescription
+
+### Changed
+- refactor(icons): 图标从根目录迁移到 `pack/go/icons/`
+- docs: 更清晰的多平台打包支持文档
+
+---
+
 ## [2.6.1] - 2026-03-23
 
 ### Fixed

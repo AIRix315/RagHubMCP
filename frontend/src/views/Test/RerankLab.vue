@@ -30,7 +30,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -48,7 +47,6 @@ import {
 } from '@/components/ui/table'
 import { Slider } from '@/components/ui/slider'
 import { useRerankStore } from '@/stores/rerank'
-import type { RerankProvider } from '@/stores/rerank'
 
 const { t } = useI18n()
 const rerankStore = useRerankStore()
@@ -384,28 +382,15 @@ function disconnectDebugWebSocket() {
 }
 
 async function runDebugPipeline() {
-  // ... (implementation continues)
-}
-
-// Lifecycle hooks
-onMounted(() => {
-  rerankStore.loadProviders()
-})
-
-// Connect WebSocket when debug tab is active
-watch(activeTab, (newTab) => {
-  if (newTab === 'debug' && debugUseWebSocket.value) {
-    connectDebugWebSocket()
-  } else if (newTab !== 'debug') {
-    disconnectDebugWebSocket()
-  }
-})
-
-// Cleanup on unmount
-onUnmounted(() => {
-  disconnectDebugWebSocket()
-})
-      )
+  debugLoading.value = true
+  try {
+    if (debugUseWebSocket.value && debugWs.value) {
+      // Use WebSocket for real-time updates
+      debugWs.value.send(JSON.stringify({
+        type: 'debug_pipeline',
+        query: debugQuery.value,
+        documents: debugDocuments.value.filter((d) => d.trim()),
+      }))
     } else {
       // Fallback to REST API
       const response = await fetch('/api/debug/pipeline', {
@@ -444,6 +429,20 @@ onUnmounted(() => {
 // Lifecycle hooks
 onMounted(() => {
   rerankStore.loadProviders()
+})
+
+// Connect WebSocket when debug tab is active
+watch(activeTab, (newTab) => {
+  if (newTab === 'debug' && debugUseWebSocket.value) {
+    connectDebugWebSocket()
+  } else if (newTab !== 'debug') {
+    disconnectDebugWebSocket()
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  disconnectDebugWebSocket()
 })
 </script>
 
@@ -496,7 +495,7 @@ onMounted(() => {
               <Textarea
                 v-model="testQuery"
                 :placeholder="t('rerankLab.test.queryPlaceholder')"
-                rows="2"
+                :rows="2"
               />
               <!-- Sample queries -->
               <div class="flex flex-wrap gap-2 mt-2">
@@ -550,7 +549,7 @@ onMounted(() => {
                   <Textarea
                     v-model="testDocuments[index]"
                     :placeholder="t('rerankLab.test.docPlaceholder', { n: index + 1 })"
-                    rows="2"
+                    :rows="2"
                     class="flex-1"
                   />
                   <Button
@@ -580,14 +579,28 @@ onMounted(() => {
                 <div class="space-y-2">
                   <label class="text-sm text-muted-foreground">{{ t('rerank.top_k') }}</label>
                   <div class="flex items-center gap-4">
-                    <Slider v-model="[testTopK]" :min="1" :max="20" :step="1" class="flex-1" />
+                    <Slider 
+                      :model-value="[testTopK]" 
+                      @update:model-value="(v) => { if (v?.[0] !== undefined) testTopK = v[0] }"
+                      :min="1" 
+                      :max="20" 
+                      :step="1" 
+                      class="flex-1" 
+                    />
                     <span class="w-8 text-sm font-mono">{{ testTopK }}</span>
                   </div>
                 </div>
                 <div class="space-y-2">
                   <label class="text-sm text-muted-foreground">{{ t('rerank.score_threshold') }}</label>
                   <div class="flex items-center gap-4">
-                    <Slider v-model="[testThreshold]" :min="0" :max="1" :step="0.1" class="flex-1" />
+                    <Slider 
+                      :model-value="[testThreshold]" 
+                      @update:model-value="(v) => { if (v?.[0] !== undefined) testThreshold = v[0] }"
+                      :min="0" 
+                      :max="1" 
+                      :step="0.1" 
+                      class="flex-1" 
+                    />
                     <span class="w-8 text-sm font-mono">{{ testThreshold.toFixed(1) }}</span>
                   </div>
                 </div>
@@ -697,7 +710,7 @@ onMounted(() => {
               <Textarea
                 v-model="compareQuery"
                 :placeholder="t('rerankLab.test.queryPlaceholder')"
-                rows="2"
+                :rows="2"
               />
             </div>
 
@@ -734,7 +747,7 @@ onMounted(() => {
                 :key="index"
                 v-model="compareDocuments[index]"
                 :placeholder="`${t('rerankLab.test.docPlaceholder', { n: index + 1 })}`"
-                rows="2"
+                :rows="2"
               />
             </div>
           </div>
@@ -862,7 +875,7 @@ onMounted(() => {
         <Textarea
           v-model="debugQuery"
           :placeholder="t('rerankLab.test.queryPlaceholder')"
-          rows="2"
+          :rows="2"
         />
       </div>
 
@@ -875,7 +888,7 @@ onMounted(() => {
             :key="index"
             v-model="debugDocuments[index]"
             :placeholder="`Doc ${index + 1}`"
-            rows="2"
+            :rows="2"
           />
         </div>
       </div>

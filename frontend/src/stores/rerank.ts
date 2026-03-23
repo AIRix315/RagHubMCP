@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 export interface RerankProvider {
   name: string
@@ -67,7 +67,7 @@ export const useRerankStore = defineStore('rerank', () => {
     }
   }
 
-  async function testProvider(name: string): Promise<{ latency_ms: number; success: boolean }> {
+  async function testProvider(_name: string): Promise<{ latency_ms: number; success: boolean }> {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 100))
     return { latency_ms: 45, success: true }

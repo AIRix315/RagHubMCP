@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
+import type { HTMLAttributes } from 'vue'
 import { SelectItem as RadixSelectItem, SelectItemIndicator, SelectItemText, type SelectItemProps, useForwardProps } from 'radix-vue'
 import { Check } from 'lucide-vue-next'
 

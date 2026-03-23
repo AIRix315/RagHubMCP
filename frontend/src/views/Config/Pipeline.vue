@@ -16,7 +16,6 @@ import {
   RotateCcw,
   ChevronDown,
   ChevronUp,
-  Settings,
   Search,
   Sparkles,
   FileText,
@@ -24,8 +23,7 @@ import {
   Check,
 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -38,6 +36,15 @@ import { Slider } from '@/components/ui/slider'
 import PipelineVisualizer from '@/components/pipeline/PipelineVisualizer.vue'
 
 const { t } = useI18n()
+
+// Stage type (redefined to avoid circular import issues)
+interface Stage {
+  id: string
+  name: string
+  icon: any
+  status: 'configured' | 'disabled' | 'running' | 'error'
+  config: Record<string, any>
+}
 
 // ============================================================================
 // Pipeline Configuration State
@@ -104,7 +111,7 @@ const expandedPanels = ref({
 // Computed
 // ============================================================================
 
-const stages = computed(() => [
+const stages = computed((): Stage[] => [
   {
     id: 'retrieval',
     name: t('pipeline.retrieval_stage'),
@@ -331,7 +338,8 @@ onMounted(async () => {
               <label class="text-sm font-medium">{{ t('pipeline.vector_weight') }}</label>
               <div class="flex items-center gap-4">
                 <Slider
-                  v-model="[pipelineConfig.retrieval.vector_weight]"
+                  :model-value="[pipelineConfig.retrieval.vector_weight]"
+                  @update:model-value="(v) => { if (v?.[0] !== undefined) pipelineConfig.retrieval.vector_weight = v[0] }"
                   :min="0"
                   :max="1"
                   :step="0.1"
@@ -433,7 +441,8 @@ onMounted(async () => {
                   <label class="text-sm font-medium">{{ t('rerank.score_threshold') }}</label>
                   <div class="flex items-center gap-4">
                     <Slider
-                      v-model="[pipelineConfig.rerank.score_threshold]"
+                      :model-value="[pipelineConfig.rerank.score_threshold]"
+                      @update:model-value="(v) => { if (v?.[0] !== undefined) pipelineConfig.rerank.score_threshold = v[0] }"
                       :min="0"
                       :max="1"
                       :step="0.05"
@@ -606,7 +615,8 @@ onMounted(async () => {
                 <label class="text-sm font-medium">{{ t('pipeline.dedup_threshold') }}</label>
                 <div class="flex items-center gap-4">
                   <Slider
-                    v-model="[pipelineConfig.context.deduplication_threshold]"
+                    :model-value="[pipelineConfig.context.deduplication_threshold]"
+                    @update:model-value="(v) => { if (v?.[0] !== undefined) pipelineConfig.context.deduplication_threshold = v[0] }"
                     :min="0.5"
                     :max="1"
                     :step="0.05"

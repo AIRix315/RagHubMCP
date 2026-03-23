@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
-import { inject, ref } from 'vue'
+import { inject, type Ref } from 'vue'
 
 interface Props {
   class?: string
@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<Props>(), {
   align: 'end',
 })
 
-const open = inject<ReturnType<typeof ref<boolean>>>('dropdown-open')
+const open = inject<Ref<boolean>>('dropdown-open')
 </script>
 
 <template>

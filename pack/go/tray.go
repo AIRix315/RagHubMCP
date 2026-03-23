@@ -2,14 +2,18 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"runtime"
 
 	"github.com/getlantern/systray"
 	"github.com/sirupsen/logrus"
 )
 
-// Icon data embedded at compile time
-var iconData []byte
+// Embed icon files for all platforms
+//
+//go:embed icons/*.png icons/*.ico icon.png
+var iconFS embed.FS
 
 // startTray starts the system tray
 func startTray() {
@@ -20,8 +24,9 @@ func startTray() {
 
 // onReady is called when the systray is ready
 func onReady() {
-	// Set tray icon
-	systray.SetIcon(getTrayIcon())
+	// Set tray icon based on platform
+	iconData := getPlatformIcon()
+	systray.SetIcon(iconData)
 	systray.SetTitle("RagHubMCP")
 	systray.SetTooltip(fmt.Sprintf("RagHubMCP v%s", appConfig.Version))
 
@@ -58,27 +63,55 @@ func onExit() {
 	logrus.Info("System tray exiting...")
 }
 
-// getTrayIcon returns the appropriate icon for the current platform
-func getTrayIcon() []byte {
-	if iconData != nil {
-		return iconData
+// getPlatformIcon returns the appropriate icon for the current platform
+// Windows: ICO format preferred
+// macOS: PNG 64x64 (retina-friendly)
+// Linux: PNG 32x32 (standard tray size)
+func getPlatformIcon() []byte {
+	var iconPath string
+
+	switch runtime.GOOS {
+	case "windows":
+		// Windows prefers ICO format with multiple resolutions
+		iconPath = "icons/icon.ico"
+	case "darwin":
+		// macOS uses larger icons for Retina displays
+		iconPath = "icons/icon_64.png"
+	default:
+		// Linux and others use standard tray size
+		iconPath = "icons/icon_32.png"
 	}
-	// Return embedded icon
+
+	// Try to load platform-specific icon
+	data, err := iconFS.ReadFile(iconPath)
+	if err == nil {
+		logrus.Debugf("Loaded platform icon: %s (%d bytes)", iconPath, len(data))
+		return data
+	}
+
+	// Fallback: try the default icon.png in root
+	data, err = iconFS.ReadFile("icon.png")
+	if err == nil {
+		logrus.Debug("Loaded fallback icon.png")
+		return data
+	}
+
+	logrus.WithError(err).Warn("Failed to load any icon, using embedded default")
 	return getDefaultIcon()
 }
 
-// getDefaultIcon returns a default icon
+// getDefaultIcon returns a minimal default icon (16x16 blue square)
+// This is only used if all icon loading fails
 func getDefaultIcon() []byte {
-	// This is a minimal 16x16 PNG icon (a simple square)
-	// In production, this would be replaced with actual icon data
+	// Minimal 16x16 PNG icon (blue square)
 	return []byte{
 		0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
 		0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10,
 		0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x91, 0x68, 0x36, 0x00, 0x00, 0x00,
 		0x19, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0x60, 0x60, 0xF8, 0x0F,
-		0x8F, 0xFF, 0xFF, 0xFF, 0xFF, 0x8F, 0x0F, 0x0F, 0x0F, 0x0F, 0x00, 0x05,
-		0xFE, 0x02, 0xFE, 0xEC, 0x33, 0x37, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45,
-		0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+		0x3B, 0x82, 0xF6, 0xFF, 0xFF, 0x3B, 0x82, 0xF6, 0x0F, 0x0F, 0x0F, 0x0F,
+		0x00, 0x05, 0xFE, 0x02, 0xFE, 0xEC, 0x33, 0x37, 0x00, 0x00, 0x00, 0x00,
+		0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
 	}
 }
 

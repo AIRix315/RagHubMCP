@@ -181,10 +181,8 @@ onMounted(() => {
       <Card
         v-for="profile in profiles"
         :key="profile.name"
-        :class="[
-          'cursor-pointer transition-all hover:shadow-lg',
-          profile.is_active ? 'ring-2 ring-primary' : '',
-        ]"
+        class="cursor-pointer transition-all hover:shadow-lg"
+        :class="profile.is_active ? 'ring-2 ring-primary' : ''"
       >
         <!-- Header -->
         <CardHeader @click="toggleExpand(profile.name)">

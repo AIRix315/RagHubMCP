@@ -66,6 +66,9 @@ func main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	// Initialize user configuration
+	userConfig = initializeUserConfig()
+
 	// Initialize configuration
 	appConfig = &AppConfig{
 		Version:    version,
@@ -94,6 +97,13 @@ func main() {
 	logrus.Infof("Platform: %s/%s", runtime.GOOS, runtime.GOARCH)
 	logrus.Infof("Working Directory: %s", appConfig.WorkingDir)
 
+	// Show first run message
+	if userConfig.FirstRun {
+		logrus.Info("First run detected - welcome!")
+		logrus.Info("The web interface will open automatically.")
+		logrus.Info("You can disable this in settings or via --no-browser flag.")
+	}
+
 	// Extract embedded resources
 	if err := extractResources(); err != nil {
 		logrus.WithError(err).Fatal("Failed to extract resources")
@@ -114,14 +124,21 @@ func main() {
 	logrus.Infof("Starting HTTP proxy on port %d...", *port)
 	go startHTTPProxy()
 
-	// Open browser (unless disabled)
-	if !*noBrowser {
+	// Open browser based on user configuration (unless disabled via CLI)
+	if shouldOpenBrowser(noBrowser) {
 		go openBrowser(fmt.Sprintf("http://localhost:%d", *port))
 	}
 
 	// Start system tray (unless disabled)
 	if !*noTray {
 		go startTray()
+	}
+
+	// Mark first run complete after successful startup
+	if userConfig.FirstRun {
+		if err := markFirstRunComplete(); err != nil {
+			logrus.WithError(err).Warn("Failed to mark first run complete")
+		}
 	}
 
 	// Wait for shutdown signal

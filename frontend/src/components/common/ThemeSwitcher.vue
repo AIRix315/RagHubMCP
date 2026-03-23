@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Sun, Moon } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/composables/useTheme'
