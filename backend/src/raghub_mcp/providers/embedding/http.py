@@ -14,7 +14,7 @@ Reference: https://platform.openai.com/docs/api-reference/embeddings
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -194,7 +194,7 @@ class HTTPEmbeddingProvider(BaseEmbeddingProvider):
         )
         response.raise_for_status()
         data = response.json()
-        return data["data"][0]["embedding"]
+        return cast(list[float], data["data"][0]["embedding"])
 
     async def aembed_documents(self, texts: list[str]) -> list[list[float]]:
         """Async embed a list of documents.
@@ -245,7 +245,7 @@ class HTTPEmbeddingProvider(BaseEmbeddingProvider):
             )
             response.raise_for_status()
             data = response.json()
-            return data["data"][0]["embedding"]
+            return cast(list[float], data["data"][0]["embedding"])
 
     def embed_batch(self, texts: list[str], batch_size: int = 32) -> list[list[float]]:
         """Embed texts in batches.

@@ -200,7 +200,7 @@ collections:
 # Benchmark
 benchmark:
   title: "Benchmark"
-  subtitle: "Compare different search configurations"
+  subtitle: "Test different search configurations"
   configure: "Configure Test"
   results: "Test Results"
   history: "History"

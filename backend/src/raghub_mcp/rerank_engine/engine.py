@@ -135,7 +135,7 @@ class RerankEngine:
         from .processors.normalize import NormalizeProcessor
         from .processors.threshold import ThresholdProcessor
 
-        processors = []
+        processors: list[BasePostProcessor] = []
         for proc_config in self.config.post_processors:
             proc_type = proc_config.get("type", "")
             proc_params = proc_config.get("config", {})

@@ -63,10 +63,11 @@ def hash_password(password: str) -> str:
     """
     if _BCRYPT_AVAILABLE:
         # Use bcrypt directly (more reliable)
-        return _bcrypt.hashpw(password.encode("utf-8"), _bcrypt.gensalt()).decode("utf-8")
+        result: str = _bcrypt.hashpw(password.encode("utf-8"), _bcrypt.gensalt()).decode("utf-8")
+        return result
 
     if _PASSLIB_AVAILABLE:
-        return _pwd_context.hash(password)
+        return str(_pwd_context.hash(password))
 
     # Fallback to SHA256 for testing (NOT secure for production!)
     logger.warning(
@@ -88,13 +89,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     if _BCRYPT_AVAILABLE:
         try:
-            return _bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+            result: bool = _bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+            return result
         except Exception as e:
             logger.warning(f"bcrypt verification failed: {e}")
 
     if _PASSLIB_AVAILABLE:
         try:
-            return _pwd_context.verify(plain_password, hashed_password)
+            return bool(_pwd_context.verify(plain_password, hashed_password))
         except Exception as e:
             logger.warning(f"passlib verification failed: {e}")
             return False
@@ -148,7 +150,7 @@ def create_access_token(
     to_encode.update({"exp": expire, "iat": datetime.now(UTC)})
 
     key = secret_key or SECRET_KEY
-    encoded_jwt = jwt.encode(to_encode, key, algorithm=algorithm)
+    encoded_jwt: str = jwt.encode(to_encode, key, algorithm=algorithm)
 
     return encoded_jwt
 
@@ -179,7 +181,7 @@ def decode_access_token(
 
     try:
         key = secret_key or SECRET_KEY
-        payload = jwt.decode(token, key, algorithms=[algorithm])
+        payload: dict[str, Any] = dict(jwt.decode(token, key, algorithms=[algorithm]))
         return payload
     except JWTError as e:
         raise ValueError(f"Invalid token: {e}") from e

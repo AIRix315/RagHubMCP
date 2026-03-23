@@ -9,7 +9,7 @@ Reference: https://ollama.com/blog/embedding-models
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -106,7 +106,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
         )
         response.raise_for_status()
         data = response.json()
-        return data["embedding"]
+        return cast(list[float], data["embedding"])
 
     def _embed_batch_sync(self, texts: list[str]) -> list[list[float]]:
         """Embed multiple texts in a single request.
@@ -124,7 +124,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
         )
         response.raise_for_status()
         data = response.json()
-        return data["embeddings"]
+        return cast(list[list[float]], data["embeddings"])
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         """Embed a list of documents.
@@ -176,7 +176,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
             )
             response.raise_for_status()
             data = response.json()
-            return data["embeddings"]
+            return cast(list[list[float]], data["embeddings"])
 
     async def aembed_query(self, query: str) -> list[float]:
         """Async embed a single query.
@@ -195,7 +195,7 @@ class OllamaEmbeddingProvider(BaseEmbeddingProvider):
             )
             response.raise_for_status()
             data = response.json()
-            return data["embedding"]
+            return cast(list[float], data["embedding"])
 
     def embed_batch(self, texts: list[str], batch_size: int = 32) -> list[list[float]]:
         """Embed texts in batches.

@@ -35,16 +35,16 @@ class ProgressMessage:
         task_id: str | None = None,
         data: dict[str, Any] | None = None,
         message: str | None = None,
-    ):
+    ) -> None:
         self.type = type
         self.task_id = task_id
-        self.data = data or {}
+        self.data: dict[str, Any] = data if data is not None else {}
         self.message = message
         self.timestamp = datetime.now().isoformat()
 
     def to_dict(self) -> dict[str, Any]:
         """Convert message to dictionary."""
-        result = {
+        result: dict[str, Any] = {
             "type": self.type.value,
             "timestamp": self.timestamp,
         }
@@ -67,7 +67,7 @@ class ConnectionManager:
     Each connection subscribes to specific task_id updates.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Map of task_id -> list of WebSocket connections
         self._connections: dict[str, list[WebSocket]] = {}
         # Map of WebSocket -> set of subscribed task_ids

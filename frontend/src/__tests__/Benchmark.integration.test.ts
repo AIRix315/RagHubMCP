@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createI18n } from 'vue-i18n'
 import Benchmark from '../views/Benchmark.vue'
 
 // Mock vue-i18n
@@ -14,6 +13,11 @@ vi.mock('vue-i18n', () => ({
 // Mock the API module
 vi.mock('@/api/benchmark', () => ({
   runBenchmark: vi.fn()
+}))
+
+// Mock API for listCollections used in Benchmark
+vi.mock('@/api', () => ({
+  listCollections: vi.fn().mockResolvedValue({ collections: [], total: 0 }),
 }))
 
 import { runBenchmark } from '@/api/benchmark'
@@ -35,13 +39,13 @@ describe('Benchmark API Integration', () => {
           rerank_provider: 'flashrank-tiny',
           latency_ms: 45,
           results: [
-            { id: '1', content: 'doc1', score: 0.9, rerank_score: 0.85 }
+            { id: '1', text: 'doc1', score: 0.9, metadata: {} }
           ]
         }
       ]
     }
     
-    vi.mocked(runBenchmark).mockResolvedValue(mockResponse)
+    vi.mocked(runBenchmark).mockResolvedValue(mockResponse as any)
     
     const wrapper = mount(Benchmark)
     
@@ -73,7 +77,7 @@ describe('Benchmark API Integration', () => {
       ]
     }
     
-    vi.mocked(runBenchmark).mockResolvedValue(mockResponse)
+    vi.mocked(runBenchmark).mockResolvedValue(mockResponse as any)
     
     const wrapper = mount(Benchmark)
     await wrapper.find('[data-testid="run-benchmark"]').trigger('click')

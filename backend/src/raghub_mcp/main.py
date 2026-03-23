@@ -11,6 +11,7 @@ import logging
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+from collections.abc import AsyncIterator
 from typing import Any
 
 import uvicorn
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan manager.
 
     Handles startup and shutdown events.
@@ -127,7 +128,7 @@ def create_app() -> FastAPI:
 
     # WebSocket endpoint for progress updates
     @app.websocket("/ws/progress/{task_id}")
-    async def websocket_progress(websocket: WebSocket, task_id: str):
+    async def websocket_progress(websocket: WebSocket, task_id: str) -> None:
         """WebSocket endpoint for real-time progress updates.
 
         Args:

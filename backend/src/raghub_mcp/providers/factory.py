@@ -90,7 +90,7 @@ class ProviderFactory:
         Returns:
             BaseEmbeddingProvider instance
         """
-        return self._get_provider(ProviderCategory.EMBEDDING, name)
+        return self._get_provider(ProviderCategory.EMBEDDING, name)  # type: ignore[return-value]
 
     def get_rerank_provider(self, name: str | None = None) -> BaseRerankProvider:
         """Get a rerank provider instance.
@@ -102,7 +102,7 @@ class ProviderFactory:
         Returns:
             BaseRerankProvider instance
         """
-        return self._get_provider(ProviderCategory.RERANK, name)
+        return self._get_provider(ProviderCategory.RERANK, name)  # type: ignore[return-value]
 
     def get_llm_provider(self, name: str | None = None) -> BaseLLMProvider:
         """Get an LLM provider instance.
@@ -114,7 +114,7 @@ class ProviderFactory:
         Returns:
             BaseLLMProvider instance
         """
-        return self._get_provider(ProviderCategory.LLM, name)
+        return self._get_provider(ProviderCategory.LLM, name)  # type: ignore[return-value]
 
     def get_vectorstore_provider(self, name: str | None = None) -> BaseVectorStoreProvider:
         """Get a vector store provider instance.
@@ -126,7 +126,7 @@ class ProviderFactory:
         Returns:
             BaseVectorStoreProvider instance
         """
-        return self._get_provider(ProviderCategory.VECTORSTORE, name)
+        return self._get_provider(ProviderCategory.VECTORSTORE, name)  # type: ignore[return-value]
 
     def _get_provider(self, category: ProviderCategory, name: str | None = None) -> BaseProvider:
         """Internal method to get a provider instance (thread-safe).

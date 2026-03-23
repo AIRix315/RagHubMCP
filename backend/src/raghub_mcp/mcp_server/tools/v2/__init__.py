@@ -333,7 +333,7 @@ def register_v2_tools(mcp: FastMCP) -> None:
                         continue
 
                 # Sanitize metadata values (ensure all values are JSON-serializable)
-                sanitized_metadata = {"doc_id": doc_id}
+                sanitized_metadata: dict[str, Any] = {"doc_id": doc_id}
                 for k, v in metadata.items():
                     if isinstance(v, str | int | float | bool | list | dict) or v is None:
                         sanitized_metadata[k] = v

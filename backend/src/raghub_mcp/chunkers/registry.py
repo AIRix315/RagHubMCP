@@ -41,6 +41,7 @@ class ChunkerRegistry(Registry[ChunkerPlugin, str]):
     """
 
     _language_map: dict[str, type[ChunkerPlugin]]
+    _items: dict[str, dict[str, type[ChunkerPlugin]]]
 
     def __init__(self) -> None:
         """Initialize chunker registry."""
@@ -178,11 +179,11 @@ def _register_builtin_chunkers() -> None:
     # Register each built-in chunker directly
     for chunker_cls in [SimpleChunker, LineChunker, MarkdownChunker]:
         if chunker_cls.NAME not in registry._items.get("chunkers", {}):
-            registry._items.setdefault("chunkers", {})[chunker_cls.NAME] = chunker_cls
+            registry._items.setdefault("chunkers", {})[chunker_cls.NAME] = chunker_cls  # type: ignore[type-abstract]
 
             # Build language mapping
             for lang in chunker_cls.SUPPORTED_LANGUAGES:
-                registry._language_map[lang.lower()] = chunker_cls
+                registry._language_map[lang.lower()] = chunker_cls  # type: ignore[type-abstract]
 
 
 def _register_ast_chunkers() -> None:

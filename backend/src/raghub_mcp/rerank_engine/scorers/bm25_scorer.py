@@ -217,15 +217,15 @@ class BM25Scorer(BaseScorer):
         if len(scores) == 0:
             return scores
 
-        min_score = np.min(scores)
-        max_score = np.max(scores)
+        min_score = float(np.min(scores))
+        max_score = float(np.max(scores))
 
         if max_score == min_score:
             # All scores are the same
             return np.ones_like(scores) if max_score > 0 else np.zeros_like(scores)
 
         # Min-max normalization
-        normalized = (scores - min_score) / (max_score - min_score)
+        normalized: np.ndarray = (scores - min_score) / (max_score - min_score)
         return normalized
 
     def get_config(self) -> dict[str, Any]:

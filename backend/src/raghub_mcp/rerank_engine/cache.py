@@ -61,7 +61,7 @@ class QueryCache:
         self._misses = 0
 
     @staticmethod
-    def hash_query(query: str, documents: list[str], **kwargs) -> str:
+    def hash_query(query: str, documents: list[str], **kwargs: Any) -> str:
         """Generate cache key from query and documents.
 
         Args:

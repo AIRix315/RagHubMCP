@@ -358,11 +358,13 @@ def create_multi_query_generator(
         try:
             from .llm_multi_query import LLMMultiQueryGenerator
 
-            return LLMMultiQueryGenerator(
+            # mypy doesn't know about LLMMultiQueryGenerator, so we cast it
+            generator: MultiQueryGenerator = LLMMultiQueryGenerator(
                 provider=config.get("provider"),
                 model=config.get("model"),
                 max_variations=config.get("max_variations", 3),
             )
+            return generator
         except ImportError:
             # Fallback to template if LLM deps not available
             return TemplateQueryGenerator()

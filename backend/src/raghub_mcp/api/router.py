@@ -30,7 +30,7 @@ api_router.include_router(debug_router)
 
 # Add a root endpoint for API health check
 @api_router.get("", tags=["root"])
-async def api_root() -> dict:
+async def api_root() -> dict[str, str | list[str]]:
     """API root endpoint.
 
     Returns basic API information.

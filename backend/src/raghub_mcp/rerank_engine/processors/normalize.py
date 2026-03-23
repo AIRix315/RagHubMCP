@@ -69,19 +69,21 @@ class NormalizeProcessor(BasePostProcessor):
 
     def _minmax_normalize(self, scores: np.ndarray) -> np.ndarray:
         """Min-max normalization to [0, 1]."""
-        min_val = np.min(scores)
-        max_val = np.max(scores)
+        min_val = float(np.min(scores))
+        max_val = float(np.max(scores))
 
         if max_val == min_val:
             # All values are the same
             return np.ones_like(scores) * 0.5
 
-        return (scores - min_val) / (max_val - min_val)
+        result: np.ndarray = (scores - min_val) / (max_val - min_val)
+        return result
 
     def _softmax_normalize(self, scores: np.ndarray) -> np.ndarray:
         """Softmax normalization (sum to 1)."""
-        exp_scores = np.exp(scores - np.max(scores))
-        return exp_scores / np.sum(exp_scores)
+        exp_scores: np.ndarray = np.exp(scores - np.max(scores))
+        result: np.ndarray = exp_scores / np.sum(exp_scores)
+        return result
 
     def get_config(self) -> dict[str, Any]:
         """Get processor configuration."""

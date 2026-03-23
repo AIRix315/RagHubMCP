@@ -19,11 +19,15 @@ ID Requirements:
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from ..base import ProviderCategory
 from ..registry import registry
 from .base import BaseVectorStoreProvider, QueryResult, SearchResult
+
+if TYPE_CHECKING:
+    from qdrant_client import QdrantClient
+    from qdrant_client.http.models import Filter, FieldCondition, PointStruct
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +99,10 @@ class QdrantProvider(BaseVectorStoreProvider):
         self._api_key = api_key
         self._embedding_dimension = embedding_dimension
         self._prefer_grpc = prefer_grpc
-        self._client: Any = None  # QdrantClient instance (lazy init)
+        self._client: QdrantClient | None = None  # Lazy init
         self._embedding_provider: Any = None  # Lazy init
 
-    def _get_client(self) -> Any:
+    def _get_client(self) -> QdrantClient:
         """Get or create QdrantClient instance (lazy initialization)."""
         if self._client is None:
             from qdrant_client import QdrantClient
@@ -114,12 +118,19 @@ class QdrantProvider(BaseVectorStoreProvider):
                 )
             elif self._mode == "remote" or (self._host or self._url):
                 if self._url:
-                    self._client = QdrantClient(
-                        url=self._url,
-                        api_key=self._api_key,
-                        grpc_port=self._port or 6334 if self._prefer_grpc else None,
-                        prefer_grpc=self._prefer_grpc,
-                    )
+                    if self._prefer_grpc:
+                        self._client = QdrantClient(
+                            url=self._url,
+                            api_key=self._api_key,
+                            grpc_port=self._port or 6334,
+                            prefer_grpc=True,
+                        )
+                    else:
+                        self._client = QdrantClient(
+                            url=self._url,
+                            api_key=self._api_key,
+                            prefer_grpc=False,
+                        )
                 else:
                     self._client = QdrantClient(
                         host=self._host or "localhost",
@@ -142,7 +153,7 @@ class QdrantProvider(BaseVectorStoreProvider):
             self._embedding_provider = factory.get_embedding_provider()
         return self._embedding_provider
 
-    def _get_collection_config(self) -> dict:
+    def _get_collection_config(self) -> dict[str, Any]:
         """Get vector configuration for collection creation."""
         from qdrant_client import models
 
@@ -196,8 +207,8 @@ class QdrantProvider(BaseVectorStoreProvider):
 
     def collection_exists(self, name: str) -> bool:
         """Check if a collection exists."""
-        client = self._get_client()
-        return client.collection_exists(name)
+        client: QdrantClient = self._get_client()
+        return bool(client.collection_exists(name))
 
     def add(
         self,
@@ -319,11 +330,11 @@ class QdrantProvider(BaseVectorStoreProvider):
 
         return QueryResult(results=search_results)
 
-    def _build_filter(self, where: dict[str, Any]) -> Any:
+    def _build_filter(self, where: dict[str, Any]) -> Filter | None:
         """Build Qdrant filter from metadata filter dict."""
         from qdrant_client import models
 
-        conditions = []
+        conditions: list[models.Condition] = []
         for key, value in where.items():
             if isinstance(value, dict):
                 # Range filter
@@ -357,12 +368,10 @@ class QdrantProvider(BaseVectorStoreProvider):
 
         if len(conditions) == 0:
             return None
-        elif len(conditions) == 1:
-            return models.Filter(must=conditions)
         else:
             return models.Filter(must=conditions)
 
-    def _build_document_filter(self, where_document: dict[str, Any]) -> Any:
+    def _build_document_filter(self, where_document: dict[str, Any]) -> Filter | None:
         """Build Qdrant filter for document content."""
         from qdrant_client import models
 
@@ -463,26 +472,30 @@ class QdrantProvider(BaseVectorStoreProvider):
         client = self._get_client()
 
         if ids:
-            # Delete by IDs - Qdrant accepts int or UUID
+            # Delete by IDs - Qdrant requires PointIdsList for list of IDs
+            from qdrant_client.http.models import PointIdsList
+
             client.delete(
                 collection_name=collection,
-                points_selector=ids,
+                points_selector=PointIdsList(points=ids),  # type: ignore[arg-type]
             )
             return len(ids)
         elif where:
             query_filter = self._build_filter(where)
-            result = client.delete(
+            if query_filter is None:
+                return 0
+            client.delete(
                 collection_name=collection,
                 points_selector=query_filter,
             )
-            return result.operation_id if hasattr(result, "operation_id") else 0
+            return 0
         return 0
 
     def count(self, collection: str) -> int:
         """Count documents in a collection."""
         client = self._get_client()
         info = client.get_collection(collection)
-        return info.points_count
+        return info.points_count if info.points_count is not None else 0
 
     def update(
         self,
@@ -511,19 +524,21 @@ class QdrantProvider(BaseVectorStoreProvider):
             embeddings = embedding_provider.embed_documents(documents)
 
         # Build points for update
-        points = []
+        points: list[models.PointStruct] = []
         for i, doc_id in enumerate(ids):
-            payload = {}
+            payload: dict[str, Any] = {}
             if documents and i < len(documents):
                 payload["document"] = documents[i]
             if metadatas and i < len(metadatas):
                 payload.update(metadatas[i])
 
-            point_data = {"id": doc_id, "payload": payload if payload else None}
-            if embeddings and i < len(embeddings):
-                point_data["vector"] = embeddings[i]
-
-            points.append(models.PointStruct(**point_data))
+            vector: list[float] | None = embeddings[i] if embeddings and i < len(embeddings) else None
+            point_kwargs: dict[str, Any] = {
+                "id": doc_id,
+                "payload": payload if payload else None,
+                "vector": vector,
+            }
+            points.append(models.PointStruct(**point_kwargs))
 
         client.upsert(
             collection_name=collection,

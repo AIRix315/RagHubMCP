@@ -31,9 +31,9 @@ class DebugWebSocketHandler:
     - Push stage completion events
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Map of query_id -> list of WebSocket connections
-        self._subscribers: dict[str, list[WebSocket]] = []
+        self._subscribers: dict[str, list[WebSocket]] = {}
         # Map of WebSocket -> set of subscribed query_ids
         self._subscriptions: dict[WebSocket, set[str]] = {}
 

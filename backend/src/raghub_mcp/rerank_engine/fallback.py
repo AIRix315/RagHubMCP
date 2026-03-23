@@ -216,12 +216,7 @@ class FallbackManager:
         Returns:
             Dictionary with fallback stats.
         """
-        stats = {
-            "failure_threshold": self._failure_threshold,
-            "recovery_timeout": self._fallback_provider,
-            "fallback_provider": self._fallback_provider,
-            "providers": {},
-        }
+        provider_stats: dict[str, dict[str, Any]] = {}
 
         for name, health in self._health.items():
             failure_rate = (
@@ -229,7 +224,7 @@ class FallbackManager:
                 if health.total_requests > 0
                 else 0.0
             )
-            stats["providers"][name] = {
+            provider_stats[name] = {
                 "status": health.status.value,
                 "consecutive_failures": health.consecutive_failures,
                 "total_requests": health.total_requests,
@@ -238,6 +233,13 @@ class FallbackManager:
                 "last_success": health.last_success,
                 "last_failure": health.last_failure,
             }
+
+        stats: dict[str, Any] = {
+            "failure_threshold": self._failure_threshold,
+            "recovery_timeout": self._fallback_provider,
+            "fallback_provider": self._fallback_provider,
+            "providers": provider_stats,
+        }
 
         return stats
 

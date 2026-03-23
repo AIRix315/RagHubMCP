@@ -12,7 +12,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from raghub_mcp.indexer.scanner import FileScanner
 from raghub_mcp.indexer.watcher import FileEvent, FileEventType
@@ -109,7 +109,7 @@ class IncrementalIndexer:
         """
         return self._scanner._compute_hash(path)
 
-    def _get_chunks_with_fallback(self, path: Path) -> list:
+    def _get_chunks_with_fallback(self, path: Path) -> list[Any]:
         """Get chunks from indexer with fallback to SimpleChunker.
 
         Some AST chunkers may return empty list when tree-sitter is
@@ -142,7 +142,7 @@ class IncrementalIndexer:
 
         return chunks
 
-    def _get_chunks_by_source(self, source: str) -> list[dict]:
+    def _get_chunks_by_source(self, source: str) -> list[dict[str, Any]]:
         """Get all chunks for a source file.
 
         Args:
@@ -198,7 +198,9 @@ class IncrementalIndexer:
             return True  # New file
 
         # Check hash from first chunk's metadata
-        old_hash = chunks[0].get("metadata", {}).get("content_hash")
+        first_chunk: dict[str, Any] = chunks[0]
+        metadata: dict[str, Any] = first_chunk.get("metadata", {})
+        old_hash: str | None = str(metadata.get("content_hash", "") or "")
         return old_hash != new_hash
 
     def handle_created(self, path: Path) -> int:

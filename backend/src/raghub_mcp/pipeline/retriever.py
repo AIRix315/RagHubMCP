@@ -168,8 +168,8 @@ class HybridRetriever(Retriever):
         self._alpha = alpha
         self._beta = beta
         self._rrf_k = rrf_k
-        self._vectorstore_provider = None
-        self._bm25_service = None
+        self._vectorstore_provider: Any = None
+        self._bm25_service: Any = None
 
     def _get_vectorstore_provider(self) -> Any:
         """Get VectorStore provider through Factory (RULE-3 compliant).
@@ -314,7 +314,8 @@ class HybridRetriever(Retriever):
             List of (doc_id, score) tuples.
         """
         try:
-            return bm25_service.query(collection, query, k)
+            results: list[tuple[str, float]] = bm25_service.query(collection, query, k)
+            return results
         except Exception as e:
             # BM25 index may not exist for all collections
             logger.debug(f"BM25 search not available for '{collection}': {e}")

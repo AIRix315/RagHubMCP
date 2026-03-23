@@ -10,11 +10,15 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from ..core.scorer import BaseScorer
+
+if TYPE_CHECKING:
+    from onnxruntime import InferenceSession
+    from tokenizers import Tokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +74,8 @@ class ONNXScorer(BaseScorer):
         self._providers = providers or ["CPUExecutionProvider"]
 
         # Lazy initialization
-        self._session = None
-        self._tokenizer = None
+        self._session: InferenceSession | None = None
+        self._tokenizer: Tokenizer | None = None
 
     def __del__(self) -> None:
         """Cleanup ONNX session on garbage collection."""
@@ -144,9 +148,10 @@ class ONNXScorer(BaseScorer):
         try:
             from tokenizers import Tokenizer
 
-            self._tokenizer = Tokenizer.from_file(str(self._tokenizer_path))
-            self._tokenizer.enable_truncation(max_length=self._max_length)
-            self._tokenizer.enable_padding(pad_id=0, pad_token="[PAD]")
+            tokenizer = Tokenizer.from_file(str(self._tokenizer_path))
+            tokenizer.enable_truncation(max_length=self._max_length)
+            tokenizer.enable_padding(pad_id=0, pad_token="[PAD]")
+            self._tokenizer = tokenizer
 
             logger.info(f"Loaded tokenizer from {self._tokenizer_path}")
 
@@ -175,6 +180,10 @@ class ONNXScorer(BaseScorer):
 
         self._ensure_initialized()
 
+        # Type narrowing - after _ensure_initialized(), these are not None
+        assert self._session is not None
+        assert self._tokenizer is not None
+
         all_scores = []
 
         # Process in batches
@@ -190,7 +199,8 @@ class ONNXScorer(BaseScorer):
         # Build query-document pairs
         pairs = [[query, doc] for doc in documents]
 
-        # Tokenize
+        # Tokenize - _ensure_initialized() guarantees _tokenizer is not None
+        assert self._tokenizer is not None
         encoded = self._tokenizer.encode_batch(pairs)
         input_ids = np.array([e.ids for e in encoded], dtype=np.int64)
         attention_mask = np.array([e.attention_mask for e in encoded], dtype=np.int64)
@@ -206,14 +216,15 @@ class ONNXScorer(BaseScorer):
         if not np.all(token_type_ids == 0):
             onnx_inputs["token_type_ids"] = token_type_ids
 
-        # Run inference
+        # Run inference - _ensure_initialized() guarantees _session is not None
+        assert self._session is not None
         outputs = self._session.run(None, onnx_inputs)
-        logits = outputs[0]
+        logits = np.asarray(outputs[0])
 
         # Convert to scores
         scores = self._logits_to_scores(logits)
 
-        return scores.tolist()
+        return list(scores.tolist())
 
     def _logits_to_scores(self, logits: np.ndarray) -> np.ndarray:
         """Convert model logits to relevance scores.
@@ -224,22 +235,24 @@ class ONNXScorer(BaseScorer):
         """
         if logits.shape[1] == 1:
             # Sigmoid for single output
-            return 1 / (1 + np.exp(-logits.flatten()))
+            result = 1 / (1 + np.exp(-logits.flatten()))
+            return np.asarray(result)
         else:
             # Softmax for multi-class, take positive class
             exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
             probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
-            return probs[:, 1]
+            return np.asarray(probs[:, 1])
 
     @staticmethod
     def _logits_to_scores_static(logits: np.ndarray) -> np.ndarray:
         """Static version for testing."""
         if logits.shape[1] == 1:
-            return 1 / (1 + np.exp(-logits.flatten()))
+            result = 1 / (1 + np.exp(-logits.flatten()))
+            return np.asarray(result)
         else:
             exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
             probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
-            return probs[:, 1]
+            return np.asarray(probs[:, 1])
 
     def get_config(self) -> dict[str, Any]:
         """Get scorer configuration."""
@@ -295,6 +308,9 @@ class ONNXScorer(BaseScorer):
             Dictionary with model metadata.
         """
         self._ensure_initialized()
+
+        # Type narrowing - after _ensure_initialized(), these are not None
+        assert self._session is not None
 
         # Get input/output info
         input_names = [inp.name for inp in self._session.get_inputs()]

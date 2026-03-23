@@ -79,7 +79,7 @@ describe('router/index.ts', () => {
 
   it('should have correct number of routes', () => {
     const routes = router.getRoutes()
-    expect(routes.length).toBe(9)
+    expect(routes.length).toBe(10)
   })
 
   it('should use createWebHistory', () => {

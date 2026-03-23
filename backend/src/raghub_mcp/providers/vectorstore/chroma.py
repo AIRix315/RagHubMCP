@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 import chromadb
 
@@ -26,13 +26,18 @@ from ..embedding.base import BaseEmbeddingProvider
 from ..registry import registry
 from .base import BaseVectorStoreProvider, QueryResult, SearchResult
 
+if TYPE_CHECKING:
+    from chromadb.api import ClientAPI
+    from chromadb.api.models.Collection import Collection
+    from chromadb.api.types import EmbeddingFunction
+
 logger = logging.getLogger(__name__)
 
 
 class ChromaCollectionWrapper:
     """Wrapper for ChromaDB collection to provide cleaner interface."""
 
-    def __init__(self, collection: chromadb.api.models.Collection) -> None:
+    def __init__(self, collection: Collection) -> None:
         self._collection = collection
 
     def add(
@@ -74,7 +79,8 @@ class ChromaCollectionWrapper:
             kwargs["include"] = include
         else:
             kwargs["include"] = ["documents", "metadatas", "distances"]
-        return self._collection.query(**kwargs)
+        result = self._collection.query(**kwargs)
+        return cast(dict[str, Any], result)
 
     def get(
         self,
@@ -97,7 +103,8 @@ class ChromaCollectionWrapper:
             kwargs["include"] = include
         else:
             kwargs["include"] = ["documents", "metadatas"]
-        return self._collection.get(**kwargs)
+        result = self._collection.get(**kwargs)
+        return cast(dict[str, Any], result)
 
     def count(self) -> int:
         return self._collection.count()
@@ -178,10 +185,10 @@ class ChromaProvider(BaseVectorStoreProvider):
         """
         self._persist_dir = persist_dir
         self._embedding_provider = embedding_provider
-        self._client: chromadb.PersistentClient | None = None
+        self._client: ClientAPI | None = None
         self._embedding_function: ChromaEmbeddingFunction | None = None
 
-    def _get_client(self) -> chromadb.PersistentClient:
+    def _get_client(self) -> ClientAPI:
         """Get or create ChromaDB client (lazy initialization)."""
         if self._client is None:
             Path(self._persist_dir).mkdir(parents=True, exist_ok=True)
@@ -213,10 +220,11 @@ class ChromaProvider(BaseVectorStoreProvider):
         embedding_function = self._get_embedding_function()
 
         client = self._get_client()
+        # ChromaDB's EmbeddingFunction is a Protocol - our wrapper is compatible at runtime
         client.get_or_create_collection(
             name=name,
             metadata=final_metadata,
-            embedding_function=embedding_function,
+            embedding_function=cast("EmbeddingFunction[list[str]]", embedding_function),  # type: ignore[arg-type]
         )
         logger.debug(f"Created collection: {name}")
 
@@ -255,7 +263,7 @@ class ChromaProvider(BaseVectorStoreProvider):
         client = self._get_client()
         chroma_collection = client.get_or_create_collection(
             name=collection,
-            embedding_function=self._get_embedding_function(),
+            embedding_function=cast("EmbeddingFunction[list[str]]", self._get_embedding_function()),  # type: ignore[arg-type]
         )
 
         wrapper = ChromaCollectionWrapper(chroma_collection)

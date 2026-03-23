@@ -33,6 +33,9 @@ class ProviderRegistry(Registry[BaseProvider, ProviderCategory]):
         provider_cls = registry.get(ProviderCategory.EMBEDDING, "ollama")
     """
 
+    _initialized: bool
+    _items: dict[ProviderCategory, dict[str, type[BaseProvider]]]
+
     def __init__(self) -> None:
         """Initialize provider registry with default categories."""
         # Only initialize if not already done

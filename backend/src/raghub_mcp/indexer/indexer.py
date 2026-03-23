@@ -17,7 +17,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from raghub_mcp.chunkers import Chunk, ChunkerRegistry
 from raghub_mcp.indexer.scanner import FileScanner
@@ -376,7 +376,7 @@ class Indexer:
         self,
         query: str,
         n_results: int = 5,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """Search the indexed content.
 
         Args:

@@ -194,8 +194,11 @@ def get_tenant_id(user: Any = None) -> str:
     Returns:
         Tenant ID string
     """
-    if user and hasattr(user, "tenant_id"):
-        return user.tenant_id
+    if user is not None and hasattr(user, "tenant_id"):
+        tenant_id = user.tenant_id
+        if isinstance(tenant_id, str):
+            return tenant_id
+        return str(tenant_id)
     return "default-tenant"
 
 

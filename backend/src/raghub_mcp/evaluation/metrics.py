@@ -138,7 +138,7 @@ def evaluate_pipeline(
     total_noise = 0.0
 
     for query in queries:
-        qid = query.get("id")
+        qid: int = query.get("id", 0)
         expected_keywords = query.get("keywords", [])
 
         retrieved = retrieval_results.get(qid, [])

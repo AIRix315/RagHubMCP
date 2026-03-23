@@ -168,23 +168,27 @@ class HybridFusionScorer(BaseScorer):
             return scores
 
         if method == "minmax":
-            min_val = np.min(scores)
-            max_val = np.max(scores)
+            min_val = float(np.min(scores))
+            max_val = float(np.max(scores))
             if max_val == min_val:
-                return np.ones_like(scores) if max_val > 0 else np.zeros_like(scores)
-            return (scores - min_val) / (max_val - min_val)
+                result: np.ndarray = np.ones_like(scores) if max_val > 0 else np.zeros_like(scores)
+                return result
+            result = (scores - min_val) / (max_val - min_val)
+            return result
 
         elif method == "softmax":
             # Stable softmax
-            exp_scores = np.exp(scores - np.max(scores))
-            return exp_scores / np.sum(exp_scores)
+            exp_scores: np.ndarray = np.exp(scores - np.max(scores))
+            result = exp_scores / np.sum(exp_scores)
+            return result
 
         elif method == "zscore":
-            mean = np.mean(scores)
-            std = np.std(scores)
+            mean = float(np.mean(scores))
+            std = float(np.std(scores))
             if std == 0:
                 return np.zeros_like(scores)
-            return (scores - mean) / std
+            result = (scores - mean) / std
+            return result
 
         else:
             # Default to minmax

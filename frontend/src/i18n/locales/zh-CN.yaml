@@ -200,7 +200,7 @@ collections:
 # Benchmark
 benchmark:
   title: "效果对比"
-  subtitle: "对比不同配置的搜索效果"
+  subtitle: "测试不同配置的检索效果"
   configure: "配置测试"
   results: "测试结果"
   history: "历史记录"

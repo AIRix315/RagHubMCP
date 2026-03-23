@@ -100,8 +100,7 @@ jobs:
         run: ruff format --check .
       
       - name: Run MyPy type check
-        run: mypy src --ignore-missing-imports || true
-        continue-on-error: true
+        run: mypy src --ignore-missing-imports
 
   # ============================================
   # Frontend Job - Build and test Vue app
@@ -130,8 +129,7 @@ jobs:
         run: npm ci
       
       - name: Run tests
-        run: npm run test || true
-        continue-on-error: true
+        run: npm run test:run
       
       - name: Build
         run: npm run build
@@ -172,7 +170,7 @@ jobs:
         continue-on-error: true
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -194,7 +192,8 @@ jobs:
         run: |
           if [[ "${{ needs.test.result }}" != "success" || \
                 "${{ needs.lint.result }}" != "success" || \
-                "${{ needs.frontend.result }}" != "success" ]]; then
+                "${{ needs.frontend.result }}" != "success" || \
+                "${{ needs.security.result }}" == "failure" ]]; then
             echo "One or more checks failed"
             exit 1
           fi

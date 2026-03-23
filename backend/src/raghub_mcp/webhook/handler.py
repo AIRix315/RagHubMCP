@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -114,7 +115,7 @@ class WebhookHandler:
             secret: Webhook secret for signature verification
         """
         self.secret = secret
-        self._handlers: dict[EventType, callable] = {}
+        self._handlers: dict[EventType, Callable[[WebhookPayload], dict[str, Any]]] = {}
 
         # Register default handlers
         self._handlers[EventType.PUSH] = self._handle_push
@@ -152,7 +153,7 @@ class WebhookHandler:
     def handle(
         self,
         event_type: str,
-        payload_body: bytes | str | dict,
+        payload_body: bytes | str | dict[str, Any],
         signature: str | None = None,
     ) -> dict[str, Any]:
         """Handle a webhook event.
@@ -263,7 +264,7 @@ class WebhookHandler:
             "message": "Webhook received successfully",
         }
 
-    def register_handler(self, event_type: EventType, handler: callable) -> None:
+    def register_handler(self, event_type: EventType, handler: Callable[[WebhookPayload], dict[str, Any]]) -> None:
         """Register a custom handler for an event type.
 
         Args:
@@ -274,7 +275,7 @@ class WebhookHandler:
 
 
 # FastAPI integration (optional)
-def create_webhook_router(handler: WebhookHandler):
+def create_webhook_router(handler: WebhookHandler) -> Any:
     """Create FastAPI router for webhook endpoint.
 
     Args:
@@ -297,7 +298,7 @@ def create_webhook_router(handler: WebhookHandler):
         x_github_event: str | None = Header(None),
         x_hub_signature_256: str | None = Header(None),
         x_github_delivery: str | None = Header(None),
-    ):
+    ) -> dict[str, Any]:
         """Handle GitHub webhook.
 
         GitHub requires a response within 10 seconds.

@@ -472,13 +472,19 @@ def create_query_rewriter(
         return TemplateRewriter()
     elif mode == RewriteMode.LLM:
         # Import LLM rewriter lazily to avoid dependency issues
-        from .llm_rewrite import LLMRewriter
+        try:
+            from .llm_rewrite import LLMRewriter
 
-        return LLMRewriter(
-            provider=config.get("provider"),
-            model=config.get("model"),
-            max_variations=config.get("max_variations", 3),
-        )
+            # mypy doesn't know about LLMRewriter, so we cast it
+            rewriter: QueryRewriter = LLMRewriter(
+                provider=config.get("provider"),
+                model=config.get("model"),
+                max_variations=config.get("max_variations", 3),
+            )
+            return rewriter
+        except ImportError:
+            # Fallback to template if LLM deps not available
+            return TemplateRewriter()
     else:
         # Default to identity for unknown modes
         return IdentityRewriter()

@@ -13,15 +13,18 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import sys
 from typing import Any
 
 import click
+import httpx
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
 
 console = Console()
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -31,16 +34,19 @@ console = Console()
 class CLIContext:
     """CLI context with configuration and API client."""
     
-    def __init__(self):
+    config: dict[str, Any] | None
+    api_base: str
+    _client: httpx.Client | None
+    
+    def __init__(self) -> None:
         self.config = None
         self.api_base = "http://localhost:8818"
         self._client = None
     
     @property
-    def client(self):
+    def client(self) -> httpx.Client:
         """Get HTTP client (lazy load)."""
         if self._client is None:
-            import httpx
             self._client = httpx.Client(base_url=self.api_base, timeout=30.0)
         return self._client
 
@@ -56,7 +62,7 @@ pass_context = click.make_pass_decorator(CLIContext, ensure=True)
 @click.option('--api-base', default='http://localhost:8818', help='API base URL')
 @click.version_option(version='2.3.1', prog_name='raghub')
 @click.pass_context
-def cli(ctx: click.Context, api_base: str):
+def cli(ctx: click.Context, api_base: str) -> None:
     """RagHubMCP - Universal Code RAG Hub CLI.
     
     Quick Start:
@@ -86,7 +92,7 @@ def cli(ctx: click.Context, api_base: str):
               help='Output format')
 @click.option('--debug', is_flag=True, help='Show debug information')
 @pass_context
-def query(ctx: CLIContext, query: str, profile: str, top_k: int, output: str, debug: bool):
+def query(ctx: CLIContext, query: str, profile: str, top_k: int, output: str, debug: bool) -> None:
     """Query the knowledge base.
     
     Examples:
@@ -122,7 +128,7 @@ def query(ctx: CLIContext, query: str, profile: str, top_k: int, output: str, de
         sys.exit(1)
 
 
-def _display_results(data: dict[str, Any], output: str, debug: bool):
+def _display_results(data: dict[str, Any], output: str, debug: bool) -> None:
     """Display query results in table format."""
     results = data.get('results', [])
     latency_ms = data.get('latency_ms', 0)
@@ -160,7 +166,7 @@ def _display_results(data: dict[str, Any], output: str, debug: bool):
         _display_debug_info(data['debug_info'])
 
 
-def _display_debug_info(debug_info: dict[str, Any]):
+def _display_debug_info(debug_info: dict[str, Any]) -> None:
     """Display debug information."""
     console.print("\n[bold yellow]Debug Information:[/]")
     
@@ -179,7 +185,7 @@ def _display_debug_info(debug_info: dict[str, Any]):
 # =============================================================================
 
 @cli.group()
-def provider():
+def provider() -> None:
     """Manage providers (embedding, rerank, vectorstore)."""
     pass
 
@@ -192,7 +198,7 @@ def provider():
               type=click.Choice(['table', 'json']),
               help='Output format')
 @pass_context
-def provider_list(ctx: CLIContext, provider_type: str | None, output: str):
+def provider_list(ctx: CLIContext, provider_type: str | None, output: str) -> None:
     """List all providers or filter by type.
     
     Examples:
@@ -219,7 +225,7 @@ def provider_list(ctx: CLIContext, provider_type: str | None, output: str):
         sys.exit(1)
 
 
-def _display_providers(data: list[dict] | dict, provider_type: str | None):
+def _display_providers(data: list[dict[str, Any]] | dict[str, Any], provider_type: str | None) -> None:
     """Display providers in table format."""
     # Handle nested provider types
     if isinstance(data, dict) and provider_type is None:
@@ -234,7 +240,7 @@ def _display_providers(data: list[dict] | dict, provider_type: str | None):
         _display_provider_table(providers)
 
 
-def _display_provider_table(providers: list[dict]):
+def _display_provider_table(providers: list[dict[str, Any]]) -> None:
     """Display a table of providers."""
     table = Table()
     table.add_column("Name", style="bold")
@@ -263,7 +269,7 @@ def _display_provider_table(providers: list[dict]):
 @click.option('--query', '-q', default='test query',
               help='Test query')
 @pass_context
-def provider_test(ctx: CLIContext, name: str, provider_type: str, query: str):
+def provider_test(ctx: CLIContext, name: str, provider_type: str, query: str) -> None:
     """Test a provider connection.
     
     Examples:
@@ -306,7 +312,7 @@ def provider_test(ctx: CLIContext, name: str, provider_type: str, query: str):
               type=click.Choice(['embedding', 'rerank', 'vectorstore']),
               help='Provider type')
 @pass_context
-def provider_switch(ctx: CLIContext, name: str, provider_type: str):
+def provider_switch(ctx: CLIContext, name: str, provider_type: str) -> None:
     """Set default provider.
     
     Examples:
@@ -332,7 +338,7 @@ def provider_switch(ctx: CLIContext, name: str, provider_type: str):
 # =============================================================================
 
 @cli.group()
-def config():
+def config() -> None:
     """Configuration management."""
     pass
 
@@ -340,7 +346,7 @@ def config():
 @config.command('list')
 @click.option('--all', 'show_all', is_flag=True, help='Show all config including defaults')
 @pass_context
-def config_list(ctx: CLIContext, show_all: bool):
+def config_list(ctx: CLIContext, show_all: bool) -> None:
     """List current configuration.
     
     Examples:
@@ -364,7 +370,7 @@ def config_list(ctx: CLIContext, show_all: bool):
 
 @config.command('profiles')
 @pass_context
-def config_profiles(ctx: CLIContext):
+def config_profiles(ctx: CLIContext) -> None:
     """List available profiles.
     
     Examples:
@@ -403,7 +409,7 @@ def config_profiles(ctx: CLIContext):
 @config.command('apply')
 @click.argument('profile', type=click.Choice(['fast', 'balanced', 'accurate']))
 @pass_context
-def config_apply(ctx: CLIContext, profile: str):
+def config_apply(ctx: CLIContext, profile: str) -> None:
     """Apply a profile configuration.
     
     Examples:
@@ -439,7 +445,7 @@ def config_apply(ctx: CLIContext, profile: str):
 # =============================================================================
 
 @cli.group()
-def pipeline():
+def pipeline() -> None:
     """Pipeline operations and debugging."""
     pass
 
@@ -450,7 +456,7 @@ def pipeline():
               type=click.Choice(['fast', 'balanced', 'accurate']),
               help='Profile to use')
 @pass_context
-def pipeline_test(ctx: CLIContext, query: str, profile: str):
+def pipeline_test(ctx: CLIContext, query: str, profile: str) -> None:
     """Test pipeline execution.
     
     Examples:
@@ -489,7 +495,7 @@ def pipeline_test(ctx: CLIContext, query: str, profile: str):
               type=click.Choice(['fast', 'balanced', 'accurate']),
               help='Profile to use')
 @pass_context
-def pipeline_debug(ctx: CLIContext, query: str, profile: str):
+def pipeline_debug(ctx: CLIContext, query: str, profile: str) -> None:
     """Debug pipeline execution with detailed output.
     
     Shows intermediate states for each pipeline stage.
@@ -541,7 +547,7 @@ def pipeline_debug(ctx: CLIContext, query: str, profile: str):
         sys.exit(1)
 
 
-def _display_pipeline_debug(debug_info: dict[str, Any]):
+def _display_pipeline_debug(debug_info: dict[str, Any]) -> None:
     """Display detailed pipeline debug information."""
     query_id = debug_info.get('query_id', 'unknown')
     stages = debug_info.get('stages', [])
@@ -584,7 +590,7 @@ def _display_pipeline_debug(debug_info: dict[str, Any]):
               type=click.Choice(['table', 'json']),
               help='Output format')
 @pass_context
-def status(ctx: CLIContext, output: str):
+def status(ctx: CLIContext, output: str) -> None:
     """Show system status.
     
     Examples:
@@ -624,7 +630,7 @@ def status(ctx: CLIContext, output: str):
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     """Main entry point for CLI."""
     cli()
 

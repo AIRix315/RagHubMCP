@@ -7,7 +7,7 @@
  */
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Server, Database, FileText, Link, Download, Copy, Check, X, Wrench, Play } from 'lucide-vue-next'
+import { Server, Database, FileText, Link, Download, Copy, Check, X, Wrench } from 'lucide-vue-next'
 
 const { t } = useI18n()
 

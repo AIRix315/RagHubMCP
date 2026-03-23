@@ -354,7 +354,7 @@ class CohereScorer(APIScorer):
         documents: list[str],
         top_n: int | None = None,
     ) -> dict[str, Any]:
-        body = {
+        body: dict[str, Any] = {
             "model": self._model,
             "query": query,
             "documents": documents,
@@ -437,7 +437,7 @@ class JinaScorer(APIScorer):
         documents: list[str],
         top_n: int | None = None,
     ) -> dict[str, Any]:
-        body = {
+        body: dict[str, Any] = {
             "model": self._model,
             "query": query,
             "documents": documents,
@@ -473,7 +473,7 @@ def create_api_scorer(
     provider: str,
     api_key: str,
     model: str | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> APIScorer:
     """Create an API scorer based on provider.
 

@@ -11,6 +11,7 @@ Reference:
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -136,7 +137,7 @@ class RAGResult:
         """Return number of documents."""
         return len(self.documents)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Document]:
         """Iterate over documents."""
         return iter(self.documents)
 

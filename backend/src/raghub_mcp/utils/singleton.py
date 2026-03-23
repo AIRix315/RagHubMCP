@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import threading
 from functools import wraps
-from typing import TypeVar
+from typing import Any, TypeVar, cast
 
 T = TypeVar("T")
 
@@ -78,10 +78,10 @@ def singleton(cls: type[T]) -> type[T]:
     _instance: T | None = None
 
     @wraps(cls)
-    def get_instance(*args: any, **kwargs: any) -> T:  # type: ignore
+    def get_instance(*args: Any, **kwargs: Any) -> T:
         nonlocal _instance
         if _instance is None:
-            _instance = cls(*args, **kwargs)  # type: ignore
+            _instance = cls(*args, **kwargs)
         return _instance
 
     def reset() -> None:
@@ -90,9 +90,9 @@ def singleton(cls: type[T]) -> type[T]:
         _instance = None
 
     # Attach methods to the class
-    cls.get_instance = staticmethod(get_instance)  # type: ignore
-    cls.reset = staticmethod(reset)  # type: ignore
-    cls._singleton_instance = None  # type: ignore
+    cls.get_instance = staticmethod(get_instance)  # type: ignore[attr-defined]
+    cls.reset = staticmethod(reset)  # type: ignore[attr-defined]
+    cls._singleton_instance = None  # type: ignore[attr-defined]
 
     return cls
 
@@ -119,10 +119,10 @@ class SingletonMeta(type):
         assert service1 is service2
     """
 
-    _instances: dict[type, object] = {}
+    _instances: dict[type[Any], object] = {}
     _lock: threading.Lock = threading.Lock()
 
-    def __call__(cls, *args: any, **kwargs: any) -> object:
+    def __call__(cls, *args: Any, **kwargs: Any) -> object:
         """Create or return the singleton instance (thread-safe)."""
         if cls not in cls._instances:
             with cls._lock:
@@ -132,7 +132,7 @@ class SingletonMeta(type):
                     cls._instances[cls] = instance
         return cls._instances[cls]
 
-    def get_instance(cls, *args: any, **kwargs: any) -> object:
+    def get_instance(cls, *args: Any, **kwargs: Any) -> object:
         """Get the singleton instance (thread-safe).
 
         Args:
@@ -181,13 +181,13 @@ def threadsafe_singleton(cls: type[T]) -> type[T]:
     _lock = threading.Lock()
 
     @wraps(cls)
-    def get_instance(*args: any, **kwargs: any) -> T:  # type: ignore
+    def get_instance(*args: Any, **kwargs: Any) -> T:
         nonlocal _instance
         if _instance is None:
             with _lock:
                 # Double-check pattern
                 if _instance is None:
-                    _instance = cls(*args, **kwargs)  # type: ignore
+                    _instance = cls(*args, **kwargs)
         return _instance
 
     def reset() -> None:
@@ -197,10 +197,10 @@ def threadsafe_singleton(cls: type[T]) -> type[T]:
             _instance = None
 
     # Attach methods to the class
-    cls.get_instance = staticmethod(get_instance)  # type: ignore
-    cls.reset = staticmethod(reset)  # type: ignore
-    cls._singleton_instance = None  # type: ignore
-    cls._singleton_lock = _lock  # type: ignore
+    cls.get_instance = staticmethod(get_instance)  # type: ignore[attr-defined]
+    cls.reset = staticmethod(reset)  # type: ignore[attr-defined]
+    cls._singleton_instance = None  # type: ignore[attr-defined]
+    cls._singleton_lock = _lock  # type: ignore[attr-defined]
 
     return cls
 
@@ -225,6 +225,8 @@ def reset_singleton(cls: type[T]) -> None:
         reset_singleton(MyService)  # _instance = None
     """
     if hasattr(cls, "reset"):
-        cls.reset()
+        # Use cast to satisfy mypy that cls has reset method
+        reset_method = cast("type[Any]", cls).reset
+        reset_method()
     elif hasattr(cls, "_singleton_instance"):
-        cls._singleton_instance = None  # type: ignore
+        setattr(cls, "_singleton_instance", None)

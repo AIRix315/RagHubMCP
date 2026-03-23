@@ -144,7 +144,9 @@ async def run_benchmark(request: BenchmarkRequest) -> BenchmarkResponse:
                     )
                 )
             else:
-                benchmark_results.append(result)
+                # result is BenchmarkResult here (Exception case handled above)
+                # asyncio.gather with return_exceptions=True returns list[BenchmarkResult | BaseException]
+                benchmark_results.append(result)  # type: ignore[arg-type]
 
         total_latency = (time.time() - start_time) * 1000
 

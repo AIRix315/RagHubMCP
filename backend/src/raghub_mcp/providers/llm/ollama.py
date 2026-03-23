@@ -8,7 +8,7 @@ Reference: https://ollama.com/blog/
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -121,7 +121,7 @@ class OllamaLLMProvider(BaseLLMProvider):
         )
         response.raise_for_status()
         data = response.json()
-        return data.get("response", "")
+        return cast(str, data.get("response", ""))
 
     @classmethod
     def from_config(cls, config: dict[str, Any]) -> OllamaLLMProvider:

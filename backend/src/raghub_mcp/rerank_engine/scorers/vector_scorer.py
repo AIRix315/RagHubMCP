@@ -205,7 +205,7 @@ class VectorScorer(BaseScorer):
             Similarity in range (0, 1], where 1 means identical.
         """
         distance = np.linalg.norm(vec1 - vec2)
-        return 1.0 / (1.0 + distance)
+        return float(1.0 / (1.0 + float(distance)))
 
     def get_config(self) -> dict[str, Any]:
         """Get scorer configuration for logging/debugging.

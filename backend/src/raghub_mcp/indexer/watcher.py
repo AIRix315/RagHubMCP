@@ -179,18 +179,10 @@ class DebouncedEventHandler(FileSystemEventHandler):
                     event_type=event_type, path=path, is_directory=is_directory
                 )
             else:
-                # For created/modified, update or add
-                existing = self._pending_events.get(path)
-                if existing is None or existing.event_type == FileEventType.DELETED:
-                    # New event or was deleted, treat as created
-                    self._pending_events[path] = FileEvent(
-                        event_type=FileEventType.CREATED, path=path, is_directory=is_directory
-                    )
-                else:
-                    # Update event
-                    self._pending_events[path] = FileEvent(
-                        event_type=event_type, path=path, is_directory=is_directory
-                    )
+                # For created/modified, add to pending
+                self._pending_events[path] = FileEvent(
+                    event_type=event_type, path=path, is_directory=is_directory
+                )
 
         self._schedule_callback()
 
@@ -332,7 +324,12 @@ class FileWatcher:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
         """Context manager exit."""
         self.stop()
 
@@ -363,7 +360,7 @@ def get_watcher(
                 config = WatcherConfig()
             if on_events is None:
                 # Default no-op callback
-                def _no_op_callback(events: list) -> None:
+                def _no_op_callback(events: list[FileEvent]) -> None:
                     """Default no-op event callback."""
                     pass
 

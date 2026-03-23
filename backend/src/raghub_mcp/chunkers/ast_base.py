@@ -220,7 +220,7 @@ class ASTChunkerBase(ChunkerPlugin, ABC):
             A tree-sitter query string that matches nodes to chunk
         """
         if not self.QUERY_STRING:
-            raise ValueError(f"Subclass {self.__name__} must define QUERY_STRING")
+            raise ValueError(f"Subclass {type(self).__name__} must define QUERY_STRING")
         return self.QUERY_STRING
 
     def chunk(self, text: str, metadata: dict[str, Any] | None = None) -> list[Chunk]:
@@ -356,7 +356,8 @@ class ASTChunkerBase(ChunkerPlugin, ABC):
                 name_node.start_byte >= chunk_node.start_byte
                 and name_node.end_byte <= chunk_node.end_byte
             ):
-                return name_node.text.decode("utf-8")
+                text: str = name_node.text.decode("utf-8")
+                return text
         return None
 
     def _find_name_in_children(self, node: Any, target_types: list[str] | str) -> str | None:
@@ -383,7 +384,8 @@ class ASTChunkerBase(ChunkerPlugin, ABC):
 
         for child in node.children:
             if child.type in target_types:
-                return child.text.decode("utf-8")
+                text: str = child.text.decode("utf-8")
+                return text
 
         # Recursively search deeper if direct children don't match
         for child in node.children:

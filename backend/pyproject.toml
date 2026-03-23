@@ -40,6 +40,7 @@ dev = [
     "pytest-cov>=4.1.0",
     "ruff>=0.2.0",
     "mypy>=1.8.0",
+    "types-PyYAML>=6.0.0",
 ]
 
 # Optional dependencies for graph features
@@ -90,3 +91,26 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
+
+# Ignore third-party libraries without type stubs
+[[tool.mypy.overrides]]
+module = [
+    "chromadb.*",
+    "qdrant_client.*",
+    "flashrank.*",
+    "bm25s.*",
+    "tree_sitter.*",
+    "watchdog.*",
+    "jose.*",
+    "passlib.*",
+    "networkx.*",
+    "neo4j.*",
+    "onnxruntime.*",
+    "tokenizers.*",
+    "rerank_engine.*",
+    "httpx.*",
+    "click.*",
+    "rich.*",
+    "yaml.*",
+]
+ignore_missing_imports = true

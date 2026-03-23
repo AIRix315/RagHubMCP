@@ -77,7 +77,7 @@ class PositionAwareBlendingStrategy(BaseRankStrategy):
         self,
         scored_docs: list[ScoredDocument],
         top_k: int | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> list[ScoredDocument]:
         """Rank documents with position-aware blending.
 

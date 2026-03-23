@@ -62,7 +62,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> type[ChunkerPlugin] | type:
     """Lazy import for AST chunkers.
 
     This allows importing AST chunkers without requiring tree-sitter

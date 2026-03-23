@@ -17,7 +17,7 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from raghub_mcp.utils.config import get_config
 
@@ -129,7 +129,7 @@ class DefaultIndexPipeline(IndexPipeline):
             )
             self._chunker_cache[cache_key] = chunker
 
-        return self._chunker_cache[cache_key]
+        return cast("ChunkerPlugin", self._chunker_cache[cache_key])
 
     async def index(
         self,

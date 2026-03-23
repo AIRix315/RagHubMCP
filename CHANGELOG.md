@@ -2,6 +2,89 @@
 
 ---
 
+## [2.6.6] - 2026-03-24
+
+### fix(ci): 修复 GitHub CI/CD 配置问题
+
+- **时间**: 2026-03-24 00:10
+- **内容**: 修复 CI/CD 工作流配置问题，确保流水线正确执行
+
+#### Fixed
+- `.github/workflows/ci.yml`: Trivy action 版本从 `@master` 固定为 `@v0.35.0`
+- `.github/workflows/ci.yml`: 添加 security job 到 `all-passed` 依赖检查
+- `.github/workflows/ci.yml`: 移除 MyPy 和 frontend tests 的 `continue-on-error: true`
+- `backend/pyproject.toml`: 添加 `types-PyYAML>=6.0.0` 到 dev dependencies
+
+---
+
+### refactor(backend): 架构重构 - 评估模块迁移
+
+- **时间**: 2026-03-24 00:10
+- **内容**: 将生产代码从 tests/ 目录迁移到 src/raghub_mcp/evaluation/
+
+#### Fixed
+- 创建 `backend/src/raghub_mcp/evaluation/__init__.py`
+- 创建 `backend/src/raghub_mcp/evaluation/metrics.py`
+- 创建 `backend/src/raghub_mcp/evaluation/questions.py`
+- 更新 `backend/scripts/evaluate.py` 导入路径
+- 更新 `backend/tests/test_scripts/test_evaluate.py` 导入路径
+- 删除 `backend/tests/test_evaluation/` 目录（架构违规）
+
+---
+
+### fix(backend): 修复所有 MyPy 类型错误 (168 → 0)
+
+- **时间**: 2026-03-24 00:10
+- **内容**: 全面修复 Python 类型注解问题
+
+#### Fixed
+- `utils/singleton.py`: 修复 `any` → `Any` 类型
+- `providers/registry.py`: 添加 `_initialized`, `_items` 类型注解
+- `chunkers/registry.py`: 修复 `type: ignore` 注释
+- `evaluation/metrics.py`: 修复 `get` 方法参数类型
+- `utils/config.py`: 移除未使用的 `type: ignore`
+- `utils/container.py`: 添加返回类型注解
+- `pipeline/retriever.py`: 添加返回类型注解
+- `pipeline/index_pipeline.py`: 添加 `cast` 导入
+- `pipeline/query_rewrite.py`: 移除未使用的 `type: ignore`
+- `pipeline/multi_query.py`: 移除未使用的 `type: ignore`
+- `indexer/indexer.py`: 添加 `Any` 导入，修复 `list[dict]` 类型
+- `indexer/incremental.py`: 修复 `None` 比较问题
+- `mcp_server/tools/v2/__init__.py`: 添加显式类型注解
+- `api/benchmark.py`: 修复 `BenchmarkResult | BaseException` 类型
+- `providers/vectorstore/qdrant.py`: 修复向量类型定义
+
+---
+
+### test(frontend): 修复所有前端测试失败 (35 → 0)
+
+- **时间**: 2026-03-24 00:10
+- **内容**: 更新测试以匹配重构后的组件结构
+
+#### Fixed
+- `AppLayout.test.ts`: 更新选择器匹配新布局结构
+  - `h1` → `.text-sm.font-semibold`
+  - 移除 `aside.w-64` 检查
+  - 移除图标类检查（使用动态组件）
+  - 更新布局结构断言
+
+- `Benchmark.view.test.ts`: 重写测试匹配静态显示页面
+  - 从 19 个失败测试减少到 12 个有效测试
+  - 移除交互式表单测试（组件现只显示静态数据）
+  - 添加视图模式切换测试
+
+- `Settings.view.test.ts`: 更新测试匹配硬编码数据
+  - 移除 `loadConfig` 调用测试
+  - 移除 loading/error 状态测试
+  - 添加标签导航测试
+  - 修复 MCP 配置测试
+
+- `Collections.view.test.ts`: 修复 mock store 数据
+  - 修复 mock 返回实际集合数据
+  - 添加异步等待以完成加载
+
+---
+
 ## [2.6.5] - 2026-03-23
 
 ### fix(mcp): 修复 MCP V2 工具相对导入路径

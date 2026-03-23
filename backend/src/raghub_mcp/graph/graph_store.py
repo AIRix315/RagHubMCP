@@ -268,11 +268,11 @@ class NetworkXStore(GraphStore):
 
     def get_node_count(self) -> int:
         """Get the total number of nodes."""
-        return self._graph.number_of_nodes()
+        return int(self._graph.number_of_nodes())
 
     def get_edge_count(self) -> int:
         """Get the total number of edges."""
-        return self._graph.number_of_edges()
+        return int(self._graph.number_of_edges())
 
     def get_statistics(self) -> dict[str, Any]:
         """Get graph statistics."""

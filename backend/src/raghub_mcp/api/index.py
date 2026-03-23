@@ -219,7 +219,7 @@ async def run_index_task(
     """
     task = _tasks[task_id]
 
-    async def broadcast_progress():
+    async def broadcast_progress() -> None:
         """Broadcast current progress via WebSocket."""
         await ws_manager.broadcast_progress(
             task_id=task_id,

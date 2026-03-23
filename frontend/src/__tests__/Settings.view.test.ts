@@ -3,55 +3,13 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import Settings from '@/views/Settings.vue'
+import { createTestI18n } from './test-utils/i18n'
 
-// Create mutable store state
-const storeState = {
-  config: {
-    server: { host: '0.0.0.0', port: 8818, debug: false },
-    chroma: { persist_dir: './chroma_data', host: null, port: null },
-    providers: {
-      embedding: {
-        default: 'ollama',
-        instances: [{ name: 'ollama', type: 'local', model: 'nomic-embed-text' }],
-      },
-      rerank: {
-        default: 'flashrank',
-        instances: [{ name: 'flashrank', type: 'local', model: 'default' }],
-      },
-      llm: {
-        default: 'ollama',
-        instances: [{ name: 'ollama', type: 'local', model: 'llama2' }],
-      },
-    },
-    indexer: {
-      chunk_size: 500,
-      chunk_overlap: 50,
-      max_file_size: 1048576,
-      file_types: ['.py', '.ts'],
-      exclude_dirs: ['node_modules'],
-    },
-    logging: { level: 'INFO', format: '%(levelname)s - %(message)s', file: null },
-  } as any,
-  loading: false,
-  error: null as string | null,
-}
-
-const mockLoadConfig = vi.fn().mockResolvedValue(undefined)
-
-vi.mock('@/stores/config', () => ({
-  useConfigStore: vi.fn(() => ({
-    get config() { return storeState.config },
-    get loading() { return storeState.loading },
-    get error() { return storeState.error },
-    loadConfig: mockLoadConfig,
-  })),
-}))
-
-// Mock lucide-vue-next icons
-vi.mock('lucide-vue-next', () => ({
-  Info: { name: 'Info', template: '<svg></svg>' },
-  Download: { name: 'Download', template: '<svg></svg>' },
-  RefreshCw: { name: 'RefreshCw', template: '<svg></svg>' },
+// Mock demo-rerank module
+vi.mock('@/demodata/demo-rerank', () => ({
+  DEMO_RERANK_PROVIDERS: [],
+  DEMO_RANK_TEST_DOCUMENTS: [],
+  DEMO_RANK_SAMPLE_QUERIES: [],
 }))
 
 // Mock clipboard API
@@ -64,142 +22,97 @@ Object.assign(navigator, {
 
 describe('Settings.vue', () => {
   let pinia: ReturnType<typeof createPinia>
+  let i18n: ReturnType<typeof createTestI18n>
 
   beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
+    i18n = createTestI18n()
     vi.clearAllMocks()
-    
-    // Reset store state
-    storeState.config = {
-      server: { host: '0.0.0.0', port: 8818, debug: false },
-      chroma: { persist_dir: './chroma_data', host: null, port: null },
-      providers: {
-        embedding: {
-          default: 'ollama',
-          instances: [{ name: 'ollama', type: 'local', model: 'nomic-embed-text' }],
-        },
-        rerank: {
-          default: 'flashrank',
-          instances: [{ name: 'flashrank', type: 'local', model: 'default' }],
-        },
-        llm: {
-          default: 'ollama',
-          instances: [{ name: 'ollama', type: 'local', model: 'llama2' }],
-        },
-      },
-      indexer: {
-        chunk_size: 500,
-        chunk_overlap: 50,
-        max_file_size: 1048576,
-        file_types: ['.py', '.ts'],
-        exclude_dirs: ['node_modules'],
-      },
-      logging: { level: 'INFO', format: '%(levelname)s - %(message)s', file: null },
-    }
-    storeState.loading = false
-    storeState.error = null
   })
 
   it('should render page title and description', () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
     expect(wrapper.find('h1').text()).toBe('系统设置')
     expect(wrapper.find('p.text-muted-foreground').text()).toContain('查看系统信息和导出 MCP 配置')
   })
 
-  it('should call loadConfig on mount', async () => {
-    mount(Settings, {
-      global: { plugins: [pinia] },
-    })
-
-    await nextTick()
-    expect(mockLoadConfig).toHaveBeenCalled()
-  })
-
-  it('should display loading state when loading', async () => {
-    storeState.loading = true
-    storeState.config = null
-
-    const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
-    })
-
-    await nextTick()
-    expect(wrapper.text()).toContain('加载中...')
-  })
-
-  it('should display error message when error exists', async () => {
-    storeState.error = 'Failed to load config'
-
-    const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
-    })
-
-    await nextTick()
-    expect(wrapper.text()).toContain('Failed to load config')
-  })
-
   it('should display system info section', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
-    // Wait for onMounted async operations
-    await new Promise(resolve => setTimeout(resolve, 50))
     await nextTick()
-    
     expect(wrapper.text()).toContain('系统信息')
   })
 
-  it('should display server address from config', async () => {
+  it('should display server address from system info', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
     await nextTick()
+    // Component shows localhost:8818 in system info
     expect(wrapper.text()).toContain('8818')
   })
 
-  it('should display chroma persist directory', async () => {
+  it('should display storage directory', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
     await nextTick()
-    expect(wrapper.text()).toContain('chroma_data')
+    // Component shows ./data/chroma
+    expect(wrapper.text()).toContain('./data/chroma')
   })
 
   it('should display log level', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
     await nextTick()
+    // Component shows INFO log level
     expect(wrapper.text()).toContain('INFO')
   })
 
-  it('should display MCP config export section', async () => {
+  it('should switch to MCP tab when clicked', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
     await nextTick()
-    expect(wrapper.text()).toContain('MCP 配置导出')
+    
+    // Initially on System tab, so MCP config not visible
+    expect(wrapper.text()).not.toContain('mcpServers')
+
+    // Click MCP tab
+    const tabs = wrapper.findAll('button')
+    const mcpTab = tabs.find(b => b.text().includes('MCP 配置'))
+    await mcpTab?.trigger('click')
+    await nextTick()
+
+    // Now MCP config should be visible
+    expect(wrapper.text()).toContain('mcpServers')
+    expect(wrapper.text()).toContain('raghub')
   })
 
-  it('should display copy config button', async () => {
+  it('should display copy config button in MCP tab', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
     await nextTick()
+
+    // Click MCP tab to see the config
+    const tabs = wrapper.findAll('button')
+    const mcpTab = tabs.find(b => b.text().includes('MCP 配置'))
+    await mcpTab?.trigger('click')
+    await nextTick()
+
     const buttons = wrapper.findAll('button')
     const copyBtn = buttons.find(b => b.text().includes('复制'))
     expect(copyBtn?.exists()).toBe(true)
@@ -207,10 +120,17 @@ describe('Settings.vue', () => {
 
   it('should copy MCP config to clipboard', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
     await nextTick()
+
+    // Click MCP tab first
+    const tabs = wrapper.findAll('button')
+    const mcpTab = tabs.find(b => b.text().includes('MCP 配置'))
+    await mcpTab?.trigger('click')
+    await nextTick()
+
     const buttons = wrapper.findAll('button')
     const copyBtn = buttons.find(b => b.text().includes('复制'))
     await copyBtn?.trigger('click')
@@ -218,69 +138,97 @@ describe('Settings.vue', () => {
     expect(mockClipboardWrite).toHaveBeenCalled()
   })
 
-  it('should display download config button', async () => {
+  it('should display download config button in MCP tab', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
     await nextTick()
+
+    // Click MCP tab first
+    const tabs = wrapper.findAll('button')
+    const mcpTab = tabs.find(b => b.text().includes('MCP 配置'))
+    await mcpTab?.trigger('click')
+    await nextTick()
+
     const buttons = wrapper.findAll('button')
     const downloadBtn = buttons.find(b => b.text().includes('下载'))
     expect(downloadBtn?.exists()).toBe(true)
   })
 
-  it('should display quick links section', async () => {
+  it('should display tabs for System, MCP, Logs, DevTools', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
     await nextTick()
-    expect(wrapper.text()).toContain('快速链接')
-    expect(wrapper.text()).toContain('GitHub 仓库')
-    expect(wrapper.text()).toContain('MCP 协议文档')
+    
+    // Check for all tab labels
+    expect(wrapper.text()).toContain('系统信息')
+    expect(wrapper.text()).toContain('MCP 配置')
+    expect(wrapper.text()).toContain('系统日志')
+    expect(wrapper.text()).toContain('开发工具')
   })
 
-  it('should display refresh button in system info', async () => {
+  it('should generate correct MCP config JSON in MCP tab', async () => {
     const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
+      global: { plugins: [pinia, i18n] },
     })
 
     await nextTick()
-    const refreshBtn = wrapper.findAll('button').find(b => b.text().includes('刷新'))
-    expect(refreshBtn?.exists()).toBe(true)
-  })
 
-  it('should call loadConfig when refresh clicked', async () => {
-    const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
-    })
-
+    // Click MCP tab first
+    const tabs = wrapper.findAll('button')
+    const mcpTab = tabs.find(b => b.text().includes('MCP 配置'))
+    await mcpTab?.trigger('click')
     await nextTick()
-    const refreshBtn = wrapper.findAll('button').find(b => b.text().includes('刷新'))
-    await refreshBtn?.trigger('click')
 
-    expect(mockLoadConfig).toHaveBeenCalled()
-  })
-
-  it('should display external links', async () => {
-    const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
-    })
-
-    await nextTick()
-    const externalLinks = wrapper.findAll('a[target="_blank"]')
-    // Should have links for GitHub, MCP docs, and API docs
-    expect(externalLinks.length).toBeGreaterThan(0)
-  })
-
-  it('should generate correct MCP config JSON', async () => {
-    const wrapper = mount(Settings, {
-      global: { plugins: [pinia] },
-    })
-
-    await nextTick()
     // Check that the config JSON is displayed
     expect(wrapper.text()).toContain('mcpServers')
     expect(wrapper.text()).toContain('raghub')
+  })
+
+  it('should display version info', async () => {
+    const wrapper = mount(Settings, {
+      global: { plugins: [pinia, i18n] },
+    })
+
+    await nextTick()
+    expect(wrapper.text()).toContain('2.5.2')
+  })
+
+  it('should switch to Logs tab when clicked', async () => {
+    const wrapper = mount(Settings, {
+      global: { plugins: [pinia, i18n] },
+    })
+
+    await nextTick()
+
+    // Click Logs tab
+    const tabs = wrapper.findAll('button')
+    const logsTab = tabs.find(b => b.text().includes('系统日志'))
+    await logsTab?.trigger('click')
+    await nextTick()
+
+    // Should show logs content
+    expect(wrapper.text()).toContain('INFO')
+    expect(wrapper.text()).toContain('WARN')
+  })
+
+  it('should switch to DevTools tab when clicked', async () => {
+    const wrapper = mount(Settings, {
+      global: { plugins: [pinia, i18n] },
+    })
+
+    await nextTick()
+
+    // Click DevTools tab
+    const tabs = wrapper.findAll('button')
+    const devtoolsTab = tabs.find(b => b.text().includes('开发工具'))
+    await devtoolsTab?.trigger('click')
+    await nextTick()
+
+    // Should show DevTools content
+    expect(wrapper.text()).toContain('示例数据')
   })
 })

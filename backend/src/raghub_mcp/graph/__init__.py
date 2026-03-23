@@ -6,8 +6,9 @@ This module provides:
 - GraphStore: Store and query code graphs (NetworkX + Neo4j)
 """
 
+from raghub_mcp.graph.base import DependencyInfo
 from raghub_mcp.graph.call_graph_builder import CallEdge, CallGraphBuilder, CallNode
-from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer, DependencyInfo
+from raghub_mcp.graph.dependency_analyzer import DependencyAnalyzer
 from raghub_mcp.graph.graph_store import GraphStore, NetworkXStore
 
 __all__ = [

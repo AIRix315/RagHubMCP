@@ -144,7 +144,7 @@ def _setup_defaults(container: Container) -> None:
 # =============================================================================
 
 
-def injectable(name: str | None = None, singleton: bool = True):
+def injectable(name: str | None = None, singleton: bool = True) -> Callable[[type[T]], type[T]]:
     """Decorator to mark a class as injectable.
 
     Args:
@@ -169,7 +169,7 @@ def injectable(name: str | None = None, singleton: bool = True):
     return decorator
 
 
-def inject(name: str | None = None):
+def inject(name: str | None = None) -> Callable[..., Callable[..., T]]:
     """Decorator to inject a dependency into a function or class.
 
     Args:
