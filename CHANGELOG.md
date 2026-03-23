@@ -2,6 +2,22 @@
 
 ---
 
+## [2.6.9] - 2026-03-24
+
+### fix(ci): 修复 CI workflow 命令格式
+
+- **时间**: 2026-03-24 10:25
+- **内容**: 修复 Python 工具命令在 CI 环境中找不到的问题
+
+#### Fixed
+
+- **pytest**: `pytest` → `python -m pytest`
+- **ruff**: `ruff` → `python -m ruff`
+- **mypy**: `mypy` → `python -m mypy`
+- 确保使用 pip 安装的包能被正确找到
+
+---
+
 ## [2.6.8] - 2026-03-24
 
 ### fix(ci): 修复 GitHub Actions workflow 版本

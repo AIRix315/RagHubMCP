@@ -54,7 +54,7 @@ jobs:
           pip install networkx python-jose[cryptography] passlib[bcrypt] bcrypt
       
       - name: Run tests
-        run: pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term-missing
+        run: python -m pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term-missing
       
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -94,13 +94,13 @@ jobs:
           pip install -e ".[dev]"
       
       - name: Run Ruff linter
-        run: ruff check --output-format=github .
-      
+        run: python -m ruff check --output-format=github .
+
       - name: Run Ruff formatter check
-        run: ruff format --check .
-      
+        run: python -m ruff format --check .
+
       - name: Run MyPy type check
-        run: mypy src --ignore-missing-imports
+        run: python -m mypy src --ignore-missing-imports
 
   # ============================================
   # Frontend Job - Build and test Vue app
