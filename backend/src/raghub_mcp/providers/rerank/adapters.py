@@ -10,9 +10,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from raghub_mcp.providers.base import ProviderCategory
+from raghub_mcp.providers.registry import registry
+
 from .base import BaseRerankProvider, RerankResult
 
 
+@registry.register(ProviderCategory.RERANK, "rerank-engine")
 class RerankEngineAdapter(BaseRerankProvider):
     """Adapter to wrap RerankEngine as BaseRerankProvider.
 
@@ -29,7 +33,7 @@ class RerankEngineAdapter(BaseRerankProvider):
         >>> results = adapter.rerank("query", ["doc1", "doc2"])
     """
 
-    NAME = "rerank_engine"
+    NAME = "rerank-engine"
 
     def __init__(self, engine: Any) -> None:
         """Initialize adapter with RerankEngine.

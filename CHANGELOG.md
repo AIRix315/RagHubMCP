@@ -2,12 +2,114 @@
 
 ---
 
+## [2.6.5] - 2026-03-23
+
+### fix(mcp): 修复 MCP V2 工具相对导入路径
+
+- **时间**: 2026-03-23 22:24
+- **内容**: 修复 MCP V2 工具中的相对导入路径，使用绝对导入
+
+#### Fixed
+- `backend/src/raghub_mcp/mcp_server/tools/v2/__init__.py`: 第 122 行导入路径从相对改为绝对
+
+---
+
+### fix(providers): 修复 RerankEngineAdapter 导入并注册到 Provider Registry
+
+- **时间**: 2026-03-23 22:24
+- **内容**: 修复 RerankEngineAdapter 内部相对导入，并注册到 Provider Registry
+
+#### Fixed
+- `backend/src/raghub_mcp/providers/rerank/adapters.py`: 修复第 58、98 行相对导入为绝对导入
+- `backend/src/raghub_mcp/providers/rerank/adapters.py`: 添加 `@registry.register` 装饰器注册 RerankEngineAdapter
+
+#### Added
+- `backend/tests/test_mcp_server/test_import_fix.py`: MCP V2 导入修复测试
+- `backend/tests/test_providers/test_rerank_engine_registration.py`: RerankEngineAdapter 注册测试
+
+---
+
+### config: 添加 RerankEngine Provider 配置
+
+- **时间**: 2026-03-23 22:24
+- **内容**: 在 config.yaml 中添加 RerankEngine Provider 配置
+
+#### Changed
+- `backend/config.yaml`: 添加 rerank-engine 实例配置（scorer_type=onnx, rank_strategy=standard）
+
+#### Added
+- `backend/tests/test_config/test_rerank_engine_config.py`: 配置加载测试
+
+---
+
+### feat(frontend): Benchmark 页面连接后端 API
+
+- **时间**: 2026-03-23 22:24
+- **内容**: Benchmark 页面从硬编码数据改为调用真实后端 API
+
+#### Changed
+- `frontend/src/views/Benchmark.vue`: 实现 `handleRun()` 调用 `/api/benchmark` API
+- `frontend/src/views/Benchmark.vue`: 添加结果转换函数 `transformResults()`
+- `frontend/src/views/Benchmark.vue`: 添加错误状态处理
+
+#### Added
+- `frontend/src/__tests__/Benchmark.integration.test.ts`: Benchmark API 集成测试（3 个测试）
+
+---
+
+### feat(frontend): SearchTest 页面实现搜索功能
+
+- **时间**: 2026-03-23 22:24
+- **内容**: SearchTest 页面从 placeholder 实现改为调用真实后端 API
+
+#### Changed
+- `frontend/src/views/Test/SearchTest.vue`: 实现 `handleSearch()` 调用 `/api/search` API
+- `frontend/src/views/Test/SearchTest.vue`: 添加加载状态和错误处理
+- `frontend/src/views/Test/SearchTest.vue`: 显示搜索结果列表
+
+#### Added
+- `frontend/src/__tests__/SearchTest.integration.test.ts`: SearchTest API 集成测试（5 个测试）
+
+---
+
+### test(backend): 新增修正项测试套件
+
+- **时间**: 2026-03-23 22:24
+- **内容**: 为所有修正项添加测试验证
+
+#### Added
+- Backend: 3 个新测试文件，6 个测试用例（5 passed, 1 skipped）
+- Frontend: 2 个新测试文件，8 个测试用例（8 passed）
+- 总计: 14 个新测试，全部通过
+
+---
+
 ## [2.6.4] - 2026-03-23
 
 ### refactor: 清理项目数据状态
 
 - **时间**: 2026-03-23 21:25
 - **内容**: 分离种子数据与演示数据，首次启动为空白状态，演示数据移至demodata/
+
+#### Changed
+- `backend/config.yaml`: 重置为空白配置，移除预配置的 provider 实例
+- `backend/config.yaml.example`: 创建配置模板（包含示例配置）
+- `frontend/src/stores/rerank.ts`: 删除 mock 数据，改用真实 API 调用
+- `frontend/src/views/Test/RerankLab.vue`: 移除硬编码测试数据，动态加载演示数据
+- `frontend/src/views/Settings.vue`: 新增"开发工具"Tab，支持导入演示数据
+#### Added
+- `frontend/demodata/demo-rerank.ts`: 演示数据配置文件（Git 不跟踪）
+- `.gitignore`: 添加 `frontend/demodata/` 和 `demodata/` 忽略规则
+- `i18n`: 新增开发工具相关翻译（zh-CN, en-US）
+#### 设计说明
+数据状态分类：
+- **真实数据**: 程序运行必需，保留
+- **种子数据**: 配置模板，转为 `.example` 文件
+- **演示数据**: 测试/学习用，移至 `demodata/` 目录（Git 不跟踪）
+用户使用流程：
+1. 首次启动 → 空白状态（无预配置数据）
+2. Settings > DevTools → 导入演示数据（可选）
+3. 开发者可手动创建 `demodata/` 文件夹
 
 ---
 

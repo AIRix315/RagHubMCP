@@ -79,8 +79,24 @@ providers:
     default: ""
     instances: []
   rerank:
-    default: ""
-    instances: []
+    default: "flashrank"
+    instances:
+      - name: "flashrank"
+        type: "flashrank"
+        model: "ms-marco-TinyBERT-L-2-v2"
+      - name: "rerank-engine"
+        type: "rerank-engine"
+        scorer_type: "onnx"
+        scorer_config:
+          model_path: "./data/models/flashrank-TinyBERT-L-2-v2.onnx"
+          tokenizer_path: "./data/models/tokenizer.json"
+          max_length: 512
+          batch_size: 32
+        rank_strategy: "standard"
+        post_processors:
+          - type: "threshold"
+            config:
+              min_score: 0.3
   vectorstore:
     default: ""
     instances: []

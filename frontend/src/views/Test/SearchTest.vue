@@ -8,6 +8,8 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, ChevronDown, ChevronUp } from 'lucide-vue-next'
+import { executeSearch } from '@/api/search'
+import type { SearchResult, SearchResponse } from '@/types'
 
 const { t } = useI18n()
 
@@ -19,14 +21,31 @@ const profile = ref('balanced')
 const enableRerank = ref(true)
 const showAdvanced = ref(false)
 const loading = ref(false)
+const searchResults = ref<SearchResult[]>([])
+const error = ref<string | null>(null)
 
-// TODO: 实现搜索功能
-function handleSearch() {
+// Search function with API integration
+async function handleSearch() {
   if (!query.value.trim()) return
+  
   loading.value = true
-  setTimeout(() => {
+  error.value = null
+  
+  try {
+    const response: SearchResponse = await executeSearch({
+      query: query.value,
+      collection_name: collection.value,
+      top_k: topK.value,
+      use_rerank: enableRerank.value,
+    })
+    searchResults.value = response.results
+  } catch (err) {
+    console.error('Search failed:', err)
+    error.value = err instanceof Error ? err.message : 'Search failed'
+    searchResults.value = []
+  } finally {
     loading.value = false
-  }, 1000)
+  }
 }
 </script>
 
@@ -121,8 +140,39 @@ function handleSearch() {
       </div>
     </div>
 
+    <!-- Error Message -->
+    <div v-if="error" class="rounded-lg border border-destructive bg-destructive/10 p-4">
+      <p class="text-destructive text-sm">{{ error }}</p>
+    </div>
+
+    <!-- Search Results -->
+    <div v-else-if="searchResults.length > 0" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">{{ t('searchTest.results') }}</h2>
+        <span class="text-sm text-muted-foreground">{{ searchResults.length }} {{ t('searchTest.resultsCount') }}</span>
+      </div>
+      <div class="rounded-lg border bg-card">
+        <div
+          v-for="(result, index) in searchResults"
+          :key="result.id"
+          class="border-b p-4 last:border-b-0"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 space-y-2">
+              <p class="text-sm">{{ result.text }}</p>
+              <div class="flex items-center gap-4 text-xs text-muted-foreground">
+                <span v-if="result.metadata?.source">Source: {{ result.metadata.source }}</span>
+                <span>Score: {{ (result.score * 100).toFixed(1) }}%</span>
+                <span v-if="result.rerank_score">Rerank: {{ (result.rerank_score * 100).toFixed(1) }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Results Placeholder -->
-    <div class="rounded-lg border bg-card p-8">
+    <div v-else class="rounded-lg border bg-card p-8">
       <div class="flex flex-col items-center justify-center text-center">
         <Search class="h-8 w-8 text-muted-foreground mb-3" />
         <p class="text-muted-foreground">{{ t('searchTest.noResults') }}</p>

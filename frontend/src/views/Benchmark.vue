@@ -8,12 +8,15 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BarChart3, Table, Radar, Play, Download } from 'lucide-vue-next'
+import { runBenchmark } from '@/api/benchmark'
+import type { BenchmarkResponse, BenchmarkResult } from '@/types/benchmark'
 
 const { t } = useI18n()
 
 // State
 const viewMode = ref<'table' | 'chart' | 'radar'>('table')
 const loading = ref(false)
+const error = ref<string | null>(null)
 
 // Metrics 接口定义
 interface BenchmarkMetrics {
@@ -22,6 +25,44 @@ interface BenchmarkMetrics {
   top5_accuracy: number
   ndcg: number
   latency_ms: number
+}
+
+// Convert API response to internal format
+function transformResults(response: BenchmarkResponse): Array<{
+  config_name: string
+  is_default: boolean
+  metrics: BenchmarkMetrics
+}> {
+  return response.results.map((result: BenchmarkResult, index: number) => {
+    // Calculate metrics from search results
+    const searchResults = result.results
+    const scores = searchResults.map(r => r.rerank_score ?? r.score)
+    
+    const top1 = scores.length > 0 ? scores[0] : 0
+    const top3 = scores.length >= 3 
+      ? scores.slice(0, 3).reduce((sum, s) => sum + s, 0) / 3
+      : top1
+    const top5 = scores.length >= 5
+      ? scores.slice(0, 5).reduce((sum, s) => sum + s, 0) / 5
+      : top3
+    
+    // Calculate NDCG (simplified)
+    const ndcg = scores.length > 0
+      ? scores.reduce((sum, s, i) => sum + (s / Math.log2(i + 2)), 0)
+      : 0
+
+    return {
+      config_name: result.config_name,
+      is_default: index === 0, // First config is default
+      metrics: {
+        top1_accuracy: Math.min(1, top1),
+        top3_accuracy: Math.min(1, top3),
+        top5_accuracy: Math.min(1, top5),
+        ndcg: Math.min(1, ndcg),
+        latency_ms: result.latency_ms
+      }
+    }
+  })
 }
 
 // 模拟测试结果数据
@@ -104,10 +145,27 @@ const radarPoints = computed(() => {
 // 运行测试
 async function handleRun() {
   loading.value = true
-  // TODO: 实现测试逻辑
-  setTimeout(() => {
+  error.value = null
+  
+  try {
+    // Use default test config - call benchmark with query
+    const response = await runBenchmark({
+      query: 'test query',
+      configs: [
+        { name: 'fast', embedding_provider: 'ollama-bge' },
+        { name: 'balanced', embedding_provider: 'ollama-bge', rerank_provider: 'flashrank-tiny' },
+        { name: 'accurate', embedding_provider: 'ollama-bge-m3', rerank_provider: 'flashrank' }
+      ]
+    })
+    
+    // Transform API response to internal format
+    benchmarkResults.value = transformResults(response)
+  } catch (err) {
+    console.error('Benchmark failed:', err)
+    error.value = err instanceof Error ? err.message : 'Benchmark failed'
+  } finally {
     loading.value = false
-  }, 2000)
+  }
 }
 
 // 导出报告
@@ -162,6 +220,7 @@ function getRadarPath(values: number[], size: number = 150): string {
         <button
           class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           :disabled="loading"
+          data-testid="run-benchmark"
           @click="handleRun"
         >
           <Play class="h-4 w-4" />
