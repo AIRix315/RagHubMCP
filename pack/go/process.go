@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -44,6 +45,7 @@ func startPythonREST() error {
 	cmd.Dir = backendDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
 	// Set PYTHONPATH to src directory (where raghub_mcp package resides)
 	// Structure: backend/src/raghub_mcp/
 	pythonPath := filepath.Join(backendDir, "src")
@@ -51,6 +53,13 @@ func startPythonREST() error {
 	env = append(env, "PYTHONUNBUFFERED=1")
 	env = append(env, fmt.Sprintf("PYTHONPATH=%s", pythonPath))
 	cmd.Env = env
+
+	// Hide console window on Windows
+	if runtime.GOOS == "windows" {
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			HideWindow: true,
+		}
+	}
 
 	// Start process
 	if err := cmd.Start(); err != nil {
@@ -89,6 +98,7 @@ func startPythonMCP() error {
 	cmd.Dir = backendDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
 	// Set PYTHONPATH to src directory (where raghub_mcp package resides)
 	// Structure: backend/src/raghub_mcp/
 	pythonPath := filepath.Join(backendDir, "src")
@@ -96,6 +106,13 @@ func startPythonMCP() error {
 	env = append(env, "PYTHONUNBUFFERED=1")
 	env = append(env, fmt.Sprintf("PYTHONPATH=%s", pythonPath))
 	cmd.Env = env
+
+	// Hide console window on Windows
+	if runtime.GOOS == "windows" {
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			HideWindow: true,
+		}
+	}
 
 	// Start process
 	if err := cmd.Start(); err != nil {

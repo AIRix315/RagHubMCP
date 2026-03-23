@@ -1,12 +1,31 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en-US">
   <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RagHubMCP - 代码 RAG 中枢</title>
+    <title>RagHubMCP</title>
+    <!-- Theme initialization - must run before CSS loads to prevent flash -->
+    <script>
+      (function() {
+        // Get saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        const savedLocale = localStorage.getItem('locale');
+        
+        // Apply theme class immediately
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        
+        // Set language attribute (default to en-US)
+        const locale = savedLocale || 'en-US';
+        document.documentElement.setAttribute('lang', locale);
+      })();
+    </script>
   </head>
-  <body>
+  <body class="bg-background text-foreground antialiased">
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -2,7 +2,8 @@ import { createI18n } from 'vue-i18n'
 import zhCN from './locales/zh-CN.yaml'
 import enUS from './locales/en-US.yaml'
 
-const savedLocale = localStorage.getItem('locale') || 'zh-CN'
+// Default to English, fallback to saved preference
+const savedLocale = localStorage.getItem('locale') || 'en-US'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const messages: any = {

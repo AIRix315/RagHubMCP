@@ -1,25 +1,27 @@
-import { useColorMode } from '@vueuse/core'
-import { computed } from 'vue'
+import { useDark } from '@vueuse/core'
 
+/**
+ * Theme management composable
+ * Uses VueUse's useDark which is Tailwind-compatible by default
+ * It adds/removes 'dark' class on the <html> element
+ */
 export function useTheme() {
-  const mode = useColorMode({
-    emitAuto: true,
-    modes: {
-      light: 'light',
-      dark: 'dark',
-      auto: 'auto',
-    },
+  // useDark is Tailwind-compatible by default
+  // It toggles 'dark' class on html element and persists to localStorage
+  const isDark = useDark({
+    selector: 'html',
+    attribute: 'class',
+    valueDark: 'dark',
+    valueLight: 'light',
     storageKey: 'theme',
   })
 
-  const isDark = computed(() => mode.value === 'dark')
-
+  // Toggle function - inverts the current value
   function toggleTheme() {
-    mode.value = mode.value === 'dark' ? 'light' : 'dark'
+    isDark.value = !isDark.value
   }
 
   return {
-    mode,
     isDark,
     toggleTheme,
   }

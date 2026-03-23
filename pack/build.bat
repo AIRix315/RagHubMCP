@@ -156,11 +156,18 @@ echo Downloading Go dependencies...
 go mod download
 go mod tidy
 
-REM Build with version info
+REM Build with version info and hide console window on Windows
+REM Note: -H windowsgui requires space separator, not equals
 set LDFLAGS=-s -w -X main.version=%VERSION% -X main.buildTime=%BUILD_TIME%
 
 echo Building Windows executable...
-go build -ldflags="%LDFLAGS%" -o ..\..\dist\RHM.exe .
+REM Check if we need to hide console window (for release builds)
+if "%HIDE_CONSOLE%"=="true" (
+    echo Hiding console window for Windows GUI build...
+    go build -ldflags="%LDFLAGS% -H windowsgui" -o ..\..\dist\RHM.exe .
+) else (
+    go build -ldflags="%LDFLAGS%" -o ..\..\dist\RHM.exe .
+)
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Go build failed
     exit /b 1

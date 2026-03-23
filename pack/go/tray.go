@@ -61,6 +61,14 @@ func onReady() {
 // onExit is called when the systray exits
 func onExit() {
 	logrus.Info("System tray exiting...")
+
+	// Stop all Python processes before exiting
+	stopPythonProcesses()
+
+	// Clean up temporary resources
+	cleanupTempResources()
+
+	logrus.Info("All services stopped, goodbye!")
 }
 
 // getPlatformIcon returns the appropriate icon for the current platform
