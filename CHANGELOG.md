@@ -2,6 +2,23 @@
 
 ---
 
+## [2.6.11] - 2026-03-24
+
+### fix(tests): 修复 CI 测试失败
+
+- **时间**: 2026-03-24 07:32
+- **内容**: 修复 test_init.py 和 test_e2e.py 中的路径和 mock 问题
+
+#### Fixed
+
+- **test_init.py**: 更新目录结构检查路径
+  - `src/*` → `src/raghub_mcp/*`
+  - `src/__init__.py` → `src/raghub_mcp/__init__.py`
+- **test_e2e.py**: 修复 mock 路径
+  - `patch("pipeline.manager")` → `patch("raghub_mcp.pipeline.manager")`
+
+---
+
 ## [2.6.10] - 2026-03-24
 
 ### fix(ci): 修复 pytest-asyncio Python 3.13 兼容性问题
