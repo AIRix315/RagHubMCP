@@ -1,139 +1,271 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+/**
+ * Collections Page
+ * 
+ * 基于 simple.html 原型设计
+ * 管理 Collections，支持文档浏览和索引状态查看
+ */
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Database, FileText, Clock, Search, Plus, Trash2, Eye, RefreshCw } from 'lucide-vue-next'
 import { useCollectionStore } from '@/stores/collection'
-import type { CollectionInfo } from '@/types'
 
+const { t } = useI18n()
 const collectionStore = useCollectionStore()
-const selectedCollection = ref<CollectionInfo | null>(null)
-const showDeleteConfirm = ref(false)
-const deleting = ref(false)
 
-onMounted(async () => {
-  await collectionStore.loadCollections()
-})
+// State
+const loading = ref(true)
+const searchQuery = ref('')
+const activeTab = ref<'all' | 'documents' | 'indexing'>('all')
 
-function confirmDelete(collection: CollectionInfo) {
-  selectedCollection.value = collection
-  showDeleteConfirm.value = true
+// Extended CollectionInfo with additional fields
+interface CollectionInfoExtended {
+  name: string
+  count: number
+  document_count?: number
+  created_at?: string
+  metadata?: Record<string, unknown>
 }
 
-async function handleDelete() {
-  if (!selectedCollection.value) return
+// Computed
+const collections = computed<CollectionInfoExtended[]>(() => collectionStore.collections || [])
 
-  deleting.value = true
+const filteredCollections = computed(() => {
+  if (!searchQuery.value) return collections.value
+  const query = searchQuery.value.toLowerCase()
+  return collections.value.filter(c => 
+    c.name.toLowerCase().includes(query)
+  )
+})
+
+const totalDocuments = computed(() => 
+  collections.value.reduce((sum, c) => sum + (c.document_count || c.count || 0), 0)
+)
+
+const avgDocuments = computed(() => {
+  if (collections.value.length === 0) return 0
+  return Math.round(totalDocuments.value / collections.value.length)
+})
+
+// 加载数据
+async function loadData() {
+  loading.value = true
   try {
-    await collectionStore.removeCollection(selectedCollection.value.name)
-    showDeleteConfirm.value = false
-    selectedCollection.value = null
+    await collectionStore.loadCollections()
+  } catch (e) {
+    console.error('Failed to load collections:', e)
   } finally {
-    deleting.value = false
+    loading.value = false
   }
 }
 
-function cancelDelete() {
-  showDeleteConfirm.value = false
-  selectedCollection.value = null
+// 刷新
+function handleRefresh() {
+  loadData()
 }
 
-function formatDate(timestamp: unknown): string {
-  if (!timestamp) return '-'
-  return new Date(timestamp as number).toLocaleString()
+// 查看 Collection
+function handleView(collection: CollectionInfoExtended) {
+  // TODO: 导航到详情页
+  console.log('View collection:', collection.name)
 }
+
+// 删除 Collection
+async function handleDelete(collection: CollectionInfoExtended) {
+  if (!confirm(t('collections.deleteConfirm'))) return
+  // TODO: 实现删除
+  console.log('Delete collection:', collection.name)
+}
+
+// 创建 Collection
+function handleCreate() {
+  // TODO: 实现创建弹窗
+  console.log('Create collection')
+}
+
+// 格式化日期
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <!-- Header -->
+    <div class="flex items-start justify-between animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight">Collection 管理</h1>
-        <p class="text-muted-foreground mt-2">查看和管理向量数据库中的 Collections</p>
+        <h1 class="text-2xl font-bold tracking-tight">{{ t('collections.title') }}</h1>
+        <p class="text-muted-foreground mt-1.5">{{ t('collections.subtitle') }}</p>
       </div>
       <button
-        @click="collectionStore.loadCollections()"
-        :disabled="collectionStore.loading"
-        class="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+        class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        @click="handleCreate"
       >
-        {{ collectionStore.loading ? '刷新中...' : '刷新' }}
+        <Plus class="h-4 w-4" />
+        {{ t('collections.create') }}
       </button>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="collectionStore.loading && collectionStore.collections.length === 0" class="flex items-center justify-center p-8">
-      <span class="text-muted-foreground">加载中...</span>
+    <!-- Stats -->
+    <div class="grid gap-3 md:grid-cols-3">
+      <div class="rounded-lg border bg-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+            <Database class="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground">{{ t('home.stats.collections') }}</div>
+            <div class="text-xl font-bold tabular-nums">{{ collectionStore.totalCollections }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-lg border bg-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+            <FileText class="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground">{{ t('home.stats.documents') }}</div>
+            <div class="text-xl font-bold tabular-nums">{{ totalDocuments.toLocaleString() }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-lg border bg-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+            <Clock class="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div>
+            <div class="text-xs text-muted-foreground">{{ t('home.stats.avg') }}</div>
+            <div class="text-xl font-bold tabular-nums">{{ avgDocuments }}</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Error State -->
-    <div v-if="collectionStore.error" class="rounded-lg border border-destructive bg-destructive/10 p-4">
-      <p class="text-destructive">{{ collectionStore.error }}</p>
+    <!-- Tabs & Search -->
+    <div class="flex items-center justify-between border-b pb-4">
+      <div class="flex gap-1">
+        <button
+          v-for="tab in ['all', 'documents', 'indexing']"
+          :key="tab"
+          :class="[
+            'rounded px-3 py-1.5 text-sm font-medium transition-colors',
+            activeTab === tab
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          ]"
+          @click="activeTab = tab as typeof activeTab"
+        >
+          {{ t(`collections.tabs.${tab}`) }}
+        </button>
+      </div>
+      <div class="relative">
+        <Search class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          :placeholder="t('collections.searchPlaceholder')"
+          class="rounded-md border bg-background pl-8 pr-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 w-64"
+        />
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center p-12">
+      <div class="flex items-center gap-2 text-muted-foreground">
+        <div class="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span>{{ t('common.loading') }}</span>
+      </div>
     </div>
 
     <!-- Collections Table -->
-    <div v-if="collectionStore.collections.length > 0" class="rounded-lg border">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b bg-muted/50">
-            <th class="px-4 py-3 text-left text-sm font-medium">名称</th>
-            <th class="px-4 py-3 text-left text-sm font-medium">文档数</th>
-            <th class="px-4 py-3 text-left text-sm font-medium">创建时间</th>
-            <th class="px-4 py-3 text-right text-sm font-medium">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="collection in collectionStore.collections"
-            :key="collection.name"
-            class="border-b last:border-0 hover:bg-muted/50"
-          >
-            <td class="px-4 py-3 text-sm font-medium">{{ collection.name }}</td>
-            <td class="px-4 py-3 text-sm">{{ collection.count }}</td>
-            <td class="px-4 py-3 text-sm text-muted-foreground">
-              {{ formatDate(collection.metadata.created_at) }}
-            </td>
-            <td class="px-4 py-3 text-right">
-              <button
-                @click="confirmDelete(collection)"
-                class="rounded-md px-3 py-1 text-sm text-destructive hover:bg-destructive/10"
-              >
-                删除
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <template v-else>
+      <div v-if="filteredCollections.length > 0" class="rounded-lg border overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{{ t('common.name') }}</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{{ t('collections.documentCount') }}</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{{ t('collections.createdAt') }}</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">{{ t('common.action') }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr
+              v-for="collection in filteredCollections"
+              :key="collection.name"
+              class="transition-colors hover:bg-muted/30"
+            >
+              <td class="px-4 py-3">
+                <span class="font-medium font-mono">{{ collection.name }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="font-mono tabular-nums">{{ (collection.document_count || collection.count || 0).toLocaleString() }}</span>
+              </td>
+              <td class="px-4 py-3 text-muted-foreground text-sm">
+                {{ formatDate(collection.created_at) }}
+              </td>
+              <td class="px-4 py-3 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button
+                    class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    @click="handleView(collection)"
+                  >
+                    <Eye class="h-3 w-3" />
+                    {{ t('common.view') }}
+                  </button>
+                  <button
+                    class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-destructive transition-colors hover:bg-destructive/10"
+                    @click="handleDelete(collection)"
+                  >
+                    <Trash2 class="h-3 w-3" />
+                    {{ t('common.delete') }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <!-- Empty State -->
-    <div v-else-if="!collectionStore.loading" class="rounded-lg border bg-card p-8 text-center">
-      <p class="text-muted-foreground">暂无 Collection</p>
-      <p class="text-sm text-muted-foreground mt-2">使用索引功能创建新的 Collection</p>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteConfirm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80"
-    >
-      <div class="rounded-lg border bg-card p-6 shadow-lg">
-        <h3 class="text-lg font-semibold">确认删除</h3>
-        <p class="mt-2 text-muted-foreground">
-          确定要删除 Collection "{{ selectedCollection?.name }}" 吗？此操作不可撤销。
-        </p>
-        <div class="mt-4 flex justify-end gap-2">
+      <!-- Empty State -->
+      <div v-else class="rounded-lg border bg-card p-12">
+        <div class="flex flex-col items-center justify-center text-center">
+          <Database class="h-8 w-8 text-muted-foreground mb-3" />
+          <p class="text-muted-foreground">{{ t('common.noData') }}</p>
           <button
-            @click="cancelDelete"
-            class="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
+            class="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            @click="handleCreate"
           >
-            取消
-          </button>
-          <button
-            @click="handleDelete"
-            :disabled="deleting"
-            class="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
-          >
-            {{ deleting ? '删除中...' : '确认删除' }}
+            <Plus class="h-4 w-4" />
+            {{ t('collections.create') }}
           </button>
         </div>
       </div>
+    </template>
+
+    <!-- Refresh Button -->
+    <div class="flex justify-end">
+      <button
+        class="inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        :disabled="loading"
+        @click="handleRefresh"
+      >
+        <RefreshCw :class="['h-4 w-4', loading ? 'animate-spin' : '']" />
+        {{ t('common.refresh') }}
+      </button>
     </div>
   </div>
 </template>

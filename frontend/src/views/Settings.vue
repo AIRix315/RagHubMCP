@@ -1,205 +1,326 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useConfigStore } from '@/stores/config'
-import { Info, Download, RefreshCw } from 'lucide-vue-next'
+/**
+ * Settings Page
+ * 
+ * 基于 simple.html 原型设计
+ * 包含系统信息、MCP 配置导出、日志查看
+ */
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Server, Database, FileText, Link, Download, Copy, Check, X } from 'lucide-vue-next'
 
-const configStore = useConfigStore()
+const { t } = useI18n()
 
-// System info
-const systemInfo = ref<{
-  serverHost: string
-  serverPort: number
-  chromaPersistDir: string
-  logLevel: string
-} | null>(null)
+// State
+const activeTab = ref<'system' | 'mcp' | 'logs'>('system')
+const copied = ref(false)
 
-// MCP config export
-const mcpConfig = computed(() => {
-  if (!configStore.config) return null
-  
-  // Generate MCP server config for Claude Desktop
-  return {
-    mcpServers: {
-      raghub: {
-        command: 'python',
-        args: ['-m', 'src.main'],
-        cwd: './backend',
-        env: {
-          CONFIG_PATH: './backend/config.yaml'
-        }
+// 模拟系统信息
+const systemInfo = ref({
+  server: 'localhost:8818',
+  storage: './data/chroma',
+  logLevel: 'INFO',
+  apiDocs: '/docs',
+  version: '2.5.2',
+  uptime: '3d 14h 27m'
+})
+
+// 模拟日志数据
+const logs = ref<Array<{
+  id: string
+  time: string
+  level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
+  module: string
+  message: string
+}>>([
+  { id: '1', time: '10:30:15.123', level: 'INFO', module: 'rerank', message: '加载 ONNX 模型成功' },
+  { id: '2', time: '10:30:14.892', level: 'INFO', module: 'api', message: '服务启动于 8818 端口' },
+  { id: '3', time: '10:30:14.500', level: 'DEBUG', module: 'config', message: '加载配置文件 config.yaml' },
+  { id: '4', time: '10:30:13.200', level: 'WARN', module: 'chroma', message: '持久化目录不存在，创建中...' },
+  { id: '5', time: '10:30:12.100', level: 'INFO', module: 'indexer', message: '初始化索引器' },
+  { id: '6', time: '10:30:11.500', level: 'ERROR', module: 'provider', message: '连接超时: retrying...' }
+])
+
+// MCP 配置
+const mcpConfig = computed(() => ({
+  mcpServers: {
+    raghub: {
+      command: 'python',
+      args: ['-m', 'src.main'],
+      cwd: './backend',
+      env: {
+        CONFIG_PATH: './backend/config.yaml'
       }
     }
   }
+}))
+
+// IDE 选项
+const ideOptions = [
+  { key: 'claude', label: t('settings.mcp.ides.claude') },
+  { key: 'cursor', label: t('settings.mcp.ides.cursor') },
+  { key: 'windsurf', label: t('settings.mcp.ides.windsurf') },
+  { key: 'vscode', label: t('settings.mcp.ides.vscode') },
+  { key: 'opencode', label: t('settings.mcp.ides.opencode') },
+  { key: 'cherry', label: t('settings.mcp.ides.cherry') }
+]
+const selectedIde = ref('claude')
+
+// 日志级别过滤
+const selectedLevel = ref<string>('all')
+const logLevels = [
+  { key: 'all', label: t('settings.logs.levels.all') },
+  { key: 'INFO', label: t('settings.logs.levels.info') },
+  { key: 'WARN', label: t('settings.logs.levels.warn') },
+  { key: 'ERROR', label: t('settings.logs.levels.error') },
+  { key: 'DEBUG', label: t('settings.logs.levels.debug') }
+]
+
+// 过滤后的日志
+const filteredLogs = computed(() => {
+  if (selectedLevel.value === 'all') return logs.value
+  return logs.value.filter(log => log.level === selectedLevel.value)
 })
 
-const copying = ref(false)
-const copyMessage = ref<string | null>(null)
+// 日志级别颜色
+const levelColors: Record<string, string> = {
+  INFO: 'text-blue-600 bg-blue-50',
+  WARN: 'text-yellow-600 bg-yellow-50',
+  ERROR: 'text-red-600 bg-red-50',
+  DEBUG: 'text-gray-600 bg-gray-50'
+}
 
-onMounted(async () => {
-  await configStore.loadConfig()
-  if (configStore.config) {
-    systemInfo.value = {
-      serverHost: configStore.config.server.host,
-      serverPort: configStore.config.server.port,
-      chromaPersistDir: configStore.config.chroma.persist_dir,
-      logLevel: configStore.config.logging.level,
-    }
-  }
-})
-
-async function copyMcpConfig() {
-  if (!mcpConfig.value) return
-  
-  copying.value = true
+// 复制配置
+async function handleCopy() {
   try {
     await navigator.clipboard.writeText(JSON.stringify(mcpConfig.value, null, 2))
-    copyMessage.value = '已复制到剪贴板'
+    copied.value = true
     setTimeout(() => {
-      copyMessage.value = null
+      copied.value = false
     }, 2000)
   } catch (e) {
-    copyMessage.value = '复制失败'
-  } finally {
-    copying.value = false
+    console.error('Failed to copy:', e)
   }
 }
 
-function downloadMcpConfig() {
-  if (!mcpConfig.value) return
-  
-  const blob = new Blob([JSON.stringify(mcpConfig.value, null, 2)], { type: 'application/json' })
+// 下载配置
+function handleDownload() {
+  const data = JSON.stringify(mcpConfig.value, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'claude_desktop_config.json'
+  a.download = `${selectedIde.value}_mcp_config.json`
   a.click()
   URL.revokeObjectURL(url)
 }
 
-async function refreshConfig() {
-  await configStore.loadConfig()
+// 导出日志
+function handleExportLogs() {
+  const data = logs.value.map(log => `[${log.time}] [${log.level}] [${log.module}] ${log.message}`).join('\n')
+  const blob = new Blob([data], { type: 'text/plain' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'raghub_logs.txt'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// 清空日志
+function handleClearLogs() {
+  if (!confirm(t('settings.logs.clearConfirm'))) return
+  logs.value = []
 }
 </script>
 
 <template>
   <div class="space-y-6">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">系统设置</h1>
-      <p class="text-muted-foreground mt-2">查看系统信息和导出 MCP 配置</p>
+    <!-- Header -->
+    <div class="animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
+      <h1 class="text-2xl font-bold tracking-tight">{{ t('settings.title') }}</h1>
+      <p class="text-muted-foreground mt-1.5">{{ t('settings.subtitle') }}</p>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="configStore.loading" class="flex items-center justify-center p-8">
-      <span class="text-muted-foreground">加载中...</span>
+    <!-- Tabs -->
+    <div class="border-b">
+      <div class="flex gap-4">
+        <button
+          v-for="tab in ['system', 'mcp', 'logs']"
+          :key="tab"
+          :class="[
+            'px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px',
+            activeTab === tab
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50'
+          ]"
+          @click="activeTab = tab as typeof activeTab"
+        >
+          {{ t(`settings.tabs.${tab}`) }}
+        </button>
+      </div>
     </div>
 
-    <!-- Error State -->
-    <div v-if="configStore.error" class="rounded-lg border border-destructive bg-destructive/10 p-4">
-      <p class="text-destructive">{{ configStore.error }}</p>
-    </div>
-
-    <div v-if="configStore.config" class="space-y-6">
-      <!-- System Info -->
-      <div class="rounded-lg border bg-card p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold flex items-center gap-2">
-            <Info class="h-5 w-5" />
-            系统信息
-          </h2>
-          <button
-            @click="refreshConfig"
-            class="rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors flex items-center gap-1"
-          >
-            <RefreshCw class="h-4 w-4" />
-            刷新
-          </button>
+    <!-- System Tab -->
+    <template v-if="activeTab === 'system'">
+      <div class="rounded-lg border bg-card">
+        <div class="p-4 border-b">
+          <h3 class="font-semibold">{{ t('settings.system.title') }}</h3>
         </div>
-        
-        <div v-if="systemInfo" class="grid gap-4 md:grid-cols-2">
-          <div class="rounded-lg border p-4">
-            <label class="text-sm text-muted-foreground">服务器地址</label>
-            <p class="text-lg font-medium">{{ systemInfo.serverHost }}:{{ systemInfo.serverPort }}</p>
+        <div class="p-4">
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="rounded-lg border p-4">
+              <div class="flex items-center gap-3 mb-2">
+                <Server class="h-4 w-4 text-muted-foreground" />
+                <span class="text-sm text-muted-foreground">{{ t('settings.system.server') }}</span>
+              </div>
+              <div class="font-mono font-medium">{{ systemInfo.server }}</div>
+            </div>
+            <div class="rounded-lg border p-4">
+              <div class="flex items-center gap-3 mb-2">
+                <Database class="h-4 w-4 text-muted-foreground" />
+                <span class="text-sm text-muted-foreground">{{ t('settings.system.storage') }}</span>
+              </div>
+              <div class="font-mono font-medium">{{ systemInfo.storage }}</div>
+            </div>
+            <div class="rounded-lg border p-4">
+              <div class="flex items-center gap-3 mb-2">
+                <FileText class="h-4 w-4 text-muted-foreground" />
+                <span class="text-sm text-muted-foreground">{{ t('settings.system.logLevel') }}</span>
+              </div>
+              <div class="font-medium">{{ systemInfo.logLevel }}</div>
+            </div>
+            <div class="rounded-lg border p-4">
+              <div class="flex items-center gap-3 mb-2">
+                <Link class="h-4 w-4 text-muted-foreground" />
+                <span class="text-sm text-muted-foreground">{{ t('settings.system.apiDocs') }}</span>
+              </div>
+              <div>
+                <a href="/docs" class="font-mono font-medium text-primary hover:underline">{{ systemInfo.apiDocs }}</a>
+              </div>
+            </div>
+            <div class="rounded-lg border p-4">
+              <div class="text-sm text-muted-foreground mb-2">{{ t('settings.system.version') }}</div>
+              <div class="font-mono font-medium">{{ systemInfo.version }}</div>
+            </div>
+            <div class="rounded-lg border p-4">
+              <div class="text-sm text-muted-foreground mb-2">{{ t('settings.system.uptime') }}</div>
+              <div class="font-mono font-medium">{{ systemInfo.uptime }}</div>
+            </div>
           </div>
-          <div class="rounded-lg border p-4">
-            <label class="text-sm text-muted-foreground">数据存储目录</label>
-            <p class="text-lg font-medium">{{ systemInfo.chromaPersistDir }}</p>
+        </div>
+      </div>
+    </template>
+
+    <!-- MCP Tab -->
+    <template v-else-if="activeTab === 'mcp'">
+      <div class="rounded-lg border bg-card">
+        <div class="p-4 border-b">
+          <h3 class="font-semibold">{{ t('settings.mcp.title') }}</h3>
+          <p class="text-sm text-muted-foreground mt-1">{{ t('settings.mcp.description') }}</p>
+        </div>
+        <div class="p-4">
+          <!-- IDE 选择 -->
+          <div class="mb-4">
+            <label class="text-sm font-medium mb-2 block">{{ t('settings.mcp.chooseIDE') }}</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="ide in ideOptions"
+                :key="ide.key"
+                :class="[
+                  'rounded px-3 py-1.5 text-sm font-medium transition-colors',
+                  selectedIde === ide.key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border bg-background hover:bg-muted'
+                ]"
+                @click="selectedIde = ide.key"
+              >
+                {{ ide.label }}
+              </button>
+            </div>
           </div>
-          <div class="rounded-lg border p-4">
-            <label class="text-sm text-muted-foreground">日志级别</label>
-            <p class="text-lg font-medium">{{ systemInfo.logLevel }}</p>
+
+          <!-- 配置预览 -->
+          <div class="rounded-lg bg-muted p-4 overflow-x-auto">
+            <pre class="text-sm font-mono">{{ JSON.stringify(mcpConfig, null, 2) }}</pre>
           </div>
-          <div class="rounded-lg border p-4">
-            <label class="text-sm text-muted-foreground">API 文档</label>
-            <a 
-              :href="`http://${systemInfo.serverHost === '0.0.0.0' ? 'localhost' : systemInfo.serverHost}:${systemInfo.serverPort}/docs`"
-              target="_blank"
-              class="text-lg font-medium text-primary hover:underline"
+
+          <!-- 操作按钮 -->
+          <div class="flex gap-2 mt-4">
+            <button
+              class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              @click="handleCopy"
             >
-              /docs
-            </a>
+              <component :is="copied ? Check : Copy" class="h-4 w-4" />
+              {{ copied ? t('settings.mcp.copied') : t('settings.mcp.copy') }}
+            </button>
+            <button
+              class="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
+              @click="handleDownload"
+            >
+              <Download class="h-4 w-4" />
+              {{ t('settings.mcp.download') }}
+            </button>
           </div>
         </div>
       </div>
+    </template>
 
-      <!-- MCP Config Export -->
-      <div class="rounded-lg border bg-card p-6">
-        <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
-          <Download class="h-5 w-5" />
-          MCP 配置导出
-        </h2>
-        
-        <p class="text-muted-foreground text-sm mb-4">
-          将以下配置添加到 Claude Desktop 的配置文件中，即可使用 RagHubMCP 作为 MCP 服务器。
-        </p>
-
-        <!-- Config Preview -->
-        <div class="rounded-lg border bg-muted/30 p-4 overflow-auto">
-          <pre class="text-sm">{{ JSON.stringify(mcpConfig, null, 2) }}</pre>
+    <!-- Logs Tab -->
+    <template v-else-if="activeTab === 'logs'">
+      <div class="rounded-lg border bg-card">
+        <div class="p-4 border-b flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold">{{ t('settings.logs.title') }}</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <select
+              v-model="selectedLevel"
+              class="rounded-md border bg-background px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option v-for="level in logLevels" :key="level.key" :value="level.key">
+                {{ level.label }}
+              </option>
+            </select>
+            <button
+              class="inline-flex items-center gap-1.5 rounded border bg-background px-2 py-1 text-sm transition-colors hover:bg-muted"
+              @click="handleExportLogs"
+            >
+              <Download class="h-3 w-3" />
+              {{ t('settings.logs.export') }}
+            </button>
+            <button
+              class="inline-flex items-center gap-1.5 rounded border border-destructive/50 bg-background px-2 py-1 text-sm text-destructive transition-colors hover:bg-destructive/10"
+              @click="handleClearLogs"
+            >
+              <X class="h-3 w-3" />
+              {{ t('settings.logs.clear') }}
+            </button>
+          </div>
         </div>
-
-        <!-- Actions -->
-        <div class="flex items-center gap-3 mt-4">
-          <button
-            @click="copyMcpConfig"
-            :disabled="copying"
-            class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        <div class="divide-y max-h-[400px] overflow-y-auto">
+          <div
+            v-for="log in filteredLogs"
+            :key="log.id"
+            class="flex items-start gap-3 p-3 hover:bg-muted/30"
           >
-            {{ copying ? '复制中...' : '复制配置' }}
-          </button>
-          <button
-            @click="downloadMcpConfig"
-            class="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors"
-          >
-            下载配置文件
-          </button>
-          <span v-if="copyMessage" class="text-sm text-green-600">
-            {{ copyMessage }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Quick Links -->
-      <div class="rounded-lg border bg-card p-6">
-        <h2 class="text-lg font-semibold mb-4">快速链接</h2>
-        <div class="grid gap-3 md:grid-cols-2">
-          <a 
-            href="https://github.com/AIRix315/RagHubMCP"
-            target="_blank"
-            class="rounded-lg border p-4 hover:bg-muted transition-colors"
-          >
-            <p class="font-medium">GitHub 仓库</p>
-            <p class="text-sm text-muted-foreground">查看源码和提交 Issue</p>
-          </a>
-          <a 
-            href="https://modelcontextprotocol.io/"
-            target="_blank"
-            class="rounded-lg border p-4 hover:bg-muted transition-colors"
-          >
-            <p class="font-medium">MCP 协议文档</p>
-            <p class="text-sm text-muted-foreground">了解 Model Context Protocol</p>
-          </a>
+            <span class="font-mono text-xs text-muted-foreground w-24">{{ log.time }}</span>
+            <span
+              :class="[
+                'rounded px-1.5 py-0.5 text-xs font-medium',
+                levelColors[log.level]
+              ]"
+            >
+              {{ log.level }}
+            </span>
+            <span class="text-xs text-muted-foreground w-20">{{ log.module }}</span>
+            <span class="text-sm flex-1">{{ log.message }}</span>
+          </div>
+          <div v-if="filteredLogs.length === 0" class="p-8 text-center text-muted-foreground">
+            {{ t('common.noData') }}
+          </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>

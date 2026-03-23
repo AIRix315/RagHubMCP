@@ -1,371 +1,355 @@
 <script setup lang="ts">
+/**
+ * Benchmark Page
+ * 
+ * 基于 simple.html 原型设计
+ * 效果对比，支持表格视图、图表视图、雷达图视图
+ */
 import { ref, computed } from 'vue'
-import { runBenchmark, listCollections } from '@/api'
-import type { BenchmarkRequest, BenchmarkResponse, BenchmarkConfig, CollectionInfo } from '@/types'
-import BenchmarkChart from '@/components/charts/BenchmarkChart.vue'
-import LatencyChart from '@/components/charts/LatencyChart.vue'
+import { useI18n } from 'vue-i18n'
+import { BarChart3, Table, Radar, Play, Download } from 'lucide-vue-next'
 
-const query = ref('')
-const collectionName = ref('')
-const collections = ref<CollectionInfo[]>([])
+const { t } = useI18n()
+
+// State
+const viewMode = ref<'table' | 'chart' | 'radar'>('table')
 const loading = ref(false)
-const result = ref<BenchmarkResponse | null>(null)
-const error = ref<string | null>(null)
 
-// Tab state for results view
-const activeTab = ref<'table' | 'charts'>('table')
-const activeChart = ref<'overview' | 'latency'>('overview')
+// Metrics 接口定义
+interface BenchmarkMetrics {
+  top1_accuracy: number
+  top3_accuracy: number
+  top5_accuracy: number
+  ndcg: number
+  latency_ms: number
+}
 
-// Config form
-const configs = ref<BenchmarkConfig[]>([
-  { name: 'Config A', embedding_provider: 'ollama', rerank_provider: 'flashrank', top_k: 10 },
-  { name: 'Config B', embedding_provider: 'ollama', rerank_provider: null, top_k: 10 },
+// 模拟测试结果数据
+const benchmarkResults = ref<Array<{
+  config_name: string
+  is_default: boolean
+  metrics: BenchmarkMetrics
+}>>([
+  {
+    config_name: 'FlashRank + Hybrid',
+    is_default: true,
+    metrics: {
+      top1_accuracy: 0.85,
+      top3_accuracy: 0.92,
+      top5_accuracy: 0.96,
+      ndcg: 0.82,
+      latency_ms: 45
+    }
+  },
+  {
+    config_name: 'Jina Reranker',
+    is_default: false,
+    metrics: {
+      top1_accuracy: 0.88,
+      top3_accuracy: 0.94,
+      top5_accuracy: 0.98,
+      ndcg: 0.85,
+      latency_ms: 120
+    }
+  },
+  {
+    config_name: 'Vector Only',
+    is_default: false,
+    metrics: {
+      top1_accuracy: 0.72,
+      top3_accuracy: 0.85,
+      top5_accuracy: 0.92,
+      ndcg: 0.71,
+      latency_ms: 15
+    }
+  }
 ])
 
-// Available providers (would come from config in real app)
-const embeddingProviders = ['ollama', 'openai']
-const rerankProviders = ['flashrank', 'cohere', null]
+// 视图选项
+const viewOptions = [
+  { key: 'table', label: t('benchmark.viewTable'), icon: Table },
+  { key: 'chart', label: t('benchmark.viewChart'), icon: BarChart3 },
+  { key: 'radar', label: t('benchmark.viewRadar'), icon: Radar }
+]
 
-// Load collections on mount
-listCollections().then(res => {
-  collections.value = res.collections
-  if (res.collections.length > 0) {
-    collectionName.value = res.collections[0].name
-  }
-})
+// 最大值计算（用于雷达图）
+const maxValues = computed(() => ({
+  top1: Math.max(...benchmarkResults.value.map(r => r.metrics.top1_accuracy)) * 100,
+  top3: Math.max(...benchmarkResults.value.map(r => r.metrics.top3_accuracy)) * 100,
+  top5: Math.max(...benchmarkResults.value.map(r => r.metrics.top5_accuracy)) * 100,
+  ndcg: Math.max(...benchmarkResults.value.map(r => r.metrics.ndcg)) * 100,
+  latency: Math.max(...benchmarkResults.value.map(r => r.metrics.latency_ms))
+}))
 
-function addConfig() {
-  configs.value.push({
-    name: `Config ${String.fromCharCode(65 + configs.value.length)}`,
-    embedding_provider: 'ollama',
-    rerank_provider: 'flashrank',
-    top_k: 10,
-  })
-}
-
-function removeConfig(index: number) {
-  if (configs.value.length > 1) {
-    configs.value.splice(index, 1)
-  }
-}
-
-async function runBenchmarkTest() {
-  if (!query.value.trim()) {
-    error.value = '请输入查询内容'
-    return
-  }
-
-  loading.value = true
-  error.value = null
-  result.value = null
-
-  try {
-    const request: BenchmarkRequest = {
-      query: query.value,
-      collection_name: collectionName.value || undefined,
-      configs: configs.value,
+// 雷达图数据点
+const radarPoints = computed(() => {
+  return benchmarkResults.value.map(result => {
+    const m = result.metrics
+    // 归一化到0-100百分比
+    const top1 = m.top1_accuracy * 100
+    const top3 = m.top3_accuracy * 100
+    const top5 = m.top5_accuracy * 100
+    const ndcg = m.ndcg * 100
+    // 延迟反转（越低越好，所以用反向值）
+    const latencyScore = Math.max(0, 100 - (m.latency_ms / maxValues.value.latency) * 50)
+    
+    return {
+      name: result.config_name,
+      is_default: result.is_default,
+      values: [top1, top3, top5, ndcg, latencyScore]
     }
-    result.value = await runBenchmark(request)
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Benchmark 执行失败'
-  } finally {
+  })
+})
+
+// 运行测试
+async function handleRun() {
+  loading.value = true
+  // TODO: 实现测试逻辑
+  setTimeout(() => {
     loading.value = false
-  }
+  }, 2000)
 }
 
-// Find best config by latency
-const bestConfig = computed(() => {
-  if (!result.value) return null
-  const sorted = [...result.value.results].sort((a, b) => a.latency_ms - b.latency_ms)
-  return sorted[0]?.config_name
-})
+// 导出报告
+function handleExport() {
+  const data = JSON.stringify(benchmarkResults.value, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'benchmark-report.json'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// 颜色列表
+const colors = ['#3b82f6', '#22c55e', '#f97316', '#8b5cf6', '#ef4444']
+
+// 雷达图路径计算
+function getRadarPath(values: number[], size: number = 150): string {
+  const center = size / 2
+  const radius = size / 2 - 20
+  const angleStep = (2 * Math.PI) / values.length
+  
+  const points = values.map((v, i) => {
+    const angle = i * angleStep - Math.PI / 2
+    const r = (v / 100) * radius
+    const x = center + r * Math.cos(angle)
+    const y = center + r * Math.sin(angle)
+    return `${x},${y}`
+  })
+  
+  return `M${points.join(' L')} Z`
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">效果对比</h1>
-      <p class="text-muted-foreground mt-2">测试不同配置的检索效果，找到最优方案</p>
+    <!-- Header -->
+    <div class="flex items-start justify-between animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">{{ t('benchmark.title') }}</h1>
+        <p class="text-muted-foreground mt-1.5">{{ t('benchmark.subtitle') }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          class="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
+          @click="handleExport"
+        >
+          <Download class="h-4 w-4" />
+          {{ t('benchmark.export') }}
+        </button>
+        <button
+          class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          :disabled="loading"
+          @click="handleRun"
+        >
+          <Play class="h-4 w-4" />
+          {{ loading ? t('benchmark.running') : t('benchmark.run') }}
+        </button>
+      </div>
     </div>
 
-    <!-- Test Form -->
-    <div class="rounded-lg border bg-card p-6">
-      <h2 class="text-lg font-semibold mb-4">测试配置</h2>
+    <!-- View Mode Tabs -->
+    <div class="border-b">
+      <div class="flex gap-4">
+        <button
+          v-for="option in viewOptions"
+          :key="option.key"
+          :class="[
+            'flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px',
+            viewMode === option.key
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50'
+          ]"
+          @click="viewMode = option.key as typeof viewMode"
+        >
+          <component :is="option.icon" class="h-4 w-4" />
+          {{ option.label }}
+        </button>
+      </div>
+    </div>
 
-      <div class="space-y-4">
-        <!-- Query Input -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium">查询内容</label>
-          <textarea
-            v-model="query"
-            placeholder="输入测试查询..."
-            rows="3"
-            class="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          />
-        </div>
-
-        <!-- Collection Select -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium">Collection</label>
-          <select
-            v-model="collectionName"
-            class="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            <option v-for="c in collections" :key="c.name" :value="c.name">
-              {{ c.name }} ({{ c.count }} docs)
-            </option>
-          </select>
-        </div>
-
-        <!-- Configurations -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <label class="text-sm font-medium">对比配置</label>
-            <button
-              @click="addConfig"
-              class="rounded-md border px-3 py-1 text-xs hover:bg-muted"
+    <!-- Table View -->
+    <template v-if="viewMode === 'table'">
+      <div class="rounded-lg border overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">{{ t('benchmark.configure') }}</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">{{ t('benchmark.top1') }}</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">{{ t('benchmark.top3') }}</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">{{ t('benchmark.top5') }}</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">{{ t('benchmark.ndcg') }}</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">{{ t('benchmark.latency') }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr
+              v-for="result in benchmarkResults"
+              :key="result.config_name"
+              class="transition-colors hover:bg-muted/30"
             >
-              + 添加配置
-            </button>
-          </div>
-
-          <div
-            v-for="(config, index) in configs"
-            :key="index"
-            class="rounded-lg border p-4"
-          >
-            <div class="flex items-center justify-between mb-3">
-              <input
-                v-model="config.name"
-                class="font-medium bg-transparent border-none outline-none"
-              />
-              <button
-                v-if="configs.length > 1"
-                @click="removeConfig(index)"
-                class="text-xs text-muted-foreground hover:text-destructive"
-              >
-                移除
-              </button>
-            </div>
-
-            <div class="grid gap-3 md:grid-cols-3">
-              <div class="space-y-1">
-                <label class="text-xs text-muted-foreground">Embedding Provider</label>
-                <select
-                  v-model="config.embedding_provider"
-                  class="w-full rounded-md border bg-background px-2 py-1 text-sm"
-                >
-                  <option v-for="p in embeddingProviders" :key="p" :value="p">
-                    {{ p }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-xs text-muted-foreground">Rerank Provider</label>
-                <select
-                  v-model="config.rerank_provider"
-                  class="w-full rounded-md border bg-background px-2 py-1 text-sm"
-                >
-                  <option value="">无</option>
-                  <option v-for="p in rerankProviders.filter((x): x is string => x !== null)" :key="p" :value="p">
-                    {{ p }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-xs text-muted-foreground">Top K</label>
-                <input
-                  v-model.number="config.top_k"
-                  type="number"
-                  min="1"
-                  max="100"
-                  class="w-full rounded-md border bg-background px-2 py-1 text-sm"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Run Button -->
-        <button
-          @click="runBenchmarkTest"
-          :disabled="loading || !query.trim()"
-          class="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
-          {{ loading ? '执行中...' : '开始对比测试' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div v-if="error" class="rounded-lg border border-destructive bg-destructive/10 p-4">
-      <p class="text-destructive">{{ error }}</p>
-    </div>
-
-    <!-- Results -->
-    <div v-if="result" class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">对比结果</h2>
-        <span class="text-sm text-muted-foreground">
-          总耗时: {{ result.total_latency_ms.toFixed(2) }}ms
-        </span>
-      </div>
-
-      <!-- Tab Navigation -->
-      <div class="flex border-b">
-        <button
-          @click="activeTab = 'table'"
-          :class="[
-            'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-            activeTab === 'table'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          ]"
-        >
-          表格视图
-        </button>
-        <button
-          @click="activeTab = 'charts'"
-          :class="[
-            'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-            activeTab === 'charts'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          ]"
-        >
-          图表视图
-        </button>
-      </div>
-
-      <!-- Table View -->
-      <div v-if="activeTab === 'table'" class="space-y-6">
-        <!-- Results Table -->
-        <div class="rounded-lg border">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b bg-muted/50">
-                <th class="px-4 py-3 text-left text-sm font-medium">配置名称</th>
-                <th class="px-4 py-3 text-left text-sm font-medium">Embedding</th>
-                <th class="px-4 py-3 text-left text-sm font-medium">Rerank</th>
-                <th class="px-4 py-3 text-right text-sm font-medium">延迟 (ms)</th>
-                <th class="px-4 py-3 text-right text-sm font-medium">结果数</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="r in result.results"
-                :key="r.config_name"
-                :class="[
-                  'border-b last:border-0',
-                  r.config_name === bestConfig ? 'bg-green-500/10' : 'hover:bg-muted/50'
-                ]"
-              >
-                <td class="px-4 py-3 text-sm font-medium">
-                  {{ r.config_name }}
-                  <span v-if="r.config_name === bestConfig" class="ml-2 text-xs text-green-600">
-                    (最快)
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <span
+                    v-if="result.is_default"
+                    class="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary"
+                  >
+                    {{ t('common.default') }}
                   </span>
-                </td>
-                <td class="px-4 py-3 text-sm">{{ r.embedding_provider }}</td>
-                <td class="px-4 py-3 text-sm">{{ r.rerank_provider || '-' }}</td>
-                <td class="px-4 py-3 text-right text-sm">{{ r.latency_ms.toFixed(2) }}</td>
-                <td class="px-4 py-3 text-right text-sm">{{ r.results.length }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <span class="font-medium">{{ result.config_name }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span class="font-mono tabular-nums">{{ (result.metrics.top1_accuracy * 100).toFixed(0) }}%</span>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span class="font-mono tabular-nums">{{ (result.metrics.top3_accuracy * 100).toFixed(0) }}%</span>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span class="font-mono tabular-nums">{{ (result.metrics.top5_accuracy * 100).toFixed(0) }}%</span>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span class="font-mono tabular-nums">{{ result.metrics.ndcg.toFixed(2) }}</span>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span class="font-mono tabular-nums">{{ result.metrics.latency_ms }}ms</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
 
-        <!-- Detailed Results -->
-        <div v-for="r in result.results" :key="r.config_name" class="rounded-lg border">
-          <div class="border-b bg-muted/50 px-4 py-2">
-            <span class="font-medium">{{ r.config_name }}</span>
-            <span class="ml-4 text-sm text-muted-foreground">{{ r.latency_ms.toFixed(2) }}ms</span>
-          </div>
-          <div class="max-h-64 overflow-auto">
-            <table class="w-full">
-              <thead class="sticky top-0 bg-background">
-                <tr class="border-b">
-                  <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">#</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Score</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">内容</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(item, idx) in r.results" :key="item.id" class="border-b last:border-0">
-                  <td class="px-4 py-2 text-sm text-muted-foreground">{{ idx + 1 }}</td>
-                  <td class="px-4 py-2 text-sm font-mono">
-                    {{ (item.rerank_score ?? item.score).toFixed(4) }}
-                  </td>
-                  <td class="px-4 py-2 text-sm truncate max-w-md">{{ item.text }}</td>
-                </tr>
-              </tbody>
-            </table>
+    <!-- Chart View -->
+    <template v-else-if="viewMode === 'chart'">
+      <div class="rounded-lg border bg-card p-6">
+        <h3 class="font-semibold mb-4">{{ t('benchmark.results') }}</h3>
+        <div class="space-y-4">
+          <div v-for="(result, index) in benchmarkResults" :key="result.config_name">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <div class="h-3 w-3 rounded" :style="{ backgroundColor: colors[index % colors.length] }" />
+                <span class="text-sm font-medium">{{ result.config_name }}</span>
+                <span
+                  v-if="result.is_default"
+                  class="rounded bg-primary/10 px-1 py-0.5 text-xs font-medium text-primary"
+                >
+                  {{ t('common.default') }}
+                </span>
+              </div>
+              <span class="text-sm text-muted-foreground">{{ result.metrics.latency_ms }}ms</span>
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="w-16 text-xs text-muted-foreground">{{ t('benchmark.top1') }}</span>
+                <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div class="h-full rounded-full" :style="{ width: `${result.metrics.top1_accuracy * 100}%`, backgroundColor: colors[index % colors.length] }" />
+                </div>
+                <span class="w-10 text-xs text-right font-mono">{{ (result.metrics.top1_accuracy * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-16 text-xs text-muted-foreground">{{ t('benchmark.top3') }}</span>
+                <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div class="h-full rounded-full" :style="{ width: `${result.metrics.top3_accuracy * 100}%`, backgroundColor: colors[index % colors.length] }" />
+                </div>
+                <span class="w-10 text-xs text-right font-mono">{{ (result.metrics.top3_accuracy * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-16 text-xs text-muted-foreground">{{ t('benchmark.ndcg') }}</span>
+                <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div class="h-full rounded-full" :style="{ width: `${result.metrics.ndcg * 100}%`, backgroundColor: colors[index % colors.length] }" />
+                </div>
+                <span class="w-10 text-xs text-right font-mono">{{ result.metrics.ndcg.toFixed(2) }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </template>
 
-      <!-- Charts View -->
-      <div v-if="activeTab === 'charts'" class="space-y-6">
-        <!-- Chart Type Tabs -->
-        <div class="flex gap-2">
-          <button
-            @click="activeChart = 'overview'"
-            :class="[
-              'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-              activeChart === 'overview'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:text-foreground'
-            ]"
-          >
-            综合对比
-          </button>
-          <button
-            @click="activeChart = 'latency'"
-            :class="[
-              'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-              activeChart === 'latency'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:text-foreground'
-            ]"
-          >
-            延迟分析
-          </button>
-        </div>
-
-        <!-- Overview Chart -->
-        <div v-if="activeChart === 'overview'" class="rounded-lg border bg-card p-4">
-          <h3 class="text-sm font-semibold mb-4">配置对比总览</h3>
-          <BenchmarkChart :results="result.results" title="延迟、分数与结果数量对比" />
-        </div>
-
-        <!-- Latency Chart -->
-        <div v-if="activeChart === 'latency'" class="rounded-lg border bg-card p-4">
-          <h3 class="text-sm font-semibold mb-4">延迟分布分析</h3>
-          <LatencyChart :results="result.results" title="配置延迟对比（按延迟排序）" />
+    <!-- Radar View -->
+    <template v-else-if="viewMode === 'radar'">
+      <div class="rounded-lg border bg-card p-6">
+        <h3 class="font-semibold mb-4">{{ t('benchmark.results') }}</h3>
+        <div class="flex items-start justify-center gap-8">
+          <!-- Radar Chart -->
+          <div class="relative" style="width: 300px; height: 300px;">
+            <svg viewBox="0 0 300 300" class="w-full h-full">
+              <!-- Grid circles -->
+              <circle cx="150" cy="150" r="110" fill="none" stroke="currentColor" stroke-width="0.5" class="text-muted opacity-30" />
+              <circle cx="150" cy="150" r="82.5" fill="none" stroke="currentColor" stroke-width="0.5" class="text-muted opacity-30" />
+              <circle cx="150" cy="150" r="55" fill="none" stroke="currentColor" stroke-width="0.5" class="text-muted opacity-30" />
+              <circle cx="150" cy="150" r="27.5" fill="none" stroke="currentColor" stroke-width="0.5" class="text-muted opacity-30" />
+              
+              <!-- Axis lines -->
+              <g class="text-muted opacity-30">
+                <line x1="150" y1="150" x2="150" y2="40" stroke="currentColor" stroke-width="0.5" />
+                <line x1="150" y1="150" x2="254.3" y2="92.8" stroke="currentColor" stroke-width="0.5" />
+                <line x1="150" y1="150" x2="254.3" y2="207.2" stroke="currentColor" stroke-width="0.5" />
+                <line x1="150" y1="150" x2="45.7" y2="207.2" stroke="currentColor" stroke-width="0.5" />
+                <line x1="150" y1="150" x2="45.7" y2="92.8" stroke="currentColor" stroke-width="0.5" />
+              </g>
+              
+              <!-- Data polygons -->
+              <path
+                v-for="(point, index) in radarPoints"
+                :key="point.name"
+                :d="getRadarPath(point.values, 300)"
+                :fill="`${colors[index % colors.length]}20`"
+                :stroke="colors[index % colors.length]"
+                stroke-width="2"
+              />
+            </svg>
+            
+            <!-- Labels -->
+            <div class="absolute top-2 left-1/2 -translate-x-1/2 text-xs font-medium">Top-1</div>
+            <div class="absolute top-1/4 right-2 text-xs font-medium">Top-3</div>
+            <div class="absolute bottom-1/4 right-2 text-xs font-medium">Top-5</div>
+            <div class="absolute bottom-1/4 left-2 text-xs font-medium">NDCG</div>
+            <div class="absolute top-2 left-2 text-xs font-medium">{{ t('benchmark.latency') }}</div>
+          </div>
           
-          <!-- Latency Stats -->
-          <div class="mt-4 grid grid-cols-3 gap-4">
-            <div class="rounded-lg border p-3">
-              <div class="text-xs text-muted-foreground">最快配置</div>
-              <div class="mt-1 font-semibold text-green-600">{{ bestConfig }}</div>
-            </div>
-            <div class="rounded-lg border p-3">
-              <div class="text-xs text-muted-foreground">平均延迟</div>
-              <div class="mt-1 font-semibold">
-                {{ (result.results.reduce((sum, r) => sum + r.latency_ms, 0) / result.results.length).toFixed(2) }} ms
-              </div>
-            </div>
-            <div class="rounded-lg border p-3">
-              <div class="text-xs text-muted-foreground">延迟范围</div>
-              <div class="mt-1 font-semibold">
-                {{ Math.min(...result.results.map(r => r.latency_ms)).toFixed(0) }} - {{ Math.max(...result.results.map(r => r.latency_ms)).toFixed(0) }} ms
-              </div>
+          <!-- Legend -->
+          <div class="space-y-2">
+            <div
+              v-for="(result, index) in benchmarkResults"
+              :key="result.config_name"
+              class="flex items-center gap-2"
+            >
+              <div class="h-3 w-3 rounded" :style="{ backgroundColor: colors[index % colors.length] }" />
+              <span class="text-sm">{{ result.config_name }}</span>
+              <span
+                v-if="result.is_default"
+                class="rounded bg-primary/10 px-1 py-0.5 text-xs font-medium text-primary"
+              >
+                {{ t('common.default') }}
+              </span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>

@@ -39,6 +39,11 @@ const router = createRouter({
       component: () => import('@/views/Benchmark.vue'),
     },
     {
+      path: '/test/search',
+      name: 'search-test',
+      component: () => import('@/views/Test/SearchTest.vue'),
+    },
+    {
       path: '/test/rerank-lab',
       name: 'rerank-lab',
       component: () => import('@/views/Test/RerankLab.vue'),

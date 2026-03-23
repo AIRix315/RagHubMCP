@@ -20,9 +20,6 @@ function createMockStore(overrides: Record<string, unknown> = {}) {
   }
 }
 
-// Default mock store for tests that don't need special behavior
-const defaultMockStore = createMockStore()
-
 // Mock the collection store module - must return a function
 vi.mock('@/stores/collection', () => ({
   useCollectionStore: vi.fn(() => ({
