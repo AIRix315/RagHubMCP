@@ -295,7 +295,7 @@ class TestPipelineExecution:
         mock_result = MagicMock(spec=RAGResult)
         mock_pipeline.run.return_value = mock_result
 
-        with patch("pipeline.manager.get_pipeline", return_value=mock_pipeline):
+        with patch("raghub_mcp.pipeline.manager.get_pipeline", return_value=mock_pipeline):
             result = await execute_search("test query", {"topK": 10, "collection": "test"})
 
             assert result is mock_result
@@ -381,7 +381,7 @@ class TestErrorHandling:
         mock_pipeline = AsyncMock(spec=RAGPipeline)
         mock_pipeline.run.side_effect = RuntimeError("Retriever failed")
 
-        with patch("pipeline.manager.get_pipeline", return_value=mock_pipeline):
+        with patch("raghub_mcp.pipeline.manager.get_pipeline", return_value=mock_pipeline):
             with pytest.raises(RuntimeError, match="Retriever failed"):
                 await execute_search("test query")
 
@@ -393,7 +393,7 @@ class TestErrorHandling:
         mock_pipeline = AsyncMock(spec=RAGPipeline)
         mock_pipeline.run.side_effect = RuntimeError("Reranker failed")
 
-        with patch("pipeline.manager.get_pipeline", return_value=mock_pipeline):
+        with patch("raghub_mcp.pipeline.manager.get_pipeline", return_value=mock_pipeline):
             with pytest.raises(RuntimeError, match="Reranker failed"):
                 await execute_search("test query")
 

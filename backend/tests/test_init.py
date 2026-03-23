@@ -89,17 +89,18 @@ class TestProjectStructure:
 
         required_dirs = [
             "src",
-            "src/api",
-            "src/mcp_server",
-            "src/mcp_server/tools",
-            "src/providers",
-            "src/providers/embedding",
-            "src/providers/rerank",
-            "src/providers/llm",
-            "src/chunkers",
-            "src/indexer",
-            "src/storage",
-            "src/utils",
+            "src/raghub_mcp",
+            "src/raghub_mcp/api",
+            "src/raghub_mcp/mcp_server",
+            "src/raghub_mcp/mcp_server/tools",
+            "src/raghub_mcp/providers",
+            "src/raghub_mcp/providers/embedding",
+            "src/raghub_mcp/providers/rerank",
+            "src/raghub_mcp/providers/llm",
+            "src/raghub_mcp/chunkers",
+            "src/raghub_mcp/indexer",
+            "src/raghub_mcp/storage",
+            "src/raghub_mcp/utils",
             "tests",
         ]
 
@@ -115,7 +116,7 @@ class TestProjectStructure:
             "pyproject.toml",
             "config.yaml",
             ".env.example",
-            "src/__init__.py",
+            "src/raghub_mcp/__init__.py",
             "tests/__init__.py",
             "tests/conftest.py",
         ]
