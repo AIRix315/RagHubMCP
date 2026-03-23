@@ -1,6 +1,6 @@
 [project]
 name = "raghub-mcp"
-version = "2.6.9"
+version = "2.6.10"
 description = "通用代码 RAG 中枢 - MCP Server + FlashRank Rerank"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -69,6 +69,7 @@ include = ["raghub_mcp*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 addopts = "-v --tb=short"
 filterwarnings = [
     # Ignore ChromaDB deprecation warnings from third-party library

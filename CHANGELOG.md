@@ -2,6 +2,21 @@
 
 ---
 
+## [2.6.10] - 2026-03-24
+
+### fix(ci): 修复 pytest-asyncio Python 3.13 兼容性问题
+
+- **时间**: 2026-03-24 10:35
+- **内容**: 添加 `asyncio_default_fixture_loop_scope` 配置解决 Python 3.13 测试失败
+
+#### Fixed
+
+- **backend/pyproject.toml**: 添加 `asyncio_default_fixture_loop_scope = "function"`
+- 修复 pytest-asyncio 在 Python 3.13 中的弃用警告和运行时错误
+- 确保异步测试在 CI 环境中正确运行
+
+---
+
 ## [2.6.9] - 2026-03-24
 
 ### fix(ci): 修复 CI workflow 命令格式
