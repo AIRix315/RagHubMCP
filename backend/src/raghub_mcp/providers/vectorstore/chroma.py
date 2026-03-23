@@ -157,7 +157,7 @@ class ChromaProvider(BaseVectorStoreProvider):
         persist_dir: Directory for persistent storage
 
     Example:
-        >>> from providers.factory import factory
+        >>> from raghub_mcp.providers.factory import factory
         >>> provider = factory.get_vectorstore_provider("chroma")
         >>> provider.add("my_collection", ["doc1"], ["id1"])
         >>> results = provider.query("my_collection", query_text="search", n_results=5)

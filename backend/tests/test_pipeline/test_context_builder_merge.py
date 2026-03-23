@@ -3,10 +3,10 @@
 Reference: Docs/11-V2-Desing.md (Section 7)
 """
 
-from pipeline.context_builder import (
+from raghub_mcp.pipeline.context_builder import (
     DefaultContextBuilder,
 )
-from pipeline.result import Document
+from raghub_mcp.pipeline.result import Document
 
 
 class TestMergeConsecutive:

@@ -21,8 +21,10 @@ class TestOllamaEmbeddingProviderRegistration:
 
     def test_provider_is_registered(self):
         """Ollama embedding provider is registered in registry."""
-        from providers.base import ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.registry import registry
+        # Import the provider to trigger registration
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         assert registry.is_registered(ProviderCategory.EMBEDDING, "ollama")
 
@@ -32,7 +34,7 @@ class TestOllamaEmbeddingProviderInit:
 
     def test_init_with_defaults(self):
         """Initialize with default values."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         provider = OllamaEmbeddingProvider(model="nomic-embed-text")
 
@@ -42,7 +44,7 @@ class TestOllamaEmbeddingProviderInit:
 
     def test_init_with_custom_base_url(self):
         """Initialize with custom base URL."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         provider = OllamaEmbeddingProvider(model="bge-m3", base_url="http://custom-host:11434")
 
@@ -50,7 +52,7 @@ class TestOllamaEmbeddingProviderInit:
 
     def test_from_config_factory(self):
         """Create instance from config dict."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         config = {
             "name": "ollama-bge",
@@ -79,10 +81,10 @@ class TestOllamaEmbeddingProviderEmbed:
             ]
         }
 
-    @patch("providers.embedding.ollama.httpx.post")
+    @patch("raghub_mcp.providers.embedding.ollama.httpx.post")
     def test_embed_documents_success(self, mock_post):
         """Embed multiple documents successfully."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         # Setup mock
         mock_response = MagicMock()
@@ -98,10 +100,10 @@ class TestOllamaEmbeddingProviderEmbed:
         assert len(result[0]) == 768
         mock_post.assert_called_once()
 
-    @patch("providers.embedding.ollama.httpx.post")
+    @patch("raghub_mcp.providers.embedding.ollama.httpx.post")
     def test_embed_query_success(self, mock_post):
         """Embed a single query successfully."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         # Setup mock - single query returns "embedding" not "embeddings"
         mock_response = MagicMock()
@@ -119,7 +121,7 @@ class TestOllamaEmbeddingProviderEmbed:
 
     def test_dimension_property(self):
         """Dimension property returns correct value."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         provider = OllamaEmbeddingProvider(model="bge-m3", dimension=1024)
 
@@ -127,7 +129,7 @@ class TestOllamaEmbeddingProviderEmbed:
 
     def test_dimension_default(self):
         """Default dimension is 768."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         provider = OllamaEmbeddingProvider(model="nomic-embed-text")
 
@@ -142,7 +144,7 @@ class TestOllamaEmbeddingProviderAsync:
         """Async embed documents successfully."""
         from unittest.mock import AsyncMock
 
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         # Setup mock response
         mock_response = MagicMock()
@@ -169,7 +171,7 @@ class TestOllamaEmbeddingProviderAsync:
         """Async embed query successfully."""
         from unittest.mock import AsyncMock
 
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         # Setup mock response
         mock_response = MagicMock()
@@ -194,10 +196,10 @@ class TestOllamaEmbeddingProviderAsync:
 class TestOllamaEmbeddingProviderBatch:
     """Test batch processing."""
 
-    @patch("providers.embedding.ollama.httpx.post")
+    @patch("raghub_mcp.providers.embedding.ollama.httpx.post")
     def test_embed_batch_small_list(self, mock_post):
         """Batch embed small list (single request)."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         mock_response = MagicMock()
         mock_response.json.return_value = {"embeddings": [[0.1] * 768, [0.2] * 768]}
@@ -211,10 +213,10 @@ class TestOllamaEmbeddingProviderBatch:
         # Should be called once (all texts fit in one batch)
         assert mock_post.call_count == 1
 
-    @patch("providers.embedding.ollama.httpx.post")
+    @patch("raghub_mcp.providers.embedding.ollama.httpx.post")
     def test_embed_batch_large_list(self, mock_post):
         """Batch embed large list (multiple requests)."""
-        from providers.embedding.ollama import OllamaEmbeddingProvider
+        from raghub_mcp.providers.embedding.ollama import OllamaEmbeddingProvider
 
         # First batch
         mock_response1 = MagicMock()

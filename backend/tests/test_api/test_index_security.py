@@ -16,7 +16,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from api.index import router, validate_path_security
+from raghub_mcp.api.index import router, validate_path_security
 
 
 class TestPathTraversalSecurity:
@@ -181,7 +181,7 @@ class TestPathSecurityIntegration:
         """Create test client."""
         return TestClient(app)
 
-    @patch("api.index.get_config")
+    @patch("raghub_mcp.api.index.get_config")
     def test_index_endpoint_rejects_path_traversal(
         self, mock_get_config: MagicMock, client: TestClient, tmp_path: Path
     ) -> None:
@@ -225,7 +225,7 @@ class TestPathSecurityIntegration:
         )
         assert response.status_code in [400, 403, 404]
 
-    @patch("api.index.get_config")
+    @patch("raghub_mcp.api.index.get_config")
     def test_index_endpoint_allows_configured_directories(
         self, mock_get_config: MagicMock, client: TestClient, tmp_path: Path
     ) -> None:

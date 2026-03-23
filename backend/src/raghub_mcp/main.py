@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from raghub_mcp.api.router import api_router
 from raghub_mcp.api.websocket import manager as ws_manager
 from raghub_mcp.api.websocket_debug import router as debug_ws_router
+from raghub_mcp.messages import get_message
 from raghub_mcp.utils.config import get_config, load_config
 
 # Configure logging
@@ -71,7 +72,7 @@ def create_app() -> FastAPI:
     """
     app = FastAPI(
         title="RagHubMCP",
-        description="通用代码 RAG 中枢 - REST API + MCP Server",
+        description=get_message("app_description", lang="zh"),
         version="0.1.0",
         docs_url="/docs",
         redoc_url="/redoc",
@@ -160,7 +161,7 @@ def create_app() -> FastAPI:
         return {
             "name": "RagHubMCP",
             "version": "0.1.0",
-            "description": "通用代码 RAG 中枢",
+            "description": get_message("app_title", lang="zh"),
             "docs": "/docs",
             "api": "/api",
             "health": "/health",

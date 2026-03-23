@@ -20,7 +20,7 @@ class TestProviderBaseClasses:
 
     def test_base_provider_cannot_instantiate(self):
         """TC-1.3.1: BaseProvider 不能直接实例化"""
-        from providers.base import BaseProvider
+        from raghub_mcp.providers.base import BaseProvider
 
         with pytest.raises(TypeError) as exc_info:
             BaseProvider()
@@ -32,7 +32,7 @@ class TestProviderBaseClasses:
 
     def test_base_embedding_provider_cannot_instantiate(self):
         """TC-1.3.1: BaseEmbeddingProvider 不能直接实例化"""
-        from providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
 
         with pytest.raises(TypeError) as exc_info:
             BaseEmbeddingProvider()
@@ -44,7 +44,7 @@ class TestProviderBaseClasses:
 
     def test_base_rerank_provider_cannot_instantiate(self):
         """TC-1.3.1: BaseRerankProvider 不能直接实例化"""
-        from providers.rerank.base import BaseRerankProvider
+        from raghub_mcp.providers.rerank.base import BaseRerankProvider
 
         with pytest.raises(TypeError) as exc_info:
             BaseRerankProvider()
@@ -56,7 +56,7 @@ class TestProviderBaseClasses:
 
     def test_base_llm_provider_cannot_instantiate(self):
         """TC-1.3.1: BaseLLMProvider 不能直接实例化"""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         with pytest.raises(TypeError) as exc_info:
             BaseLLMProvider()
@@ -68,7 +68,7 @@ class TestProviderBaseClasses:
 
     def test_incomplete_implementation_fails(self):
         """TC-1.3.1: 未实现所有抽象方法的子类无法实例化"""
-        from providers.base import BaseProvider
+        from raghub_mcp.providers.base import BaseProvider
 
         # 定义一个不完整的实现
         class IncompleteProvider(BaseProvider):
@@ -80,7 +80,7 @@ class TestProviderBaseClasses:
 
     def test_missing_name_attribute_fails(self):
         """TC-1.3.1: 未定义 NAME 属性的子类初始化失败"""
-        from providers.base import BaseProvider
+        from raghub_mcp.providers.base import BaseProvider
 
         with pytest.raises(TypeError) as exc_info:
 
@@ -98,7 +98,7 @@ class TestConcreteImplementation:
 
     def test_complete_embedding_provider_instantiation(self):
         """TC-1.3.2: 完整的 EmbeddingProvider 可以实例化"""
-        from providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
 
         class MockEmbeddingProvider(BaseEmbeddingProvider):
             NAME = "mock-embedding"
@@ -130,7 +130,7 @@ class TestConcreteImplementation:
 
     def test_complete_rerank_provider_instantiation(self):
         """TC-1.3.2: 完整的 RerankProvider 可以实例化"""
-        from providers.rerank.base import BaseRerankProvider, RerankResult
+        from raghub_mcp.providers.rerank.base import BaseRerankProvider, RerankResult
 
         class MockRerankProvider(BaseRerankProvider):
             NAME = "mock-rerank"
@@ -157,7 +157,7 @@ class TestConcreteImplementation:
 
     def test_complete_llm_provider_instantiation(self):
         """TC-1.3.2: 完整的 LLMProvider 可以实例化"""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class MockLLMProvider(BaseLLMProvider):
             NAME = "mock-llm"
@@ -180,7 +180,7 @@ class TestConcreteImplementation:
 
     def test_from_config_factory_method(self):
         """TC-1.3.2: from_config 方法正确创建实例"""
-        from providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
 
         class ConfigurableProvider(BaseEmbeddingProvider):
             NAME = "configurable"
@@ -216,7 +216,7 @@ class TestAsyncMethods:
     @pytest.mark.anyio
     async def test_async_embed_documents_default_implementation(self):
         """异步 embed_documents 默认包装同步方法"""
-        from providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
 
         class AsyncTestProvider(BaseEmbeddingProvider):
             NAME = "async-test"
@@ -249,7 +249,7 @@ class TestAsyncMethods:
     @pytest.mark.anyio
     async def test_async_embed_query_default_implementation(self):
         """异步 embed_query 默认包装同步方法"""
-        from providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
 
         class AsyncQueryProvider(BaseEmbeddingProvider):
             NAME = "async-query"
@@ -277,7 +277,7 @@ class TestAsyncMethods:
     @pytest.mark.anyio
     async def test_async_rerank_default_implementation(self):
         """异步 rerank 默认包装同步方法"""
-        from providers.rerank.base import BaseRerankProvider, RerankResult
+        from raghub_mcp.providers.rerank.base import BaseRerankProvider, RerankResult
 
         class AsyncRerankProvider(BaseRerankProvider):
             NAME = "async-rerank"
@@ -300,7 +300,7 @@ class TestAsyncMethods:
     @pytest.mark.anyio
     async def test_async_generate_default_implementation(self):
         """异步 generate 默认包装同步方法"""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class AsyncLLMProvider(BaseLLMProvider):
             NAME = "async-llm"

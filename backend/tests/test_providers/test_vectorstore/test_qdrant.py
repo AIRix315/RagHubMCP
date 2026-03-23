@@ -16,7 +16,7 @@ class TestQdrantProviderInit:
 
     def test_default_initialization(self):
         """Test default initialization."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider()
 
@@ -26,7 +26,7 @@ class TestQdrantProviderInit:
 
     def test_memory_mode(self):
         """Test memory mode initialization."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory")
 
@@ -34,7 +34,7 @@ class TestQdrantProviderInit:
 
     def test_custom_embedding_dimension(self):
         """Test custom embedding dimension."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(
             mode="memory",
@@ -45,7 +45,7 @@ class TestQdrantProviderInit:
 
     def test_from_config_memory(self):
         """Test from_config factory method for memory mode."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         config = {
             "mode": "memory",
@@ -59,7 +59,7 @@ class TestQdrantProviderInit:
 
     def test_from_config_local(self):
         """Test from_config factory method for local mode."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         config = {
             "mode": "local",
@@ -74,7 +74,7 @@ class TestQdrantProviderInit:
 
     def test_from_config_remote(self):
         """Test from_config factory method for remote mode."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         config = {
             "mode": "remote",
@@ -96,7 +96,7 @@ class TestQdrantProviderCollectionOps:
     @pytest.fixture
     def memory_provider(self):
         """Create a provider with in-memory storage."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
         return provider
@@ -133,7 +133,7 @@ class TestQdrantProviderDocumentOps:
     @pytest.fixture
     def provider_with_mock_embedding(self):
         """Create a provider with mocked embedding provider."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
 
@@ -237,7 +237,7 @@ class TestQdrantProviderQuery:
     @pytest.fixture
     def provider_with_data(self):
         """Create a provider with test data."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
 
@@ -317,12 +317,12 @@ class TestQdrantProviderWithoutClient:
 
     def test_qdrant_provider_name(self):
         """Test provider name is registered correctly."""
-        from providers.base import ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         # Check if qdrant is registered (it may not be if qdrant-client is not installed)
         if registry.is_registered(ProviderCategory.VECTORSTORE, "qdrant"):
-            from providers.vectorstore.qdrant import QdrantProvider
+            from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
             assert QdrantProvider.NAME == "qdrant"
 
@@ -332,7 +332,7 @@ class TestQdrantProviderClientModes:
 
     def test_from_config_cloud_mode(self):
         """Test from_config for cloud mode."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         config = {
             "mode": "cloud",
@@ -349,7 +349,7 @@ class TestQdrantProviderClientModes:
 
     def test_from_config_with_grpc(self):
         """Test from_config with gRPC preference."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         config = {
             "mode": "remote",
@@ -365,7 +365,7 @@ class TestQdrantProviderClientModes:
 
     def test_cloud_mode_initialization(self):
         """Test cloud mode initialization parameters."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(
             mode="cloud",
@@ -379,7 +379,7 @@ class TestQdrantProviderClientModes:
 
     def test_remote_mode_initialization(self):
         """Test remote mode initialization parameters."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(
             mode="remote",
@@ -398,7 +398,7 @@ class TestQdrantProviderFilterBuilding:
     @pytest.fixture
     def memory_provider(self):
         """Create a provider with in-memory storage."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
         return provider
@@ -480,7 +480,7 @@ class TestQdrantProviderAddOperations:
     @pytest.fixture
     def provider_with_mock_embedding(self):
         """Create a provider with mocked embedding provider."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
 
@@ -542,7 +542,7 @@ class TestQdrantProviderGetOperations:
     @pytest.fixture
     def provider_with_data(self):
         """Create a provider with test data."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
 
@@ -611,7 +611,7 @@ class TestQdrantProviderDeleteOperations:
     @pytest.fixture
     def provider_with_data(self):
         """Create a provider with test data."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
 
@@ -667,7 +667,7 @@ class TestQdrantProviderUpdateOperations:
     @pytest.fixture
     def provider_with_data(self):
         """Create a provider with test data."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
 
@@ -779,7 +779,7 @@ class TestQdrantProviderQueryWithFilters:
     @pytest.fixture
     def provider_with_data(self):
         """Create a provider with test data."""
-        from providers.vectorstore.qdrant import QdrantProvider
+        from raghub_mcp.providers.vectorstore.qdrant import QdrantProvider
 
         provider = QdrantProvider(mode="memory", embedding_dimension=4)
 

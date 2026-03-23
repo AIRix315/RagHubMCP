@@ -21,17 +21,17 @@ class TestProviderRegistry:
 
     def test_registry_is_singleton(self):
         """注册表是单例模式"""
-        from providers.registry import registry
+        from raghub_mcp.providers.registry import registry
 
         # 获取另一个实例应该是同一个对象
-        from providers.registry import registry as registry2
+        from raghub_mcp.providers.registry import registry as registry2
 
         assert registry is registry2
 
     def test_register_provider_success(self):
         """成功注册 Provider"""
-        from providers.base import BaseProvider, ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import BaseProvider, ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         @registry.register(ProviderCategory.EMBEDDING, "test-provider-1")
         class TestProvider1(BaseProvider):
@@ -47,8 +47,8 @@ class TestProviderRegistry:
 
     def test_register_duplicate_provider_fails(self):
         """重复注册同名 Provider 应该失败"""
-        from providers.base import BaseProvider, ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import BaseProvider, ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         @registry.register(ProviderCategory.EMBEDDING, "test-duplicate")
         class DuplicateProvider(BaseProvider):
@@ -73,8 +73,8 @@ class TestProviderRegistry:
 
     def test_get_unregistered_provider_fails(self):
         """获取未注册的 Provider 应该抛出明确异常"""
-        from providers.base import ProviderCategory, UnsupportedProviderError
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory, UnsupportedProviderError
+        from raghub_mcp.providers.registry import registry
 
         with pytest.raises(UnsupportedProviderError) as exc_info:
             registry.get(ProviderCategory.EMBEDDING, "nonexistent-provider-xyz")
@@ -86,8 +86,8 @@ class TestProviderRegistry:
 
     def test_list_providers_by_category(self):
         """列出某分类下的所有 Provider"""
-        from providers.base import BaseProvider, ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import BaseProvider, ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         # 注册几个测试 provider
         @registry.register(ProviderCategory.RERANK, "list-test-1")
@@ -113,8 +113,8 @@ class TestProviderRegistry:
 
     def test_is_registered_check(self):
         """检查 Provider 是否已注册"""
-        from providers.base import BaseProvider, ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import BaseProvider, ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         @registry.register(ProviderCategory.LLM, "check-test")
         class CheckTest(BaseProvider):
@@ -129,8 +129,8 @@ class TestProviderRegistry:
 
     def test_register_different_categories_same_name(self):
         """不同分类可以有同名 Provider"""
-        from providers.base import BaseProvider, ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import BaseProvider, ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         # Embedding 分类
         @registry.register(ProviderCategory.EMBEDDING, "same-name-test")

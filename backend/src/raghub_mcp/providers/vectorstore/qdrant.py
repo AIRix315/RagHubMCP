@@ -137,7 +137,7 @@ class QdrantProvider(BaseVectorStoreProvider):
     def _get_embedding_provider(self) -> Any:
         """Get the embedding provider for auto-embedding."""
         if self._embedding_provider is None:
-            from providers.factory import factory
+            from raghub_mcp.providers.factory import factory
 
             self._embedding_provider = factory.get_embedding_provider()
         return self._embedding_provider

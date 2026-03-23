@@ -26,14 +26,16 @@ class TestFlashRankProviderBasic:
 
     def test_provider_registration(self):
         """FlashRank 提供者已注册到 registry"""
-        from providers.base import ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.registry import registry
+        # Import the provider to trigger registration
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         assert registry.is_registered(ProviderCategory.RERANK, "flashrank")
 
     def test_provider_instantiation(self):
         """TC-1.4.1: 模型首次加载成功"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
             model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
@@ -44,7 +46,7 @@ class TestFlashRankProviderBasic:
 
     def test_from_config_factory(self):
         """from_config 方法正确创建实例"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         config = {
             "name": "test-flashrank",
@@ -58,7 +60,7 @@ class TestFlashRankProviderBasic:
 
     def test_empty_documents_returns_empty(self):
         """TC-1.4.5: 空文档列表返回空结果"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
             model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
@@ -69,7 +71,7 @@ class TestFlashRankProviderBasic:
 
     def test_single_document(self):
         """TC-1.4.6: 单文档返回正确结果"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
             model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
@@ -90,7 +92,7 @@ class TestFlashRankProviderRerank:
     @pytest.fixture
     def provider(self):
         """创建测试用的 FlashRank 提供者"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         return FlashRankRerankProvider(
             model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
@@ -166,7 +168,7 @@ class TestFlashRankProviderCaching:
 
     def test_model_caching_speedup(self):
         """TC-1.4.2: 模型缓存命中，二次调用更快"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
             model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
@@ -191,7 +193,7 @@ class TestFlashRankProviderCaching:
 
     def test_different_model_switching(self):
         """TC-1.4.7: 不同模型切换成功"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         # TinyBERT 模型
         provider_tiny = FlashRankRerankProvider(
@@ -224,7 +226,7 @@ class TestFlashRankProviderAsync:
     @pytest.mark.anyio
     async def test_async_rerank(self):
         """异步 rerank 方法正常工作"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
             model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"
@@ -244,7 +246,7 @@ class TestFlashRankProviderRerankWithMetadata:
 
     def test_rerank_with_metadata(self):
         """rerank_with_metadata 方法正确添加分数"""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         provider = FlashRankRerankProvider(
             model="ms-marco-TinyBERT-L-2-v2", cache_dir="./temp_test_cache"

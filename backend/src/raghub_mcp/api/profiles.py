@@ -20,6 +20,7 @@ from raghub_mcp.config.profiles import (
     get_default_profile,
     get_profile,
 )
+from raghub_mcp.messages import get_message
 
 router = APIRouter(prefix="/profiles", tags=["profiles"])
 
@@ -162,7 +163,7 @@ async def apply_profile(name: str) -> ApplyProfileResponse:
 
     return ApplyProfileResponse(
         name=name,
-        message=f"已应用 {profile.metadata.description} 配置",
+        message=get_message("profile_applied", lang="zh", description=profile.metadata.description),
         previous_profile=previous,
     )
 

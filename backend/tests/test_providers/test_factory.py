@@ -20,16 +20,16 @@ class TestProviderFactory:
 
     def test_factory_is_singleton(self):
         """工厂是单例模式"""
-        from providers.factory import factory
-        from providers.factory import factory as factory2
+        from raghub_mcp.providers.factory import factory
+        from raghub_mcp.providers.factory import factory as factory2
 
         assert factory is factory2
 
     def test_factory_creates_correct_embedding_provider(self):
         """TC-1.3.3: 工厂根据配置创建正确的 EmbeddingProvider"""
-        from providers.base import ProviderCategory
-        from providers.embedding.base import BaseEmbeddingProvider
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.registry import registry
 
         # 注册一个 mock provider
         @registry.register(ProviderCategory.EMBEDDING, "mock-emb-factory")
@@ -57,7 +57,7 @@ class TestProviderFactory:
                 return cls(model=config.get("model", "default"))
 
         # 修改配置以使用 mock provider
-        from utils.config import load_config
+        from raghub_mcp.utils.config import load_config
 
         config_path = Path(__file__).parent.parent.parent / "config.yaml"
         config = load_config(str(config_path))
@@ -78,9 +78,9 @@ class TestProviderFactory:
 
     def test_factory_singleton_caching(self):
         """工厂使用单例缓存：相同配置复用实例"""
-        from providers.base import ProviderCategory
-        from providers.embedding.base import BaseEmbeddingProvider
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.registry import registry
 
         # 注册一个可追踪实例创建的 provider
         instance_ids = []
@@ -109,7 +109,7 @@ class TestProviderFactory:
                 return cls(model=config.get("model", "default"))
 
         # 清除工厂缓存
-        from providers.factory import factory
+        from raghub_mcp.providers.factory import factory
 
         factory.clear_cache()
 
@@ -137,8 +137,8 @@ class TestProviderFactory:
 
     def test_unsupported_provider_raises_clear_error(self):
         """TC-1.3.4: 不支持的 provider 类型抛出明确异常"""
-        from providers.base import ProviderCategory, UnsupportedProviderError
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory, UnsupportedProviderError
+        from raghub_mcp.providers.registry import registry
 
         # 尝试获取不存在的 provider
         with pytest.raises(UnsupportedProviderError) as exc_info:
@@ -151,8 +151,8 @@ class TestProviderFactory:
 
     def test_provider_not_found_in_config(self):
         """TC-1.3.4: 配置中找不到 provider 实例"""
-        from providers.base import ProviderNotFoundError
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderNotFoundError
+        from raghub_mcp.providers.factory import factory
 
         # 清除缓存
         factory.clear_cache()
@@ -168,10 +168,10 @@ class TestProviderFactory:
 
     def test_clear_cache(self):
         """测试清除缓存功能"""
-        from providers.base import ProviderCategory
-        from providers.embedding.base import BaseEmbeddingProvider
-        from providers.factory import factory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.factory import factory
+        from raghub_mcp.providers.registry import registry
 
         # 注册测试 provider
         @registry.register(ProviderCategory.EMBEDDING, "clear-cache-test")
@@ -212,8 +212,8 @@ class TestProviderFactory:
 
     def test_cache_key_generation(self):
         """测试缓存键生成的一致性"""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         config1 = {"name": "test", "type": "ollama", "model": "nomic"}
         config2 = {"name": "test", "type": "ollama", "model": "nomic"}
@@ -230,8 +230,8 @@ class TestProviderFactory:
 
     def test_different_categories_have_different_keys(self):
         """不同分类的缓存键应该不同"""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         config = {"name": "test", "type": "ollama", "model": "test"}
 
@@ -250,8 +250,8 @@ class TestProviderFactoryGetters:
 
     def test_get_llm_provider_calls_internal_method(self):
         """Test that get_llm_provider calls _get_provider with correct category."""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         # Use cache_key generation to verify correct category
         config = {"name": "llm-test", "type": "test", "model": "test"}
@@ -261,8 +261,8 @@ class TestProviderFactoryGetters:
 
     def test_get_vectorstore_provider_calls_internal_method(self):
         """Test that get_vectorstore_provider calls _get_provider with correct category."""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         config = {"name": "vs-test", "type": "test", "path": "/tmp"}
         key = factory._cache_key(ProviderCategory.VECTORSTORE, "vs-test", config)
@@ -271,8 +271,8 @@ class TestProviderFactoryGetters:
 
     def test_get_rerank_provider_calls_internal_method(self):
         """Test that get_rerank_provider calls _get_provider with correct category."""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         config = {"name": "rerank-test", "type": "test", "model": "test"}
         key = factory._cache_key(ProviderCategory.RERANK, "rerank-test", config)
@@ -285,8 +285,8 @@ class TestProviderFactoryErrorHandling:
 
     def test_provider_not_found_error_message(self):
         """Test ProviderNotFoundError contains useful information."""
-        from providers.base import ProviderNotFoundError
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderNotFoundError
+        from raghub_mcp.providers.factory import factory
 
         factory.clear_cache()
 
@@ -298,8 +298,8 @@ class TestProviderFactoryErrorHandling:
 
     def test_unsupported_provider_error_details(self):
         """Test UnsupportedProviderError contains available providers."""
-        from providers.base import ProviderCategory, UnsupportedProviderError
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory, UnsupportedProviderError
+        from raghub_mcp.providers.registry import registry
 
         with pytest.raises(UnsupportedProviderError) as exc_info:
             registry.get(ProviderCategory.EMBEDDING, "totally-fake-provider")
@@ -314,8 +314,8 @@ class TestProviderFactoryErrorHandling:
 
     def test_get_vectorstore_provider_not_found(self):
         """Test get_vectorstore_provider with non-existent instance."""
-        from providers.base import ProviderNotFoundError
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderNotFoundError
+        from raghub_mcp.providers.factory import factory
 
         factory.clear_cache()
 
@@ -324,8 +324,8 @@ class TestProviderFactoryErrorHandling:
 
     def test_get_llm_provider_not_found(self):
         """Test get_llm_provider with non-existent instance."""
-        from providers.base import ProviderNotFoundError
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderNotFoundError
+        from raghub_mcp.providers.factory import factory
 
         factory.clear_cache()
 
@@ -338,10 +338,10 @@ class TestProviderFactoryCaching:
 
     def test_cache_returns_same_instance(self):
         """Test that cache returns same instance for same config."""
-        from providers.base import ProviderCategory
-        from providers.embedding.base import BaseEmbeddingProvider
-        from providers.factory import factory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
+        from raghub_mcp.providers.factory import factory
+        from raghub_mcp.providers.registry import registry
 
         @registry.register(ProviderCategory.EMBEDDING, "cache-same-test")
         class CacheSameTest(BaseEmbeddingProvider):
@@ -380,8 +380,8 @@ class TestProviderFactoryCaching:
 
     def test_different_configs_different_instances(self):
         """Test that different configs create different instances."""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         config1 = {"name": "diff-test-1", "type": "test", "model": "model-a"}
         config2 = {"name": "diff-test-2", "type": "test", "model": "model-b"}
@@ -397,8 +397,8 @@ class TestProviderFactoryConfigHash:
 
     def test_config_order_does_not_affect_hash(self):
         """Test that config key order doesn't change the hash."""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         config1 = {"name": "test", "type": "http", "model": "test", "dimension": 768}
         config2 = {"dimension": 768, "model": "test", "name": "test", "type": "http"}
@@ -410,8 +410,8 @@ class TestProviderFactoryConfigHash:
 
     def test_nested_config_in_hash(self):
         """Test that nested config values affect hash."""
-        from providers.base import ProviderCategory
-        from providers.factory import factory
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.factory import factory
 
         config1 = {"name": "test", "type": "test", "options": {"batch_size": 32}}
         config2 = {"name": "test", "type": "test", "options": {"batch_size": 64}}

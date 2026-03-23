@@ -4,23 +4,19 @@ chroma:
   port: null
 cors:
   allow_credentials: true
-  # 修改前: allow_headers: ["*"]
-  # 修改后: 显式列出允许的头部
   allow_headers:
-    - Content-Type
-    - Authorization
-    - X-Requested-With
-  # 修改前: allow_methods: ["*"]
-  # 修改后: 显式列出允许的方法
+  - Content-Type
+  - Authorization
+  - X-Requested-With
   allow_methods:
-    - GET
-    - POST
-    - PUT
-    - DELETE
-    - OPTIONS
+  - GET
+  - POST
+  - PUT
+  - DELETE
+  - OPTIONS
   origins:
-    - http://localhost:3315
-    - http://127.0.0.1:3315
+  - http://localhost:3315
+  - http://127.0.0.1:3315
 hybrid:
   alpha: 0.5
   beta: 0.5

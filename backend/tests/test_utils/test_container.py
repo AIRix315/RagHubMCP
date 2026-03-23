@@ -18,7 +18,7 @@ class TestContainer:
         """Test registering a singleton."""
         container = Container()
 
-        container.registerSingleton("test", lambda: {"value": 42})
+        container.register_singleton("test", lambda: {"value": 42})
 
         assert "test" in container._factories
         assert "test" not in container._singletons
@@ -27,7 +27,7 @@ class TestContainer:
         """Test registering a transient."""
         container = Container()
 
-        container.registerTransient("test", lambda: {"value": 42})
+        container.register_transient("test", lambda: {"value": 42})
 
         assert "test" in container._factories
 
@@ -40,7 +40,7 @@ class TestContainer:
             call_count[0] += 1
             return {"value": 42}
 
-        container.registerSingleton("test", factory)
+        container.register_singleton("test", factory)
 
         instance1 = container.get("test")
         instance2 = container.get("test")
@@ -57,7 +57,7 @@ class TestContainer:
             call_count[0] += 1
             return {"value": call_count[0]}
 
-        container.registerTransient("_transient_test", factory)
+        container.register_transient("_transient_test", factory)
 
         instance1 = container.get("_transient_test")
         instance2 = container.get("_transient_test")
@@ -75,7 +75,7 @@ class TestContainer:
     def test_reset_single(self):
         """Test resetting a single dependency."""
         container = Container()
-        container.registerSingleton("test", lambda: {"value": 42})
+        container.register_singleton("test", lambda: {"value": 42})
 
         container.get("test")
         assert "test" in container._singletons
@@ -86,8 +86,8 @@ class TestContainer:
     def test_reset_all(self):
         """Test resetting all dependencies."""
         container = Container()
-        container.registerSingleton("test1", lambda: {})
-        container.registerSingleton("test2", lambda: {})
+        container.register_singleton("test1", lambda: {})
+        container.register_singleton("test2", lambda: {})
 
         container.get("test1")
         container.get("test2")
@@ -149,7 +149,7 @@ class TestInjectable:
 
         # For transient, need to use _transient_ prefix internally
         container = get_container()
-        container.registerTransient("_transient_transient_svc", lambda: TransientService())
+        container.register_transient("_transient_transient_svc", lambda: TransientService())
 
         instance1 = container.get("_transient_transient_svc")
         instance2 = container.get("_transient_transient_svc")

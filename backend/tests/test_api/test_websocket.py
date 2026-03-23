@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from utils.config import load_config
+from raghub_mcp.utils.config import load_config
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +25,7 @@ def test_client():
     load_config(str(config_path))
 
     # Import app after config is loaded
-    from main import app
+    from raghub_mcp.main import app
 
     with TestClient(app) as client:
         yield client
@@ -36,7 +36,7 @@ class TestWebSocketManager:
 
     def test_manager_initialization(self):
         """Test that manager initializes correctly."""
-        from api.websocket import ConnectionManager, manager
+        from raghub_mcp.api.websocket import ConnectionManager, manager
 
         assert manager is not None
         assert isinstance(manager, ConnectionManager)
@@ -44,7 +44,7 @@ class TestWebSocketManager:
 
     def test_message_types(self):
         """Test message type enum."""
-        from api.websocket import MessageType
+        from raghub_mcp.api.websocket import MessageType
 
         assert MessageType.PROGRESS.value == "progress"
         assert MessageType.HEARTBEAT.value == "heartbeat"
@@ -53,7 +53,7 @@ class TestWebSocketManager:
 
     def test_progress_message_to_dict(self):
         """Test ProgressMessage serialization."""
-        from api.websocket import MessageType, ProgressMessage
+        from raghub_mcp.api.websocket import MessageType, ProgressMessage
 
         msg = ProgressMessage(
             type=MessageType.PROGRESS,
@@ -72,7 +72,7 @@ class TestWebSocketManager:
 
     def test_progress_message_to_json(self):
         """Test ProgressMessage JSON serialization."""
-        from api.websocket import MessageType, ProgressMessage
+        from raghub_mcp.api.websocket import MessageType, ProgressMessage
 
         msg = ProgressMessage(
             type=MessageType.PROGRESS,
@@ -121,7 +121,7 @@ class TestWebSocketConnection:
 
     def test_websocket_disconnect(self, test_client):
         """Test WebSocket disconnect handling."""
-        from api.websocket import manager
+        from raghub_mcp.api.websocket import manager
 
         task_id = "test-task-disconnect"
 
@@ -147,7 +147,7 @@ class TestWebSocketBroadcast:
     @pytest.mark.asyncio
     async def test_broadcast_progress_no_connections(self):
         """Test broadcasting with no connections (should not raise)."""
-        from api.websocket import ConnectionManager
+        from raghub_mcp.api.websocket import ConnectionManager
 
         manager = ConnectionManager()
 
@@ -162,7 +162,7 @@ class TestWebSocketBroadcast:
     @pytest.mark.asyncio
     async def test_broadcast_error(self):
         """Test broadcasting error message."""
-        from api.websocket import ConnectionManager
+        from raghub_mcp.api.websocket import ConnectionManager
 
         manager = ConnectionManager()
 
@@ -268,7 +268,7 @@ class TestWebSocketManagerMethods:
     @pytest.mark.asyncio
     async def test_get_connection_count(self):
         """Test connection counting."""
-        from api.websocket import ConnectionManager
+        from raghub_mcp.api.websocket import ConnectionManager
 
         manager = ConnectionManager()
 
@@ -281,7 +281,7 @@ class TestWebSocketManagerMethods:
         """Test heartbeat sending."""
         from unittest.mock import AsyncMock, MagicMock
 
-        from api.websocket import ConnectionManager
+        from raghub_mcp.api.websocket import ConnectionManager
 
         manager = ConnectionManager()
 

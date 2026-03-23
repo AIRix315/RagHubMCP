@@ -7,9 +7,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pipeline.result import Document
-from pipeline.retriever import VectorRetriever
-from providers.vectorstore.base import QueryResult, SearchResult
+from raghub_mcp.pipeline.result import Document
+from raghub_mcp.pipeline.retriever import VectorRetriever
+from raghub_mcp.providers.vectorstore.base import QueryResult, SearchResult
 
 
 class TestVectorRetrieverWithProvider:
@@ -26,7 +26,7 @@ class TestVectorRetrieverWithProvider:
             ]
         )
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever(collection="test_collection")
@@ -56,7 +56,7 @@ class TestVectorRetrieverWithProvider:
             ]
         )
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever()
@@ -82,7 +82,7 @@ class TestVectorRetrieverWithProvider:
             ]
         )
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever()
@@ -99,7 +99,7 @@ class TestVectorRetrieverWithProvider:
         mock_provider = MagicMock()
         mock_provider.query.return_value = QueryResult(results=[])
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever()
@@ -119,7 +119,7 @@ class TestVectorRetrieverWithProvider:
         mock_provider = MagicMock()
         mock_provider.query.return_value = QueryResult(results=[])
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever(collection="my_default")
@@ -134,7 +134,7 @@ class TestVectorRetrieverWithProvider:
         mock_provider = MagicMock()
         mock_provider.query.return_value = QueryResult(results=[])
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever()
@@ -152,7 +152,7 @@ class TestVectorRetrieverWithProvider:
             ]
         )
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever()
@@ -170,7 +170,7 @@ class TestVectorRetrieverWithProvider:
             ]
         )
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_provider
 
             retriever = VectorRetriever()

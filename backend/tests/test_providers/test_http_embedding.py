@@ -28,7 +28,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that the provider can be instantiated with required parameters.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -46,7 +46,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that the provider can be instantiated with optional API key.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://api.openai.com/v1",
@@ -62,7 +62,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that the provider can be instantiated with custom headers.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://your-resource.openai.azure.com/openai/deployments/your-deployment",
@@ -79,7 +79,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that embed_documents returns vectors with correct dimension.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -110,7 +110,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that embed_query returns a vector with correct dimension.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -138,7 +138,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that the provider can be created from config dict.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         config: dict[str, Any] = {
             "name": "lmstudio-local",
@@ -159,7 +159,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that from_config handles API key correctly.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         config: dict[str, Any] = {
             "name": "openai-via-http",
@@ -180,7 +180,7 @@ class TestHTTPEmbeddingProvider:
 
         Verify that large lists are processed in sub-batches.
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -224,7 +224,7 @@ class TestHTTPEmbeddingProvider:
         Body: {"input": [...], "model": "..."}
         Headers: Authorization: Bearer {api_key}
         """
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://api.openai.com/v1",
@@ -261,7 +261,7 @@ class TestHTTPEmbeddingProvider:
 
     def test_empty_documents_returns_empty_list(self):
         """Test that empty document list returns empty list."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -277,8 +277,8 @@ class TestHTTPEmbeddingProvider:
 
         Verify that the provider can be retrieved from the registry.
         """
-        from providers.base import ProviderCategory
-        from providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         # Check if http embedding provider is registered
         http_provider_class = registry.get(ProviderCategory.EMBEDDING, "http")
@@ -293,7 +293,7 @@ class TestHTTPEmbeddingProviderAsync:
     @pytest.mark.asyncio
     async def test_aembed_documents_returns_correct_dimension(self):
         """Test that aembed_documents returns vectors with correct dimension."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -326,7 +326,7 @@ class TestHTTPEmbeddingProviderAsync:
     @pytest.mark.asyncio
     async def test_aembed_documents_empty_list(self):
         """Test that aembed_documents with empty list returns empty list."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -340,7 +340,7 @@ class TestHTTPEmbeddingProviderAsync:
     @pytest.mark.asyncio
     async def test_aembed_query_returns_correct_dimension(self):
         """Test that aembed_query returns vector with correct dimension."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -370,7 +370,7 @@ class TestHTTPEmbeddingProviderAsync:
     @pytest.mark.asyncio
     async def test_aembed_query_with_api_key(self):
         """Test that aembed_query sends correct headers with API key."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://api.openai.com/v1",
@@ -405,7 +405,7 @@ class TestHTTPEmbeddingProviderAsync:
     @pytest.mark.asyncio
     async def test_aembed_documents_with_custom_headers(self):
         """Test that aembed_documents uses custom headers."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://azure.example.com",
@@ -440,7 +440,7 @@ class TestHTTPEmbeddingProviderAsync:
     @pytest.mark.asyncio
     async def test_aembed_documents_sorted_by_index(self):
         """Test that aembed_documents sorts results by index."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -475,7 +475,7 @@ class TestHTTPEmbeddingProviderBatch:
 
     def test_embed_batch_empty_list(self):
         """Test that embed_batch with empty list returns empty list."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -488,7 +488,7 @@ class TestHTTPEmbeddingProviderBatch:
 
     def test_embed_batch_single_batch(self):
         """Test embed_batch with texts that fit in single batch."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -514,7 +514,7 @@ class TestHTTPEmbeddingProviderBatch:
 
     def test_embed_batch_respects_batch_size(self):
         """Test that embed_batch makes multiple calls for large lists."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -554,7 +554,7 @@ class TestHTTPEmbeddingProviderHeaders:
 
     def test_get_headers_with_api_key(self):
         """Test that _get_headers includes Authorization with API key."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://api.openai.com/v1",
@@ -570,7 +570,7 @@ class TestHTTPEmbeddingProviderHeaders:
 
     def test_get_headers_with_custom_headers(self):
         """Test that _get_headers includes custom headers."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://azure.example.com",
@@ -586,7 +586,7 @@ class TestHTTPEmbeddingProviderHeaders:
 
     def test_get_headers_custom_auth_takes_precedence(self):
         """Test that custom Authorization header takes precedence over api_key."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="https://api.example.com",
@@ -603,7 +603,7 @@ class TestHTTPEmbeddingProviderHeaders:
 
     def test_get_embeddings_url(self):
         """Test that _get_embeddings_url constructs correct URL."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1",
@@ -617,7 +617,7 @@ class TestHTTPEmbeddingProviderHeaders:
 
     def test_base_url_trailing_slash_removed(self):
         """Test that trailing slash is removed from base_url."""
-        from providers.embedding.http import HTTPEmbeddingProvider
+        from raghub_mcp.providers.embedding.http import HTTPEmbeddingProvider
 
         provider = HTTPEmbeddingProvider(
             base_url="http://localhost:1234/v1/",

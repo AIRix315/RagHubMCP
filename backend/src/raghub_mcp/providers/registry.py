@@ -22,8 +22,8 @@ class ProviderRegistry(Registry[BaseProvider, ProviderCategory]):
     Supports decorator-based registration and runtime lookup.
 
     Example:
-        from providers.registry import registry
-        from providers.base import ProviderCategory
+        from raghub_mcp.providers.registry import registry
+        from raghub_mcp.providers.base import ProviderCategory
 
         @registry.register(ProviderCategory.EMBEDDING, "ollama")
         class OllamaEmbeddingProvider(BaseEmbeddingProvider):

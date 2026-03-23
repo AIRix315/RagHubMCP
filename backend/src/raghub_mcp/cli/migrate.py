@@ -174,7 +174,7 @@ Examples:
     # Dry run: list collections and exit
     if args.dry_run:
         try:
-            from providers.vectorstore import ChromaProvider
+            from raghub_mcp.providers.vectorstore import ChromaProvider
 
             print("Scanning ChromaDB collections...")
             source = ChromaProvider(persist_dir=args.chroma_dir)
@@ -218,7 +218,7 @@ Examples:
     print()
 
     try:
-        from utils.migrate import migrate_chroma_to_qdrant
+        from raghub_mcp.utils.migrate import migrate_chroma_to_qdrant
 
         # Build Qdrant config
         qdrant_kwargs: dict[str, Any] = {

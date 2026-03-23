@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from utils.config import load_config
+from raghub_mcp.utils.config import load_config
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +25,7 @@ def test_client():
     config_path = Path(__file__).parent.parent.parent / "config.yaml"
     load_config(str(config_path))
 
-    from main import app
+    from raghub_mcp.main import app
 
     with TestClient(app) as client:
         yield client
@@ -144,7 +144,7 @@ class TestProviderSchemas:
 
     def test_rerank_test_request_schema(self):
         """Test RerankTestRequest validation."""
-        from api.schemas import RerankTestRequest
+        from raghub_mcp.api.schemas import RerankTestRequest
 
         # Valid request
         request = RerankTestRequest(
@@ -164,7 +164,7 @@ class TestProviderSchemas:
 
     def test_rerank_test_response_schema(self):
         """Test RerankTestResponse model."""
-        from api.schemas import RerankTestResponse, RerankResult
+        from raghub_mcp.api.schemas import RerankTestResponse, RerankResult
 
         result = RerankResult(
             index=0,
@@ -177,7 +177,7 @@ class TestProviderSchemas:
 
     def test_provider_info_schema(self):
         """Test ProviderInfo model."""
-        from api.schemas import ProviderInfo
+        from raghub_mcp.api.schemas import ProviderInfo
 
         info = ProviderInfo(
             name="test-provider",
@@ -191,7 +191,7 @@ class TestProviderSchemas:
 
     def test_provider_create_request_schema(self):
         """Test ProviderCreateRequest validation."""
-        from api.schemas import ProviderCreateRequest
+        from raghub_mcp.api.schemas import ProviderCreateRequest
 
         # Valid request with minimal fields
         request = ProviderCreateRequest(
@@ -207,7 +207,7 @@ class TestProviderStatus:
 
     def test_provider_status_values(self):
         """Test valid provider status values."""
-        from api.schemas import ProviderStatus
+        from raghub_mcp.api.schemas import ProviderStatus
 
         assert ProviderStatus.ACTIVE == "active"
         assert ProviderStatus.INACTIVE == "inactive"

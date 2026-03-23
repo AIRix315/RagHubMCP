@@ -13,8 +13,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from pipeline.reranker import FallbackReranker, NoOpReranker, PipelineReranker, Reranker
-from pipeline.result import Document
+from raghub_mcp.pipeline.reranker import FallbackReranker, NoOpReranker, PipelineReranker, Reranker
+from raghub_mcp.pipeline.result import Document
 
 
 class TestRerankerABC:
@@ -90,7 +90,7 @@ class TestPipelineReranker:
         mock_factory = MagicMock()
         mock_factory.get_rerank_provider.return_value = mock_provider
 
-        with patch("src.providers.factory.factory", mock_factory):
+        with patch("raghub_mcp.providers.factory.factory", mock_factory):
             reranker = PipelineReranker()
             reranked = await reranker.rerank("test query", docs)
 
@@ -120,7 +120,7 @@ class TestPipelineReranker:
         mock_factory = MagicMock()
         mock_factory.get_rerank_provider.return_value = None
 
-        with patch("src.providers.factory.factory", mock_factory):
+        with patch("raghub_mcp.providers.factory.factory", mock_factory):
             reranker = PipelineReranker()
             reranked = await reranker.rerank("test query", docs)
 
@@ -146,7 +146,7 @@ class TestPipelineReranker:
         mock_factory = MagicMock()
         mock_factory.get_rerank_provider.return_value = mock_provider
 
-        with patch("src.providers.factory.factory", mock_factory):
+        with patch("raghub_mcp.providers.factory.factory", mock_factory):
             reranker = PipelineReranker()
             reranked = await reranker.rerank("test query", docs, {"top_k": 3})
 
@@ -174,7 +174,7 @@ class TestPipelineReranker:
         mock_factory = MagicMock()
         mock_factory.get_rerank_provider.return_value = mock_provider
 
-        with patch("src.providers.factory.factory", mock_factory):
+        with patch("raghub_mcp.providers.factory.factory", mock_factory):
             reranker = PipelineReranker()
             reranked = await reranker.rerank("test query", docs)
 

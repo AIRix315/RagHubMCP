@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from pipeline.retriever import HybridRetriever
+from raghub_mcp.pipeline.retriever import HybridRetriever
 
 
 class TestHybridRetriever:
@@ -66,10 +66,10 @@ class TestHybridRetriever:
         mock_bm25_service.query.return_value = [("doc1", 0.8)]
 
         # Patch at the import location used in retriever.py
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_vectorstore
 
-            with patch("src.services.bm25_service.get_bm25_service") as mock_get_bm25:
+            with patch("raghub_mcp.pipeline.bm25.get_bm25_service") as mock_get_bm25:
                 mock_get_bm25.return_value = mock_bm25_service
 
                 retriever = HybridRetriever(alpha=0.6, beta=0.4)
@@ -95,10 +95,10 @@ class TestHybridRetriever:
         mock_bm25_service = MagicMock()
         mock_bm25_service.query.return_value = [("doc1", 0.9)]
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_vectorstore
 
-            with patch("src.services.bm25_service.get_bm25_service") as mock_get_bm25:
+            with patch("raghub_mcp.pipeline.bm25.get_bm25_service") as mock_get_bm25:
                 mock_get_bm25.return_value = mock_bm25_service
 
                 retriever = HybridRetriever()
@@ -121,10 +121,10 @@ class TestHybridRetriever:
         mock_bm25_service = MagicMock()
         mock_bm25_service.query.return_value = []
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_vectorstore
 
-            with patch("src.services.bm25_service.get_bm25_service") as mock_get_bm25:
+            with patch("raghub_mcp.pipeline.bm25.get_bm25_service") as mock_get_bm25:
                 mock_get_bm25.return_value = mock_bm25_service
 
                 retriever = HybridRetriever()
@@ -148,10 +148,10 @@ class TestHybridRetriever:
         mock_bm25_service = MagicMock()
         mock_bm25_service.query.return_value = [("doc1", 0.85)]
 
-        with patch("src.providers.factory.factory") as mock_factory:
+        with patch("raghub_mcp.providers.factory.factory") as mock_factory:
             mock_factory.get_vectorstore_provider.return_value = mock_vectorstore
 
-            with patch("src.services.bm25_service.get_bm25_service") as mock_get_bm25:
+            with patch("raghub_mcp.pipeline.bm25.get_bm25_service") as mock_get_bm25:
                 mock_get_bm25.return_value = mock_bm25_service
 
                 retriever = HybridRetriever()

@@ -11,7 +11,7 @@ Reference: Docs/11-V2-Desing.md, Docs/12-V2-Blueprint.md
 
 from unittest.mock import MagicMock
 
-from pipeline.options import PipelineOptions
+from raghub_mcp.pipeline.options import PipelineOptions
 
 
 class TestPipelineOptions:

@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from utils.config import load_config
+from raghub_mcp.utils.config import load_config
 
 
 @pytest.fixture(scope="module")
@@ -29,9 +29,9 @@ def test_client():
     mock_vectorstore = MagicMock()
     mock_vectorstore.list_collections.return_value = []
 
-    with patch("src.api.search._get_vectorstore_provider", return_value=mock_vectorstore):
+    with patch("raghub_mcp.api.search._get_vectorstore_provider", return_value=mock_vectorstore):
         # Import app after config is loaded
-        from main import app
+        from raghub_mcp.main import app
 
         with TestClient(app) as client:
             yield client
@@ -263,7 +263,7 @@ class TestSchemas:
 
     def test_search_request_validation(self):
         """Test SearchRequest validation."""
-        from api.schemas import SearchRequest
+        from raghub_mcp.api.schemas import SearchRequest
 
         # Valid request
         request = SearchRequest(query="test", collection_name="test")
@@ -279,7 +279,7 @@ class TestSchemas:
 
     def test_index_request_validation(self):
         """Test IndexRequest validation."""
-        from api.schemas import IndexRequest
+        from raghub_mcp.api.schemas import IndexRequest
 
         request = IndexRequest(path="/test")
         assert request.path == "/test"
@@ -288,7 +288,7 @@ class TestSchemas:
 
     def test_benchmark_config_validation(self):
         """Test BenchmarkConfig validation."""
-        from api.schemas import BenchmarkConfig
+        from raghub_mcp.api.schemas import BenchmarkConfig
 
         config = BenchmarkConfig(
             name="test",

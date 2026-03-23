@@ -21,7 +21,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError
 
-from api.schemas import (
+from raghub_mcp.api.schemas import (
     BenchmarkConfig,
     BenchmarkRequest,
     BenchmarkResponse,

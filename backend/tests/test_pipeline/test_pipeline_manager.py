@@ -15,15 +15,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from pipeline.base import RAGPipeline
-from pipeline.manager import (
+from raghub_mcp.pipeline.base import RAGPipeline
+from raghub_mcp.pipeline.manager import (
     _lock,
     create_pipeline,
     execute_search,
     get_pipeline,
     reset_pipeline,
 )
-from pipeline.result import Document, RAGResult
+from raghub_mcp.pipeline.result import Document, RAGResult
 
 
 class TestGetPipeline:
@@ -118,7 +118,7 @@ class TestExecuteSearch:
     @pytest.mark.asyncio
     async def test_execute_search_returns_result(self):
         """Test execute_search returns RAGResult."""
-        with patch("pipeline.manager.get_pipeline") as mock_get:
+        with patch("raghub_mcp.pipeline.manager.get_pipeline") as mock_get:
             mock_pipeline = MagicMock()
             mock_pipeline.run = AsyncMock(
                 return_value=RAGResult(
@@ -137,7 +137,7 @@ class TestExecuteSearch:
     @pytest.mark.asyncio
     async def test_execute_search_with_options(self):
         """Test execute_search passes options to pipeline."""
-        with patch("pipeline.manager.get_pipeline") as mock_get:
+        with patch("raghub_mcp.pipeline.manager.get_pipeline") as mock_get:
             mock_pipeline = MagicMock()
             mock_pipeline.run = AsyncMock(
                 return_value=RAGResult(

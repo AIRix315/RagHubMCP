@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from utils.config import (
+from raghub_mcp.utils.config import (
     ChromaConfig,
     CORSConfig,
     HybridConfig,

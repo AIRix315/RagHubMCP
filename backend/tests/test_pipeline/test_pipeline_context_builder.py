@@ -13,12 +13,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pipeline.context_builder import (
+from raghub_mcp.pipeline.context_builder import (
     ContextBuilder,
     DefaultContextBuilder,
     MultiQueryContextBuilder,
 )
-from pipeline.result import Document
+from raghub_mcp.pipeline.result import Document
 
 
 class TestContextBuilderABC:

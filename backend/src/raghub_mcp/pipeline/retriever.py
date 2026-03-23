@@ -185,13 +185,16 @@ class HybridRetriever(Retriever):
         return self._vectorstore_provider
 
     def _get_bm25_service(self) -> Any:
-        """Get BM25 service instance.
+        """Get BM25 service instance (Pipeline-internal implementation).
+
+        This method uses the pipeline's internal BM25 service instead of
+        the deprecated services module, following RULE-3.
 
         Returns:
             BM25Service singleton instance.
         """
         if self._bm25_service is None:
-            from raghub_mcp.services.bm25_service import get_bm25_service
+            from raghub_mcp.pipeline.bm25 import get_bm25_service
 
             self._bm25_service = get_bm25_service()
         return self._bm25_service

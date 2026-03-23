@@ -266,7 +266,7 @@ class TestIngestTool:
         mock_chunker.chunk.return_value = [mock_chunk]
 
         with patch(
-            "providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
+            "raghub_mcp.providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
         ):
             with patch("chunkers.SimpleChunker", return_value=mock_chunker):
                 result = await ingest(
@@ -303,7 +303,7 @@ class TestIngestTool:
         mock_chunker.chunk.return_value = [mock_chunk]
 
         with patch(
-            "providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
+            "raghub_mcp.providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
         ):
             with patch("chunkers.SimpleChunker", return_value=mock_chunker):
                 result = await ingest(
@@ -336,7 +336,7 @@ class TestIngestTool:
         mock_chunker.chunk.return_value = [mock_chunk]
 
         with patch(
-            "providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
+            "raghub_mcp.providers.factory.factory.get_vectorstore_provider", return_value=mock_vectorstore
         ):
             with patch("chunkers.SimpleChunker", return_value=mock_chunker):
                 result = await ingest(documents=[{"text": "test"}], collection="")
@@ -350,7 +350,7 @@ class TestIngestTool:
         ingest = self.get_ingest_func()
 
         with patch(
-            "providers.factory.factory.get_vectorstore_provider",
+            "raghub_mcp.providers.factory.factory.get_vectorstore_provider",
             side_effect=Exception("Provider error"),
         ):
             result = await ingest(documents=[{"text": "test"}], collection="test")

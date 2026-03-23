@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from utils.migrate import (
+from raghub_mcp.utils.migrate import (
     CollectionMigrationResult,
     MigrationResult,
     VectorStoreMigrator,
@@ -135,7 +135,7 @@ class MockVectorStoreProvider:
         offset: int | None = None,
     ) -> list[Any]:
         """Get documents from collection."""
-        from providers.vectorstore import SearchResult
+        from raghub_mcp.providers.vectorstore import SearchResult
 
         if collection not in self._collections:
             return []
@@ -374,8 +374,8 @@ class TestVectorStoreMigrator:
 class TestMigrateChromaToQdrant:
     """Tests for the convenience function."""
 
-    @patch("providers.vectorstore.ChromaProvider")
-    @patch("providers.vectorstore.QdrantProvider")
+    @patch("raghub_mcp.providers.vectorstore.ChromaProvider")
+    @patch("raghub_mcp.providers.vectorstore.QdrantProvider")
     def test_migrate_chroma_to_qdrant(
         self,
         mock_qdrant_class: MagicMock,
@@ -656,7 +656,7 @@ class TestMigrateErrorPaths:
         source.NAME = "qdrant"  # Not chroma
 
         # Mock SearchResult objects
-        from providers.vectorstore import SearchResult
+        from raghub_mcp.providers.vectorstore import SearchResult
 
         source.get.return_value = [
             SearchResult(id="id1", document="doc1", metadata={"k": "v1"}),

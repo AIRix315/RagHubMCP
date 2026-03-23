@@ -15,7 +15,7 @@ Reference:
 
 import pytest
 
-from pipeline.query_rewrite import (
+from raghub_mcp.pipeline.query_rewrite import (
     IdentityRewriter,
     NormalizeRewriter,
     QueryRewriter,

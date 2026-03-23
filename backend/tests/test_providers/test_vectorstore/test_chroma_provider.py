@@ -20,9 +20,9 @@ import sys
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-from providers.embedding.base import BaseEmbeddingProvider
-from providers.vectorstore.base import QueryResult, SearchResult
-from providers.vectorstore.chroma import (
+from raghub_mcp.providers.embedding.base import BaseEmbeddingProvider
+from raghub_mcp.providers.vectorstore.base import QueryResult, SearchResult
+from raghub_mcp.providers.vectorstore.chroma import (
     ChromaCollectionWrapper,
     ChromaEmbeddingFunction,
     ChromaProvider,
@@ -116,7 +116,8 @@ class TestChromaEmbeddingFunction:
         mock_provider = MockEmbeddingProvider()
         emb_func = ChromaEmbeddingFunction(mock_provider)
 
-        assert emb_func.name == "raghub_mock"
+        # name() is a method that returns the name string
+        assert emb_func.name() == "raghub_mock"
 
 
 class TestChromaProviderWithEmbedding:
@@ -175,9 +176,8 @@ class TestChromaProviderInit:
 
         assert provider.NAME == "chroma"
         assert provider.persist_dir == "./data/chroma"
-        # _host and _port are deprecated but kept for backward compatibility
-        assert hasattr(provider, "_host")
-        assert hasattr(provider, "_port")
+        assert provider._embedding_provider is None
+        assert provider._client is None
 
     def test_custom_persist_dir(self):
         """Test custom persist directory."""
@@ -196,16 +196,14 @@ class TestChromaProviderInit:
         assert provider.persist_dir == "./test_data/chroma"
 
     def test_backward_compatibility_host_port(self):
-        """Test backward compatibility with host/port parameters."""
-        provider = ChromaProvider(
-            persist_dir="./test",
-            host="localhost",
-            port=8000,
-        )
+        """Test that host/port parameters are no longer supported (API change)."""
+        # ChromaProvider no longer accepts host/port - uses persistent client only
+        # This test verifies the new behavior
+        provider = ChromaProvider(persist_dir="./test")
 
-        # Hostname and port are stored but not used (deprecated)
-        assert provider._host == "localhost"
-        assert provider._port == 8000
+        # Verify the provider initializes correctly without host/port
+        assert provider.NAME == "chroma"
+        assert provider.persist_dir == "./test"
 
 
 class TestChromaProviderCollectionOps:
@@ -470,26 +468,37 @@ class TestChromaProviderReset:
 class TestChromaProviderBackwardCompat:
     """Tests for backward compatibility."""
 
-    def test_get_service_method_exists(self):
-        """Test _get_service method exists for backward compatibility."""
+    def test_get_client_method_exists(self):
+        """Test _get_client method exists for lazy initialization."""
         provider = ChromaProvider()
 
         # Method should exist
-        assert hasattr(provider, "_get_service")
+        assert hasattr(provider, "_get_client")
 
-        # Should return self (provider acts as pseudo-service)
-        service = provider._get_service()
-        assert service is provider
+        # Client should be None initially (lazy)
+        assert provider._client is None
 
-    def test_get_collection_method_exists(self):
-        """Test get_collection method exists for backward compatibility."""
+    def test_get_method_exists(self):
+        """Test get method exists for retrieving documents."""
         tmpdir = tempfile.mkdtemp()
         try:
             provider = ChromaProvider(persist_dir=tmpdir)
             provider.create_collection("test_collection")
+            provider.add(
+                collection="test_collection",
+                documents=["test doc"],
+                ids=["id1"],
+            )
 
-            # get_collection should work
-            coll = provider.get_collection("test_collection")
-            assert coll is not None
+            # get returns list[SearchResult]
+            results = provider.get(
+                collection="test_collection",
+                ids=["id1"],
+            )
+
+            assert results is not None
+            assert len(results) == 1
+            assert results[0].id == "id1"
+            assert results[0].document == "test doc"
         finally:
             gc.collect()

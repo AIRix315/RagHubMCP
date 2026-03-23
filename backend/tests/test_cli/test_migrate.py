@@ -19,7 +19,7 @@ from contextlib import redirect_stdout
 from unittest.mock import MagicMock, patch
 
 # Import the module under test
-from cli.migrate import main, print_progress, print_result
+from raghub_mcp.cli.migrate import main, print_progress, print_result
 
 
 class TestPrintProgress:
@@ -167,7 +167,7 @@ class TestPrintResult:
 class TestMainArgumentParsing:
     """Tests for main function argument parsing (TC-CLI-003)."""
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_main_default_arguments(self, mock_migrate: MagicMock) -> None:
         """Test main with default arguments."""
         mock_migrate.return_value = MagicMock(
@@ -195,7 +195,7 @@ class TestMainArgumentParsing:
         assert call_kwargs["batch_size"] == 100
         assert call_kwargs["verify"] is True
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_main_custom_arguments(self, mock_migrate: MagicMock) -> None:
         """Test main with custom arguments."""
         mock_migrate.return_value = MagicMock(
@@ -225,7 +225,7 @@ class TestMainArgumentParsing:
         assert call_kwargs["batch_size"] == 50
         assert call_kwargs["verify"] is False
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_main_specific_collections(self, mock_migrate: MagicMock) -> None:
         """Test main with specific collections."""
         mock_migrate.return_value = MagicMock(success=True, to_dict=lambda: {"success": True})
@@ -247,7 +247,7 @@ class TestMainArgumentParsing:
         call_kwargs = mock_migrate.call_args[1]
         assert call_kwargs["collections"] == ["docs", "code", "test"]
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_main_remote_qdrant(self, mock_migrate: MagicMock) -> None:
         """Test main with remote Qdrant server."""
         mock_migrate.return_value = MagicMock(success=True, to_dict=lambda: {"success": True})
@@ -272,7 +272,7 @@ class TestMainArgumentParsing:
         assert call_kwargs["qdrant_host"] == "192.168.1.100"
         assert call_kwargs["qdrant_port"] == 6333
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_main_cloud_qdrant(self, mock_migrate: MagicMock) -> None:
         """Test main with Qdrant Cloud."""
         mock_migrate.return_value = MagicMock(success=True, to_dict=lambda: {"success": True})
@@ -301,7 +301,7 @@ class TestMainArgumentParsing:
 class TestDryRun:
     """Tests for dry run functionality (TC-CLI-004)."""
 
-    @patch("providers.vectorstore.ChromaProvider")
+    @patch("raghub_mcp.providers.vectorstore.ChromaProvider")
     def test_dry_run_list_collections(self, mock_chroma_class: MagicMock) -> None:
         """Test dry run lists collections without migrating."""
         mock_provider = MagicMock()
@@ -323,7 +323,7 @@ class TestDryRun:
         assert "test: 25 documents" in content
         assert "Total: 175 documents" in content
 
-    @patch("providers.vectorstore.ChromaProvider")
+    @patch("raghub_mcp.providers.vectorstore.ChromaProvider")
     def test_dry_run_no_collections(self, mock_chroma_class: MagicMock) -> None:
         """Test dry run with no collections."""
         mock_provider = MagicMock()
@@ -339,7 +339,7 @@ class TestDryRun:
         content = output.getvalue()
         assert "No collections found" in content
 
-    @patch("providers.vectorstore.ChromaProvider")
+    @patch("raghub_mcp.providers.vectorstore.ChromaProvider")
     def test_dry_run_error(self, mock_chroma_class: MagicMock) -> None:
         """Test dry run with connection error."""
         mock_chroma_class.side_effect = RuntimeError("Failed to connect")
@@ -353,7 +353,7 @@ class TestDryRun:
 class TestMigrationWorkflow:
     """Tests for migration workflow (TC-CLI-005)."""
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_successful_migration(self, mock_migrate: MagicMock) -> None:
         """Test successful migration workflow."""
         mock_result = MagicMock()
@@ -394,7 +394,7 @@ class TestMigrationWorkflow:
         assert "Target: Qdrant (local)" in content
         assert "SUCCESS" in content
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_failed_migration(self, mock_migrate: MagicMock) -> None:
         """Test failed migration workflow."""
         mock_result = MagicMock()
@@ -420,7 +420,7 @@ class TestMigrationWorkflow:
         assert "FAILED" in content
         assert "Connection refused" in content
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_migration_with_progress_callback(self, mock_migrate: MagicMock) -> None:
         """Test that progress_callback is passed and used."""
         mock_result = MagicMock()
@@ -439,7 +439,7 @@ class TestMigrationWorkflow:
 class TestErrorHandling:
     """Tests for error handling (TC-CLI-006)."""
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_keyboard_interrupt(self, mock_migrate: MagicMock) -> None:
         """Test handling of keyboard interrupt."""
         mock_migrate.side_effect = KeyboardInterrupt()
@@ -453,7 +453,7 @@ class TestErrorHandling:
         content = output.getvalue()
         assert "cancelled by user" in content.lower()
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_exception_during_migration(self, mock_migrate: MagicMock) -> None:
         """Test exception handling during migration."""
         mock_migrate.side_effect = RuntimeError("Database error")
@@ -471,7 +471,7 @@ class TestErrorHandling:
 class TestVerboseMode:
     """Tests for verbose mode (TC-CLI-007)."""
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_verbose_mode(self, mock_migrate: MagicMock) -> None:
         """Test verbose mode enables debug logging."""
         mock_result = MagicMock()
@@ -486,7 +486,7 @@ class TestVerboseMode:
         # Verify logging level was changed
         # (This is implicit - the code sets logging.DEBUG level)
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_verbose_mode_long_flag(self, mock_migrate: MagicMock) -> None:
         """Test verbose mode with --verbose flag."""
         mock_result = MagicMock()
@@ -556,7 +556,7 @@ class TestResultFormatting:
 class TestEdgeCases:
     """Tests for edge cases."""
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_empty_collections_list(self, mock_migrate: MagicMock) -> None:
         """Test migration with empty collections list."""
         mock_result = MagicMock()
@@ -575,7 +575,7 @@ class TestEdgeCases:
 
         assert result == 0  # Empty collections is still success
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_large_batch_size(self, mock_migrate: MagicMock) -> None:
         """Test migration with large batch size."""
         mock_result = MagicMock()
@@ -590,7 +590,7 @@ class TestEdgeCases:
         call_kwargs = mock_migrate.call_args[1]
         assert call_kwargs["batch_size"] == 10000
 
-    @patch("utils.migrate.migrate_chroma_to_qdrant")
+    @patch("raghub_mcp.utils.migrate.migrate_chroma_to_qdrant")
     def test_collections_specified(self, mock_migrate: MagicMock) -> None:
         """Test collections are shown when specified."""
         mock_result = MagicMock()

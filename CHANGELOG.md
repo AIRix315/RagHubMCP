@@ -2,6 +2,13 @@
 
 ---
 
+## [2.6.1] - 2026-03-23
+
+### Fixed
+- fix(backend): 修复所有测试导入路径 (`from services.` → `from raghub_mcp.services.` 等), 删除废弃 `services/` 模块, 新增 `pipeline/bm25.py`, 创建6个缺失模块测试, 测试覆盖率 20% → 26%, 679测试通过
+
+---
+
 ## [2.6.0] - 2026-03-23
 
 ### Changed

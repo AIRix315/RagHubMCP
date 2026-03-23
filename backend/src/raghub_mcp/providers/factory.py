@@ -40,7 +40,7 @@ class ProviderFactory:
     Thread-safety: Uses lock to protect cache during instance creation.
 
     Example:
-        from providers.factory import factory
+        from raghub_mcp.providers.factory import factory
 
         # Get the default embedding provider
         embedding = factory.get_embedding_provider()

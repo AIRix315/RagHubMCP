@@ -22,34 +22,34 @@ class TestRerankEngineAdapter:
 
     def test_adapter_import(self):
         """TC-1.6.1: RerankEngineAdapter can be imported."""
-        from providers.rerank.adapters import RerankEngineAdapter
+        from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
 
         assert RerankEngineAdapter is not None
 
     def test_adapter_is_base_provider(self):
         """TC-1.6.1: RerankEngineAdapter is a BaseRerankProvider."""
-        from providers.rerank.base import BaseRerankProvider
-        from providers.rerank.adapters import RerankEngineAdapter
+        from raghub_mcp.providers.rerank.base import BaseRerankProvider
+        from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
 
         assert issubclass(RerankEngineAdapter, BaseRerankProvider)
 
     def test_adapter_has_name(self):
         """TC-1.6.1: RerankEngineAdapter has NAME attribute."""
-        from providers.rerank.adapters import RerankEngineAdapter
+        from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
 
         assert hasattr(RerankEngineAdapter, "NAME")
         assert RerankEngineAdapter.NAME == "rerank_engine"
 
     def test_adapter_rerank_method_signature(self):
         """TC-1.6.1: Adapter has rerank method with correct signature."""
-        from providers.rerank.adapters import RerankEngineAdapter
+        from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
 
         # Check method exists and has expected parameters
         assert hasattr(RerankEngineAdapter, "rerank")
 
     def test_adapter_from_config(self):
         """TC-1.6.1: Adapter can be created from config."""
-        from providers.rerank.adapters import RerankEngineAdapter
+        from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
 
         config = {
             "scorer_type": "onnx",
@@ -68,7 +68,7 @@ class TestRerankEngineAdapterBehavior:
 
     def test_adapter_rerank_returns_rerank_result(self):
         """TC-1.6.1: Adapter returns list of RerankResult."""
-        from providers.rerank.base import RerankResult
+        from raghub_mcp.providers.rerank.base import RerankResult
 
         # Check the return type annotation matches
         pass
@@ -87,7 +87,7 @@ class TestBackwardCompatibility:
 
     def test_existing_flashrank_provider_still_works(self):
         """TC-1.6.2: Existing FlashRankRerankProvider still works."""
-        from providers.rerank.flashrank import FlashRankRerankProvider
+        from raghub_mcp.providers.rerank.flashrank import FlashRankRerankProvider
 
         # Provider should still be importable
         assert FlashRankRerankProvider is not None
@@ -95,7 +95,7 @@ class TestBackwardCompatibility:
 
     def test_base_rerank_provider_interface_unchanged(self):
         """TC-1.6.2: BaseRerankProvider interface is unchanged."""
-        from providers.rerank.base import BaseRerankProvider, RerankResult
+        from raghub_mcp.providers.rerank.base import BaseRerankProvider, RerankResult
 
         # RerankResult should have expected fields
         result = RerankResult(index=0, score=0.5, text="test")
@@ -105,7 +105,7 @@ class TestBackwardCompatibility:
 
     def test_rerank_result_comparison(self):
         """TC-1.6.2: RerankResult comparison still works."""
-        from providers.rerank.base import RerankResult
+        from raghub_mcp.providers.rerank.base import RerankResult
 
         r1 = RerankResult(index=0, score=0.9)
         r2 = RerankResult(index=1, score=0.5)

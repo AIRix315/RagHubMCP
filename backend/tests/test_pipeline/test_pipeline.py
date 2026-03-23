@@ -13,9 +13,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from pipeline.base import RAGPipeline
-from pipeline.default import DefaultRAGPipeline
-from pipeline.result import Document, RAGResult
+from raghub_mcp.pipeline.base import RAGPipeline
+from raghub_mcp.pipeline.default import DefaultRAGPipeline
+from raghub_mcp.pipeline.result import Document, RAGResult
 
 
 class TestRAGResult:
@@ -229,7 +229,7 @@ class TestPipelineFactory:
 
     def test_create_default_pipeline(self):
         """Test factory can create default pipeline."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         config = {
             "type": "default",
@@ -244,7 +244,7 @@ class TestPipelineFactory:
 
     def test_create_pipeline_with_profile(self):
         """Test factory can create pipeline with profile."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         config = {
             "type": "default",
@@ -257,14 +257,14 @@ class TestPipelineFactory:
 
     def test_create_pipeline_unknown_type_raises_error(self):
         """Test factory raises ValueError for unknown pipeline type."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         with pytest.raises(ValueError, match="Unknown pipeline type"):
             PipelineFactory.create({"type": "unknown_type"})
 
     def test_get_profile(self):
         """Test factory get_profile method."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         profile = PipelineFactory.get_profile("fast")
 
@@ -274,7 +274,7 @@ class TestPipelineFactory:
 
     def test_get_profile_unknown_returns_default(self):
         """Test factory get_profile returns balanced for unknown profile."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         profile = PipelineFactory.get_profile("unknown_profile")
 
@@ -282,7 +282,7 @@ class TestPipelineFactory:
 
     def test_list_profiles(self):
         """Test factory list_profiles method."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         profiles = PipelineFactory.list_profiles()
 
@@ -293,7 +293,7 @@ class TestPipelineFactory:
 
     def test_create_pipeline_with_vector_retriever(self):
         """Test factory can create pipeline with vector retriever."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         config = {
             "type": "default",
@@ -306,7 +306,7 @@ class TestPipelineFactory:
 
     def test_create_pipeline_unknown_retriever_raises_error(self):
         """Test factory raises ValueError for unknown retriever type."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         config = {
             "type": "default",
@@ -318,7 +318,7 @@ class TestPipelineFactory:
 
     def test_create_pipeline_with_noop_reranker(self):
         """Test factory can create pipeline with NoOp reranker."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         config = {
             "type": "default",
@@ -331,7 +331,7 @@ class TestPipelineFactory:
 
     def test_create_pipeline_unknown_reranker_raises_error(self):
         """Test factory raises ValueError for unknown reranker type."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         config = {
             "type": "default",
@@ -346,7 +346,7 @@ class TestPipelineFactory:
 
     def test_create_pipeline_unknown_context_builder_raises_error(self):
         """Test factory raises ValueError for unknown context builder type."""
-        from pipeline.factory import PipelineFactory
+        from raghub_mcp.pipeline.factory import PipelineFactory
 
         config = {
             "type": "default",
@@ -358,7 +358,7 @@ class TestPipelineFactory:
 
     def test_factory_get_pipeline_convenience_function(self):
         """Test factory get_pipeline convenience function."""
-        from pipeline.factory import get_pipeline as factory_get_pipeline
+        from raghub_mcp.pipeline.factory import get_pipeline as factory_get_pipeline
 
         pipeline = factory_get_pipeline("fast")
 

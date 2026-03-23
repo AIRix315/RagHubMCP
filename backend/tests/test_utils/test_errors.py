@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 src_path = Path(__file__).parent.parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from utils.errors import (
+from raghub_mcp.utils.errors import (
     ErrorCode,
     NotFoundError,
     PipelineError,

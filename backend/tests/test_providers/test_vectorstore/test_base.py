@@ -15,7 +15,7 @@ class TestSearchResult:
 
     def test_search_result_creation(self):
         """Test creating a SearchResult."""
-        from providers.vectorstore.base import SearchResult
+        from raghub_mcp.providers.vectorstore.base import SearchResult
 
         result = SearchResult(
             id="doc1",
@@ -31,7 +31,7 @@ class TestSearchResult:
 
     def test_search_result_defaults(self):
         """Test SearchResult default values."""
-        from providers.vectorstore.base import SearchResult
+        from raghub_mcp.providers.vectorstore.base import SearchResult
 
         result = SearchResult(id="doc1", document="test")
 
@@ -44,7 +44,7 @@ class TestQueryResult:
 
     def test_query_result_creation(self):
         """Test creating a QueryResult."""
-        from providers.vectorstore.base import QueryResult, SearchResult
+        from raghub_mcp.providers.vectorstore.base import QueryResult, SearchResult
 
         results = [
             SearchResult(id="doc1", document="test1", score=0.9),
@@ -58,7 +58,7 @@ class TestQueryResult:
 
     def test_query_result_defaults(self):
         """Test QueryResult default values."""
-        from providers.vectorstore.base import QueryResult
+        from raghub_mcp.providers.vectorstore.base import QueryResult
 
         result = QueryResult()
 
@@ -71,14 +71,14 @@ class TestBaseVectorStoreProvider:
 
     def test_cannot_instantiate_abstract(self):
         """Cannot instantiate abstract class directly."""
-        from providers.vectorstore.base import BaseVectorStoreProvider
+        from raghub_mcp.providers.vectorstore.base import BaseVectorStoreProvider
 
         with pytest.raises(TypeError):
             BaseVectorStoreProvider()
 
     def test_subclass_must_implement_all_methods(self):
         """Subclass must implement all abstract methods."""
-        from providers.vectorstore.base import BaseVectorStoreProvider
+        from raghub_mcp.providers.vectorstore.base import BaseVectorStoreProvider
 
         class IncompleteProvider(BaseVectorStoreProvider):
             NAME = "incomplete"
@@ -90,7 +90,7 @@ class TestBaseVectorStoreProvider:
 
     def test_complete_implementation(self):
         """Complete implementation can be instantiated."""
-        from providers.vectorstore.base import (
+        from raghub_mcp.providers.vectorstore.base import (
             BaseVectorStoreProvider,
             QueryResult,
         )

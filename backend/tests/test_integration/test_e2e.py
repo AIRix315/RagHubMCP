@@ -19,10 +19,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # Import pipeline components
-from pipeline import get_pipeline, reset_pipeline
-from pipeline.base import RAGPipeline
-from pipeline.factory import PROFILES, PipelineFactory
-from pipeline.result import RAGResult
+from raghub_mcp.pipeline import get_pipeline, reset_pipeline
+from raghub_mcp.pipeline.base import RAGPipeline
+from raghub_mcp.pipeline.factory import PROFILES, PipelineFactory
+from raghub_mcp.pipeline.result import RAGResult
 
 
 class TestPipelineIntegration:
@@ -277,7 +277,7 @@ class TestPipelineExecution:
     @pytest.mark.asyncio
     async def test_execute_search_invalid_query(self) -> None:
         """TC-EXEC-001: Execute search with invalid query raises error."""
-        from pipeline.manager import execute_search
+        from raghub_mcp.pipeline.manager import execute_search
 
         with pytest.raises(ValueError, match="Query must be a non-empty string"):
             await execute_search("")
@@ -288,7 +288,7 @@ class TestPipelineExecution:
     @pytest.mark.asyncio
     async def test_execute_search_with_options(self) -> None:
         """TC-EXEC-002: Execute search passes options correctly."""
-        from pipeline.manager import execute_search
+        from raghub_mcp.pipeline.manager import execute_search
 
         # Mock the pipeline
         mock_pipeline = AsyncMock(spec=RAGPipeline)
@@ -314,7 +314,7 @@ class TestPipelineExecution:
 
     def test_create_pipeline_function(self) -> None:
         """TC-EXEC-003: create_pipeline creates new instance."""
-        from pipeline.manager import create_pipeline
+        from raghub_mcp.pipeline.manager import create_pipeline
 
         pipeline1 = create_pipeline({"profile": "balanced"})
         pipeline2 = create_pipeline({"profile": "balanced"})
@@ -332,7 +332,7 @@ class TestComponentIntegration:
 
     def test_retriever_integration(self) -> None:
         """TC-COMP-001: Retriever integrates with pipeline."""
-        from pipeline.retriever import HybridRetriever, VectorRetriever
+        from raghub_mcp.pipeline.retriever import HybridRetriever, VectorRetriever
 
         # Create retrievers
         hybrid = HybridRetriever(alpha=0.6, beta=0.4)
@@ -344,7 +344,7 @@ class TestComponentIntegration:
 
     def test_reranker_integration(self) -> None:
         """TC-COMP-002: Reranker integrates with pipeline."""
-        from pipeline.reranker import NoOpReranker, PipelineReranker
+        from raghub_mcp.pipeline.reranker import NoOpReranker, PipelineReranker
 
         reranker = PipelineReranker(model="ms-marco-TinyBERT-L-2-v2", top_k=5)
         noop = NoOpReranker()
@@ -355,7 +355,7 @@ class TestComponentIntegration:
 
     def test_context_builder_integration(self) -> None:
         """TC-COMP-003: ContextBuilder integrates with pipeline."""
-        from pipeline.context_builder import DefaultContextBuilder
+        from raghub_mcp.pipeline.context_builder import DefaultContextBuilder
 
         builder = DefaultContextBuilder()
 
@@ -376,7 +376,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_pipeline_handles_retriever_error(self) -> None:
         """TC-ERR-001: Pipeline handles retriever errors gracefully."""
-        from pipeline.manager import execute_search
+        from raghub_mcp.pipeline.manager import execute_search
 
         mock_pipeline = AsyncMock(spec=RAGPipeline)
         mock_pipeline.run.side_effect = RuntimeError("Retriever failed")
@@ -388,7 +388,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_pipeline_handles_reranker_error(self) -> None:
         """TC-ERR-002: Pipeline handles reranker errors gracefully."""
-        from pipeline.manager import execute_search
+        from raghub_mcp.pipeline.manager import execute_search
 
         mock_pipeline = AsyncMock(spec=RAGPipeline)
         mock_pipeline.run.side_effect = RuntimeError("Reranker failed")
@@ -412,7 +412,7 @@ class TestConcurrency:
     @pytest.mark.asyncio
     async def test_concurrent_pipeline_access(self) -> None:
         """TC-CONC-001: Concurrent access returns same instance."""
-        from pipeline.manager import get_pipeline
+        from raghub_mcp.pipeline.manager import get_pipeline
 
         # Get pipeline in concurrent tasks
         results = await asyncio.gather(

@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol
 
 if TYPE_CHECKING:
-    from providers.vectorstore import BaseVectorStoreProvider
+    from raghub_mcp.providers.vectorstore import BaseVectorStoreProvider
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class VectorStoreMigrator:
     provider to another, with progress tracking and integrity verification.
 
     Example:
-        >>> from providers.vectorstore import ChromaProvider, QdrantProvider
+        >>> from raghub_mcp.providers.vectorstore import ChromaProvider, QdrantProvider
         >>> from utils.migrate import VectorStoreMigrator
         >>>
         >>> source = ChromaProvider(persist_dir="./data/chroma")
@@ -427,7 +427,7 @@ def migrate_chroma_to_qdrant(
         ... )
         >>> print(f"Migrated {result.documents_migrated} documents")
     """
-    from providers.vectorstore import ChromaProvider, QdrantProvider
+    from raghub_mcp.providers.vectorstore import ChromaProvider, QdrantProvider
 
     source = ChromaProvider(persist_dir=chroma_persist_dir)
     target = QdrantProvider(mode=qdrant_mode, path=qdrant_path)

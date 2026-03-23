@@ -72,7 +72,7 @@ class TestLLMBaseStreamMethods:
 
     def test_stream_yields_single_chunk_default(self):
         """Test that default stream yields single chunk from generate."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         # Create a concrete implementation for testing
         class TestLLM(BaseLLMProvider):
@@ -100,7 +100,7 @@ class TestLLMBaseStreamMethods:
 
     def test_stream_passes_all_parameters(self):
         """Test that stream passes all parameters to generate."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -138,7 +138,7 @@ class TestLLMBaseAsyncStreamMethods:
     @pytest.mark.asyncio
     async def test_astream_yields_from_sync_stream(self):
         """Test that astream wraps sync stream correctly."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -163,7 +163,7 @@ class TestLLMBaseAsyncStreamMethods:
     @pytest.mark.asyncio
     async def test_astream_yields_control_to_event_loop(self):
         """Test that astream yields control to event loop between chunks."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -196,7 +196,7 @@ class TestLLMBaseChatMethods:
 
     def test_chat_formats_messages_into_prompt(self):
         """Test that chat formats messages into a single prompt."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -228,7 +228,7 @@ class TestLLMBaseChatMethods:
 
     def test_chat_handles_missing_role(self):
         """Test that chat handles messages without role."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -260,7 +260,7 @@ class TestLLMBaseChatMethods:
 
     def test_chat_handles_missing_content(self):
         """Test that chat handles messages without content."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -291,7 +291,7 @@ class TestLLMBaseChatMethods:
 
     def test_chat_passes_parameters(self):
         """Test that chat passes temperature and max_tokens."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -317,7 +317,7 @@ class TestLLMBaseChatMethods:
 
     def test_chat_passes_additional_kwargs(self):
         """Test that chat passes additional kwargs to generate."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -348,7 +348,7 @@ class TestLLMBaseAsyncChatMethods:
     @pytest.mark.asyncio
     async def test_achat_wraps_sync_chat(self):
         """Test that achat wraps sync chat using asyncio.to_thread."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -372,7 +372,7 @@ class TestLLMBaseAsyncChatMethods:
     @pytest.mark.asyncio
     async def test_achat_passes_all_parameters(self):
         """Test that achat passes all parameters correctly."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -410,7 +410,7 @@ class TestLLMBaseAsyncGenerate:
     @pytest.mark.asyncio
     async def test_agenerate_wraps_sync_generate(self):
         """Test that agenerate wraps sync generate using asyncio.to_thread."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -437,7 +437,7 @@ class TestLLMBaseAsyncGenerate:
     @pytest.mark.asyncio
     async def test_agenerate_passes_parameters(self):
         """Test that agenerate passes all parameters."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class TestLLM(BaseLLMProvider):
             NAME = "test-llm"
@@ -475,7 +475,7 @@ class TestLLMBaseFromConfig:
     def test_from_config_is_abstract(self):
         """Test that from_config is an abstract method."""
 
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         # Verify that BaseLLMProvider is abstract
         assert hasattr(BaseLLMProvider, "__abstractmethods__")
@@ -483,7 +483,7 @@ class TestLLMBaseFromConfig:
 
     def test_from_config_implementation(self):
         """Test a proper from_config implementation."""
-        from providers.llm.base import BaseLLMProvider
+        from raghub_mcp.providers.llm.base import BaseLLMProvider
 
         class ConfigurableLLM(BaseLLMProvider):
             NAME = "configurable-llm"
