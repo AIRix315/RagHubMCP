@@ -1,198 +1,155 @@
 # RagHubMCP
 
-**通用代码 RAG 中枢** - MCP Server + FlashRank Rerank + 效果对比仪表盘
+> Code RAG Hub for AI Assistants — Pipeline Architecture, Configurable Components
 
+[![Version](https://img.shields.io/badge/version-2.6.12-blue)](./version.txt)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
-[![Node](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
----
+**RagHubMCP** provides code retrieval capabilities for AI coding assistants via the MCP protocol. Built on a configurable Pipeline architecture supporting multiple vector stores and reranking strategies.
 
-## 项目定位
-
-**核心价值**: 效果对比仪表盘 - 让用户测试、调配、找到最优配置
-
-**核心洞察**: 模型在迅速发展，用户希望得到更好的结果。本项目与其他竞品的区别在于：竞品提供便捷的封装方案，本项目的便捷之上，把封装全部打开，让用户自己去调配。
+[中文介绍](#中文介绍)
 
 ---
 
-## 快速安装
+## Quick Start
 
-### 方式一：一键脚本（推荐）
+### Single Binary (Recommended)
 
 ```bash
-# 1. 克隆仓库
+# Download for your platform
+# macOS
+wget https://github.com/your-username/RagHubMCP/releases/latest/download/RHM-2.6.12-darwin
+
+# Linux
+wget https://github.com/your-username/RagHubMCP/releases/latest/download/RHM-2.6.12-linux
+
+# Windows (PowerShell)
+Invoke-WebRequest -Uri "https://github.com/.../RHM-2.6.12.exe" -OutFile "RHM.exe"
+
+# Run
+chmod +x RHM-*
+./RHM-2.6.12-linux
+```
+
+Access Web UI at `http://localhost:3315`
+
+### From Source
+
+```bash
 git clone https://github.com/your-username/RagHubMCP.git
 cd RagHubMCP
-
-# 2. 初始化配置
-python scripts/config/init-config.py
-
-# 3. 环境检查
-python scripts/check/check-env.py
-
-# 4. 一键安装
 python scripts/install/install.py
 ```
 
-### 方式二：Docker 部署
+---
 
-```bash
-# 克隆并启动
-git clone https://github.com/your-username/RagHubMCP.git
-cd RagHubMCP/scripts/docker
-docker-compose up -d
+## Features
 
-# 访问服务
-# 前端: http://localhost:3315
-# 后端: http://localhost:8818
-```
-
-### 方式三：手动安装
-
-**后端**:
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -e ".[dev]"
-python -m src.main
-```
-
-**前端**:
-```bash
-cd frontend
-npm install
-npm run dev
-```
+| Module | Status | Description |
+|--------|--------|-------------|
+| **Pipeline V2** | ✅ Ready | Unified `query` and `ingest` entry points |
+| **Profiles** | ✅ Ready | `fast` / `balanced` / `accurate` strategies |
+| **Vector Stores** | ✅ Ready | Chroma, Qdrant support |
+| **Rerank Engine** | ✅ Ready | Pluggable scorers (BM25, ONNX) with strategies |
+| **MCP Tools** | ✅ Ready | query, ingest, chroma management |
+| **Go Distributor** | ✅ Ready | ~10MB single binary with tray/proxy/process management |
+| **Web Console** | ✅ Ready | Basic search interface |
+| **AST Chunking** | 🚧 WIP | Python/TypeScript/Go support (partial) |
+| **Hybrid Search** | 🚧 WIP | BM25 + vector fusion |
+| **Benchmark Dashboard** | 🚧 WIP | Multi-config comparison |
 
 ---
 
-## 访问地址
+## MCP Integration
 
-| 服务 | 地址 |
-|------|------|
-| Web 控制台 | http://localhost:3315 |
-| API 文档 | http://localhost:8818/docs |
-| MCP Server | 配置后可在 IDE 中直接调用 |
-
----
-
-## MCP 集成
-
-生成 MCP 配置文件，支持多种 IDE：
+Generate IDE configuration:
 
 ```bash
-# 查看支持的 IDE
-python scripts/config/generate-mcp-config.py --list
-
-# 生成 Claude Desktop 配置
-python scripts/config/generate-mcp-config.py --ide claude_desktop --print
-
-# 写入配置文件
 python scripts/config/generate-mcp-config.py --ide cursor --write
 ```
 
-**支持的 IDE**: Claude Desktop, Cursor, Windsurf, VS Code, OpenCode, CherryStudio
+### Available Tools
 
----
+| Tool | Description |
+|------|-------------|
+| `query` | Search with Pipeline V2 |
+| `ingest` | Index documents |
+| `chroma_*` | Collection management |
 
-## 功能特性
+### Example Usage
 
-### 核心功能
+```json
+// Query
+{
+  "query": "how to implement authentication",
+  "strategy": "accurate",
+  "top_k": 5
+}
 
-- **向量检索** - Chroma/Qdrant 向量数据库支持
-- **Rerank 重排** - FlashRank 高效重排，提升检索精度
-- **混合搜索** - BM25 + 向量检索融合
-- **效果对比** - 多配置对比测试，找到最优方案
-
-### MCP 工具
-
-| 工具 | 描述 |
-|------|------|
-| `chroma_query_with_rerank` | 向量检索 + Rerank 组合 |
-| `benchmark_search_config` | 多配置性能对比 |
-| `rerank_documents` | 独立文档重排 |
-| `hybrid_search` | 混合搜索 |
-| `index_directory` | 目录索引 |
-
----
-
-## 技术栈
-
-| 层级 | 技术选型 |
-|------|---------|
-| 后端语言 | Python 3.11+ |
-| 后端框架 | FastAPI |
-| 协议层 | MCP |
-| 向量数据库 | Chroma / Qdrant |
-| Rerank | FlashRank |
-| 前端框架 | Vue 3 + TypeScript |
-| UI 组件 | shadcn-vue |
-
----
-
-## 项目结构
-
-```
-RagHubMCP/
-├── backend/              # 后端服务
-│   ├── src/              # 源代码
-│   │   ├── mcp_server/   # MCP 工具
-│   │   ├── providers/    # Provider 实现
-│   │   ├── services/     # 业务服务
-│   │   └── api/          # REST API
-│   ├── tests/            # 测试 (512+ tests)
-│   └── config.yaml       # 配置文件
-├── frontend/             # Web 控制台
-│   └── src/
-│       ├── views/        # 页面组件
-│       ├── stores/       # 状态管理
-│       └── composables/  # 组合式函数
-├── scripts/              # 部署脚本
-│   ├── config/           # 配置管理
-│   ├── check/            # 环境检查
-│   ├── setup/            # 组件安装
-│   ├── install/          # 一键安装
-│   └── docker/           # Docker 配置
-├── schemas/              # JSON Schema
-└── Docs/                 # 文档
+// Ingest
+{
+  "documents": [{"text": "...", "metadata": {}}],
+  "collection": "code_docs"
+}
 ```
 
 ---
 
-## 部署脚本
-
-每个脚本可独立运行：
+## CLI Commands
 
 ```bash
-# 配置初始化
-python scripts/config/init-config.py --help
-
-# 环境检查
-python scripts/check/check-env.py --json
-
-# 安装 Ollama
-python scripts/setup/setup-ollama.py --check
-
-# 安装 Qdrant
-python scripts/setup/setup-qdrant.py --start
-
-# 验证 Chroma
-python scripts/setup/setup-chroma.py
-
-# 生成 MCP 配置
-python scripts/config/generate-mcp-config.py --ide claude_desktop
+RHM --version              # Show version
+RHM index /path/to/code    # Index directory
+RHM search "query"         # Local search test
+RHM --no-browser --no-tray # Server mode (no tray)
 ```
 
 ---
 
-## 文档
+## Tech Stack
 
-详细安装部署指南请参考项目 Wiki。
+- **Backend**: Python 3.11, FastAPI, MCP
+- **Frontend**: Vue 3, TypeScript
+- **Distribution**: Go wrapper (~10MB)
+
+---
+
+## Status
+
+⚠️ **This project is under active development.** V2 Pipeline core is stable. Advanced features (hybrid search, AST chunking, benchmark dashboard) are still evolving.
+
+See [Docs/](Docs/) for architecture design and development plans.
+
+---
+
+## 中文介绍
+
+**RagHubMCP** 是面向 AI 编程助手的代码 RAG 中枢。通过 MCP 协议与 Claude、Cursor 等 IDE 集成，提供可配置的 Pipeline 检索架构。
+
+### 核心特点
+
+- **Pipeline V2** — 统一的 `query` / `ingest` 入口
+- **可配置策略** — fast / balanced / accurate 三档切换
+- **组件可插拔** — Chroma/Qdrant 向量库，BM25/ONNX 重排器
+- **单文件分发** — Go 包装器，~10MB，带系统托盘
+
+### 快速开始
+
+```bash
+# 下载单文件版本
+wget https://github.com/.../RHM-2.6.12-linux
+chmod +x RHM-* && ./RHM-2.6.12-linux
+```
+
+访问 `http://localhost:3315`
+
+### 状态说明
+
+⚠️ **活跃开发中**。Pipeline 核心已稳定，高级功能（混合搜索、AST 分块、Benchmark 仪表盘）持续迭代。
 
 ---
 
 ## License
 
-MIT
+MIT © RagHubMCP
