@@ -20,13 +20,13 @@ class TestProjectInitialization:
         python_exe = scripts_path / "python.exe"
         assert python_exe.exists(), f"python.exe not found at {python_exe}"
 
-    def test_tc_1_1_2_pip_install_success(self):
+    def test_tc_1_2_pip_install_success(self):
         """TC-1.1.2: pip install 无报错."""
         # 检查关键依赖是否已安装
         try:
             import chromadb
             import fastapi
-            import flashrank
+            import onnxruntime
             import pydantic
             import yaml
         except ImportError as e:
@@ -39,7 +39,7 @@ class TestProjectInitialization:
         modules = [
             ("fastapi", "FastAPI"),
             ("chromadb", "ChromaDB"),
-            ("flashrank", "FlashRank"),
+            ("onnxruntime", "ONNX Runtime"),
             ("pydantic", "Pydantic"),
             ("pydantic_settings", "Pydantic Settings"),
             ("yaml", "PyYAML"),

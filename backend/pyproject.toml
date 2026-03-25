@@ -1,6 +1,6 @@
 [project]
 name = "raghub-mcp"
-version = "2.6.12"
+version = "2.6.13"
 description = "通用代码 RAG 中枢 - MCP Server + FlashRank Rerank"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -18,7 +18,8 @@ dependencies = [
     "ollama>=0.1.0",
     "openai>=1.12.0",
     "httpx>=0.26.0",
-    "flashrank>=0.2.0",
+    "onnxruntime>=1.16.0",
+    "tokenizers>=0.15.0",
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
     "python-dotenv>=1.0.0",
@@ -98,7 +99,6 @@ warn_unused_configs = true
 module = [
     "chromadb.*",
     "qdrant_client.*",
-    "flashrank.*",
     "bm25s.*",
     "tree_sitter.*",
     "watchdog.*",

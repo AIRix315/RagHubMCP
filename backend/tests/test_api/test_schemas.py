@@ -255,7 +255,7 @@ class TestSearchRequest:
             collection_name="my_collection",
             top_k=20,
             embedding_provider="openai",
-            rerank_provider="flashrank",
+            rerank_provider="onnx-minilm",
             use_rerank=False,
         )
 
@@ -263,7 +263,7 @@ class TestSearchRequest:
         assert request.collection_name == "my_collection"
         assert request.top_k == 20
         assert request.embedding_provider == "openai"
-        assert request.rerank_provider == "flashrank"
+        assert request.rerank_provider == "onnx-minilm"
         assert request.use_rerank is False
 
     def test_search_request_top_k_range(self) -> None:
@@ -359,11 +359,11 @@ class TestSearchResponse:
             total=2,
             collection="test_collection",
             embedding_provider="openai",
-            rerank_provider="flashrank",
+            rerank_provider="onnx-minilm",
         )
 
         assert len(response.results) == 2
-        assert response.rerank_provider == "flashrank"
+        assert response.rerank_provider == "onnx-minilm"
 
 
 class TestBenchmarkConfig:
@@ -386,11 +386,11 @@ class TestBenchmarkConfig:
         config = BenchmarkConfig(
             name="high-accuracy",
             embedding_provider="openai",
-            rerank_provider="flashrank",
+            rerank_provider="onnx-minilm",
             top_k=20,
         )
 
-        assert config.rerank_provider == "flashrank"
+        assert config.rerank_provider == "onnx-minilm"
         assert config.top_k == 20
 
     def test_benchmark_config_required_fields(self) -> None:

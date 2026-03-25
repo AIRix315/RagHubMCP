@@ -38,7 +38,7 @@ class TestPipelineOptions:
             collection="my_collection",
             top_k=10,  # Changed from topK to top_k
             rerank=False,
-            rerank_provider="flashrank",
+            rerank_provider="onnx-minilm",
             embedding_provider="openai",
             where={"category": "tech"},
             where_document={"$contains": "python"},
@@ -50,7 +50,7 @@ class TestPipelineOptions:
         assert options.collection == "my_collection"
         assert options.top_k == 10  # Changed from topK to top_k
         assert options.rerank is False
-        assert options.rerank_provider == "flashrank"
+        assert options.rerank_provider == "onnx-minilm"
         assert options.embedding_provider == "openai"
         assert options.where == {"category": "tech"}
         assert options.where_document == {"$contains": "python"}
@@ -202,7 +202,7 @@ class TestPipelineOptionsFromRequest:
         request.collection_name = "request_collection"
         request.top_k = 20
         request.use_rerank = False
-        request.rerank_provider = "flashrank"
+        request.rerank_provider = "onnx-minilm"
         request.embedding_provider = "openai"
         request.where = {"category": "ai"}
         request.where_document = {"$contains": "data"}
@@ -212,7 +212,7 @@ class TestPipelineOptionsFromRequest:
         assert options.collection == "request_collection"
         assert options.top_k == 20  # Changed from topK to top_k
         assert options.rerank is False
-        assert options.rerank_provider == "flashrank"
+        assert options.rerank_provider == "onnx-minilm"
         assert options.embedding_provider == "openai"
         assert options.where == {"category": "ai"}
         assert options.where_document == {"$contains": "data"}

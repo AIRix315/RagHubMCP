@@ -2,6 +2,44 @@
 
 ---
 
+## [2.6.13] - 2026-03-25
+
+### refactor(rerank): Rerank 架构修正（Docs/25）
+
+- **时间**: 2026-03-25 20:36
+- **内容**: 执行 Docs/25-Rerank-Correction-Plan.md 修正计划，修复 Rerank 模块设计偏差
+
+#### Fixed
+
+- **RerankEngineAdapter 导入路径**: 修复 `from rerank_engine.models` → `from raghub_mcp.rerank_engine.models`
+- **_create_scorer() 支持 BM25/Vector/Hybrid**: 扩展 engine.py 支持多种 scorer 类型
+
+#### Removed
+
+- **FlashRankRerankProvider**: 删除 `flashrank.py`，不再作为独立 Provider
+- **废弃测试**: 删除 `test_rerank_engine/` 目录和 `test_flashrank.py`
+- **flashrank 依赖**: 从 pyproject.toml 移除 flashrank 依赖
+
+#### Added
+
+- **BackendType 枚举**: 新增 `BackendType` (ONNX/API/LOCAL) 区分调用方式
+- **embedding_provider_name 字段**: RerankConfig 预留 embedding_provider 协调接口（Docs/26 完成）
+- **APIBackendAdapter**: 新增外部 Rerank API 适配器，支持用户自定义 API 端点
+- **onnxruntime/tokenizers 依赖**: 显式添加替代 flashrank 的依赖
+
+#### Changed
+
+- **RerankEngineAdapter**: 支持 backend 路由（ONNX → RerankEngine，API → APIBackendAdapter）
+- **config.yaml**: 重命名 `flashrank` → `onnx-minilm`，使用 `backend: onnx` 配置
+- **测试配置**: 更新 conftest.py、test_init.py 使用新配置结构
+
+#### References
+
+- `Docs/25-Rerank-Correction-Plan.md`: 完整修正计划
+- `Docs/26-Architecture-Consistency-Check.md`: 后续 embedding_provider 协调
+
+---
+
 ## [2.6.12] - 2026-03-24
 
 ### fix(ci): 简化 CI 测试命令

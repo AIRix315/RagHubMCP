@@ -46,7 +46,7 @@ class ProviderFactory:
         embedding = factory.get_embedding_provider()
 
         # Get a specific provider by name
-        reranker = factory.get_rerank_provider("flashrank-mini")
+        reranker = factory.get_rerank_provider("onnx-minilm")
     """
 
     _instance: ProviderFactory | None = None

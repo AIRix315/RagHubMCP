@@ -36,12 +36,20 @@ def test_config() -> dict:
                 "instances": [],
             },
             "rerank": {
-                "default": "flashrank-tiny",
+                "default": "onnx-minilm",
                 "instances": [
                     {
-                        "name": "flashrank-tiny",
-                        "type": "flashrank",
-                        "model": "ms-marco-TinyBERT-L-2-v2",
+                        "name": "onnx-minilm",
+                        "backend": "onnx",
+                        "scorer_type": "onnx",
+                        "scorer_config": {
+                            "model_path": "./data/models/test-minilm.onnx",
+                            "tokenizer_path": "./data/models/test-tokenizer.json",
+                            "batch_size": 32,
+                            "max_length": 512,
+                        },
+                        "post_processors": [],
+                        "rank_strategy": "standard",
                     }
                 ],
             },

@@ -19,10 +19,25 @@ class ScorerType(StrEnum):
     """Scorer type enumeration."""
 
     ONNX = "onnx"
-    API = "api"
+    BM25 = "bm25"
     VECTOR = "vector"
     HYBRID = "hybrid"
     CUSTOM = "custom"
+
+
+class BackendType(StrEnum):
+    """Rerank backend type - how the reranking is invoked.
+
+    This distinguishes the invocation method from the internal scorer type.
+
+    - ONNX: Local ONNX model inference → outputs scores that need ranking
+    - API: External Rerank API call → returns pre-ranked results
+    - LOCAL: Local model service (Ollama/vLLM) → returns pre-ranked results
+    """
+
+    ONNX = "onnx"
+    API = "api"
+    LOCAL = "local"
 
 
 class RankStrategyType(StrEnum):

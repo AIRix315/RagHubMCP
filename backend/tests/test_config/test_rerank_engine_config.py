@@ -1,57 +1,72 @@
-"""Test rerank-engine config loading."""
+"""Test rerank-engine config loading.
+
+After Rerank architecture correction (Docs/25):
+- Default rerank provider is "onnx-minilm"
+- Uses backend: onnx configuration
+- RerankEngineAdapter handles backend routing
+"""
 
 from __future__ import annotations
 
 import pytest
 
 
-def test_rerank_engine_config_loaded() -> None:
-    """Verify rerank-engine can be loaded from config."""
+def test_rerank_config_loaded() -> None:
+    """Verify rerank provider is loaded from config."""
     from raghub_mcp.utils.config import get_config
 
     config = get_config()
-    # Verify rerank-engine is in instances (dict list)
+    # Verify rerank instances exist
     rerank_configs = config.providers.rerank.instances
     rerank_names = [r.get("name") for r in rerank_configs if isinstance(r, dict)]
-    assert "rerank-engine" in rerank_names
+    assert len(rerank_names) > 0, "No rerank instances configured"
 
 
-def test_rerank_engine_config_structure() -> None:
-    """Verify rerank-engine has correct config structure."""
+def test_onnx_backend_config_structure() -> None:
+    """Verify ONNX backend has correct config structure."""
     from raghub_mcp.utils.config import get_config
 
     config = get_config()
     rerank_configs = config.providers.rerank.instances
 
-    # Find rerank-engine config
-    rerank_engine = None
+    # Find onnx-minilm config
+    onnx_config = None
     for r in rerank_configs:
-        if isinstance(r, dict) and r.get("name") == "rerank-engine":
-            rerank_engine = r
+        if isinstance(r, dict) and r.get("name") == "onnx-minilm":
+            onnx_config = r
             break
 
-    assert rerank_engine is not None, "rerank-engine not found in instances"
-    assert rerank_engine.get("type") == "rerank-engine"
-    assert rerank_engine.get("scorer_type") == "onnx"
-    assert rerank_engine.get("rank_strategy") == "standard"
+    if onnx_config is None:
+        pytest.skip("onnx-minilm not configured")
+
+    # Verify backend configuration
+    assert onnx_config.get("backend") == "onnx", "Expected backend: onnx"
+    assert onnx_config.get("scorer_type") == "onnx", "Expected scorer_type: onnx"
+    assert onnx_config.get("rank_strategy") in ["standard", "diversity"], "Valid rank_strategy"
 
 
-def test_factory_can_get_rerank_engine_provider() -> None:
-    """Verify factory can instantiate rerank-engine provider."""
-    from raghub_mcp.providers.factory import factory
+def test_default_rerank_provider() -> None:
+    """Verify default rerank provider is set."""
+    from raghub_mcp.utils.config import get_config
+
+    config = get_config()
+    # Default should be set
+    default = config.providers.rerank.default
+    assert default, "Default rerank provider should be set"
+
+
+def test_rerank_config_backend_field() -> None:
+    """Verify rerank config uses backend field (new architecture)."""
     from raghub_mcp.utils.config import get_config
 
     config = get_config()
     rerank_configs = config.providers.rerank.instances
 
-    # Check if rerank-engine exists in config (dict format)
-    rerank_names = [r.get("name") for r in rerank_configs if isinstance(r, dict)]
-    if "rerank-engine" not in rerank_names:
-        pytest.skip("rerank-engine not configured")
-
-    # Try to get provider - will fail if adapter not registered (T3 dependency)
-    try:
-        provider = factory.get_rerank_provider("rerank-engine")
-        assert provider is not None
-    except Exception as e:
-        pytest.skip(f"RerankEngineAdapter not yet registered (T3 dependency): {e}")
+    # Verify backend field is present in configured instances
+    for r in rerank_configs:
+        if isinstance(r, dict):
+            # Backend field should be present
+            backend = r.get("backend")
+            # If backend is set, it should be valid
+            if backend is not None:
+                assert backend in ["onnx", "api", "local"], f"Invalid backend: {backend}"

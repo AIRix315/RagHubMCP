@@ -4,6 +4,7 @@ This module provides an adapter that wraps RerankEngine as a
 BaseRerankProvider, ensuring backward compatibility.
 
 Reference: Docs/20-RerankEngine-Architecture.md Section 6.2
+Reference: Docs/25-Rerank-Correction-Plan.md Section 3.2
 """
 
 from __future__ import annotations
@@ -12,7 +13,9 @@ from typing import Any
 
 from raghub_mcp.providers.base import ProviderCategory
 from raghub_mcp.providers.registry import registry
+from raghub_mcp.rerank_engine.models import BackendType
 
+from .api_backend import APIBackendAdapter
 from .base import BaseRerankProvider, RerankResult
 
 
@@ -24,13 +27,25 @@ class RerankEngineAdapter(BaseRerankProvider):
     existing BaseRerankProvider interface, maintaining backward
     compatibility with existing code.
 
+    Supports multiple backends:
+    - ONNX backend: Local ONNX model inference (via RerankEngine)
+    - API backend: External rerank API (via APIBackendAdapter)
+    - LOCAL backend: (reserved) Local model service
+
     Example:
-        >>> from rerank_engine.engine import RerankEngine, RerankConfig
-        >>> config = RerankConfig(scorer_type="onnx", ...)
-        >>> engine = RerankEngine(config)
-        >>> adapter = RerankEngineAdapter(engine)
-        >>> # Now use adapter as BaseRerankProvider
-        >>> results = adapter.rerank("query", ["doc1", "doc2"])
+        >>> # ONNX backend
+        >>> adapter = RerankEngineAdapter.from_config({
+        ...     "backend": "onnx",
+        ...     "scorer_type": "onnx",
+        ...     "scorer_config": {"model_path": "./model.onnx"},
+        ... })
+        >>>
+        >>> # API backend
+        >>> adapter = RerankEngineAdapter.from_config({
+        ...     "backend": "api",
+        ...     "api_url": "https://api.example.com/v1",
+        ...     "api_key": "...",
+        ... })
     """
 
     NAME = "rerank-engine"
@@ -59,7 +74,7 @@ class RerankEngineAdapter(BaseRerankProvider):
         Returns:
             List of RerankResult sorted by score.
         """
-        from rerank_engine.models import RerankRequest
+        from raghub_mcp.rerank_engine.models import RerankRequest
 
         # Build request for engine
         request = RerankRequest(
@@ -82,21 +97,46 @@ class RerankEngineAdapter(BaseRerankProvider):
         ]
 
     @classmethod
-    def from_config(cls, config: dict[str, Any]) -> RerankEngineAdapter:
+    def from_config(cls, config: dict[str, Any]) -> BaseRerankProvider:
         """Create adapter from configuration.
+
+        Routes to appropriate backend based on config:
+        - backend="onnx": Uses RerankEngine with ONNX scorer
+        - backend="api": Uses APIBackendAdapter directly
 
         Args:
             config: Configuration dictionary with:
-                - scorer_type: Type of scorer
-                - scorer_config: Scorer configuration
-                - rank_strategy: Rank strategy name
-                - rank_strategy_config: Rank strategy configuration
-                - post_processors: List of post-processor configs
+                - backend: Backend type ("onnx", "api", "local")
+                - For ONNX backend:
+                    - scorer_type: Type of scorer ("onnx", "bm25", "vector", "hybrid")
+                    - scorer_config: Scorer configuration
+                    - rank_strategy: Rank strategy name
+                    - post_processors: Post-processor configs
+                - For API backend:
+                    - api_url: API endpoint URL
+                    - api_key: API key
+                    - model: Model name
+                    - timeout: Request timeout
+                    - max_retries: Max retry attempts
 
         Returns:
-            Configured RerankEngineAdapter instance.
+            Configured provider instance (RerankEngineAdapter or APIBackendAdapter).
         """
-        from rerank_engine.engine import RerankConfig, RerankEngine
+        backend = config.get("backend", "onnx")
+
+        # API backend: Route to APIBackendAdapter
+        if backend == BackendType.API or backend == "api":
+            return APIBackendAdapter.from_config(config)
+
+        # LOCAL backend: Reserved for future use
+        if backend == BackendType.LOCAL or backend == "local":
+            raise NotImplementedError(
+                "LOCAL backend is reserved for future implementation. "
+                "Use 'onnx' or 'api' backend."
+            )
+
+        # ONNX backend: Use RerankEngine
+        from raghub_mcp.rerank_engine.engine import RerankConfig, RerankEngine
 
         engine_config = RerankConfig(
             scorer_type=config.get("scorer_type", "onnx"),
