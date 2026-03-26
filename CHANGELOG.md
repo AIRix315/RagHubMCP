@@ -2,6 +2,29 @@
 
 ---
 
+## [2.6.17] - 2026-03-26
+
+### fix(ci): 修复 mypy unused-ignore 错误
+
+- **时间**: 2026-03-26 18:00
+- **内容**: 移除不必要的 type: ignore 注释，通过所有 CI 检查
+
+#### Fixed
+
+- **auth/dependencies.py**: 移除多余的 `# type: ignore[misc]` 注释
+  - 由于文件顶部已有 `# mypy: disable-error-code=no-redef` 指令
+  - 第30行和第38行的 type: ignore 变得冗余，导致 mypy 报 "unused-ignore" 错误
+  - 移除这两处注释后 mypy 检查通过
+
+#### Tests
+
+- ruff check: ✅ All checks passed
+- ruff format: ✅ 199 files formatted
+- mypy: ✅ Success: no issues found in 121 source files
+- pytest: ✅ 1171 passed, 5 skipped
+
+---
+
 ## [2.6.16] - 2026-03-26
 
 ### fix(ci): 修复 CI/CD 检查失败 - ruff linter 和 format

@@ -10,13 +10,15 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 logger = logging.getLogger(__name__)
 
-# Try to import FastAPI components
+# FastAPI imports with fallback
+# mypy: disable-error-code=no-redef
 try:
-    from fastapi import HTTPException, status
+    from fastapi import HTTPException as HTTPException
+    from fastapi import status as status
     from fastapi.security import HTTPBearer
 
     _security = HTTPBearer(auto_error=False)
@@ -24,7 +26,7 @@ try:
 except ImportError:
     _FASTAPI_AVAILABLE = False
 
-    # Fallback for environments without FastAPI
+    # Fallback class for environments without FastAPI
     class HTTPException(Exception):  # noqa: N818
         """Fallback HTTPException when FastAPI is not available."""
 
@@ -41,6 +43,11 @@ except ImportError:
         HTTP_404_NOT_FOUND: int = 404
         HTTP_422_UNPROCESSABLE_ENTITY: int = 422
         HTTP_500_INTERNAL_SERVER_ERROR: int = 500
+
+
+# Type checking imports - never executed at runtime
+if TYPE_CHECKING:
+    from fastapi import HTTPException, status
 
 
 @dataclass
