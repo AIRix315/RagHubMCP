@@ -57,6 +57,7 @@ class HybridFusionScorer(BaseScorer):
         k: int = 60,
         normalize_method: Literal["minmax", "softmax", "zscore"] = "minmax",
         bm25_config: dict[str, Any] | None = None,
+        embedding_provider: Any | None = None,
     ):
         """Initialize HybridFusionScorer.
 
@@ -73,6 +74,9 @@ class HybridFusionScorer(BaseScorer):
                 - 'softmax': Softmax normalization
                 - 'zscore': Z-score normalization
             bm25_config: Optional configuration for BM25Scorer.
+            embedding_provider: Optional embedding provider for generating
+                query embeddings. If not provided, VectorScorer will use
+                a simple text-based fallback for scoring.
         """
         self.vector_weight = vector_weight
         self.fusion_method = fusion_method
@@ -82,7 +86,7 @@ class HybridFusionScorer(BaseScorer):
         # Initialize sub-scorers
         bm25_cfg = bm25_config or {}
         self._bm25_scorer = BM25Scorer(**bm25_cfg)
-        self._vector_scorer = VectorScorer()
+        self._vector_scorer = VectorScorer(embedding_provider=embedding_provider)
 
         logger.debug(
             f"HybridFusionScorer initialized: method={fusion_method}, "

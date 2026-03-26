@@ -110,6 +110,7 @@ class RerankEngineAdapter(BaseRerankProvider):
                 - For ONNX backend:
                     - scorer_type: Type of scorer ("onnx", "bm25", "vector", "hybrid")
                     - scorer_config: Scorer configuration
+                    - embedding_provider_name: Optional name of embedding provider
                     - rank_strategy: Rank strategy name
                     - post_processors: Post-processor configs
                 - For API backend:
@@ -122,25 +123,42 @@ class RerankEngineAdapter(BaseRerankProvider):
         Returns:
             Configured provider instance (RerankEngineAdapter or APIBackendAdapter).
         """
+        from raghub_mcp.rerank_engine.engine import RerankConfig, RerankEngine
+        from raghub_mcp.rerank_engine.models import BackendType
+
         backend = config.get("backend", "onnx")
 
-        # API backend: Route to APIBackendAdapter
-        if backend == BackendType.API or backend == "api":
+        # Parse backend type
+        if isinstance(backend, str):
+            backend = BackendType(backend)
+
+        # API Backend: Return APIBackendAdapter directly
+        if backend == BackendType.API:
             return APIBackendAdapter.from_config(config)
 
-        # LOCAL backend: Reserved for future use
-        if backend == BackendType.LOCAL or backend == "local":
+        # LOCAL Backend: Reserved for future implementation
+        if backend == BackendType.LOCAL:
             raise NotImplementedError(
                 "LOCAL backend is reserved for future implementation. "
                 "Use 'onnx' or 'api' backend."
             )
 
-        # ONNX backend: Use RerankEngine
-        from raghub_mcp.rerank_engine.engine import RerankConfig, RerankEngine
+        # ONNX Backend: Use RerankEngine
+        # Get embedding_provider if configured
+        embedding_provider = None
+        embedding_provider_name = config.get("embedding_provider_name")
+
+        if embedding_provider_name:
+            from raghub_mcp.providers.factory import factory
+
+            embedding_provider = factory.get_embedding_provider(embedding_provider_name)
 
         engine_config = RerankConfig(
+            backend=backend,
             scorer_type=config.get("scorer_type", "onnx"),
             scorer_config=config.get("scorer_config", {}),
+            embedding_provider_name=embedding_provider_name,
+            embedding_provider=embedding_provider,  # Inject
             rank_strategy=config.get("rank_strategy", "standard"),
             rank_strategy_config=config.get("rank_strategy_config", {}),
             post_processors=config.get("post_processors", []),

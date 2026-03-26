@@ -70,3 +70,48 @@ def test_rerank_config_backend_field() -> None:
             # If backend is set, it should be valid
             if backend is not None:
                 assert backend in ["onnx", "api", "local"], f"Invalid backend: {backend}"
+
+
+def test_rerank_config_backend_type() -> None:
+    """Test RerankConfig backend field."""
+    from raghub_mcp.rerank_engine.engine import RerankConfig
+    from raghub_mcp.rerank_engine.models import BackendType
+
+    # Default value
+    config = RerankConfig()
+    assert config.backend == BackendType.ONNX
+
+    # Explicit setting
+    config = RerankConfig(backend=BackendType.API)
+    assert config.backend == BackendType.API
+
+    # String conversion
+    config = RerankConfig(backend="api")  # type: ignore
+    assert config.backend == "api"
+
+
+def test_rerank_config_embedding_provider_field() -> None:
+    """Test RerankConfig embedding_provider field."""
+    from raghub_mcp.rerank_engine.engine import RerankConfig
+
+    # Default is None
+    config = RerankConfig()
+    assert config.embedding_provider is None
+
+    # Can be set
+    mock_provider = object()
+    config = RerankConfig(embedding_provider=mock_provider)
+    assert config.embedding_provider is mock_provider
+
+
+def test_rerank_config_embedding_provider_name_field() -> None:
+    """Test RerankConfig embedding_provider_name field."""
+    from raghub_mcp.rerank_engine.engine import RerankConfig
+
+    # Default is None
+    config = RerankConfig()
+    assert config.embedding_provider_name is None
+
+    # Can be set
+    config = RerankConfig(embedding_provider_name="ollama-bge")
+    assert config.embedding_provider_name == "ollama-bge"

@@ -18,11 +18,15 @@ from typing import Any
 
 import httpx
 
+from raghub_mcp.providers.base import ProviderCategory
+from raghub_mcp.providers.registry import registry
+
 from .base import BaseRerankProvider, RerankResult
 
 logger = logging.getLogger(__name__)
 
 
+@registry.register(ProviderCategory.RERANK, "api-backend")
 class APIBackendAdapter(BaseRerankProvider):
     """Adapter for external Rerank API services.
 

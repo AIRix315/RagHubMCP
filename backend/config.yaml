@@ -55,19 +55,20 @@ providers:
   rerank:
     default: onnx-minilm
     instances:
-    - backend: onnx
-      name: onnx-minilm
-      post_processors:
-      - config:
-          min_score: 0.3
-        type: threshold
-      rank_strategy: standard
+    - name: onnx-minilm
+      backend: onnx
+      scorer_type: onnx
+      # embedding_provider_name: ollama-bge  # Optional: Required for VectorScorer/HybridScorer
       scorer_config:
+        model_path: ./data/models/model.onnx
+        tokenizer_path: ./data/models/tokenizer.json
         batch_size: 32
         max_length: 512
-        model_path: ./data/models/flashrank-TinyBERT-L-2-v2.onnx
-        tokenizer_path: ./data/models/tokenizer.json
-      scorer_type: onnx
+      post_processors:
+      - type: threshold
+        config:
+          min_score: 0.3
+      rank_strategy: standard
   vectorstore:
     default: ''
     instances: []

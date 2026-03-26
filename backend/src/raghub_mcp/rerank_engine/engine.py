@@ -17,7 +17,7 @@ from typing import Any
 from .core.processor import BasePostProcessor
 from .core.ranker import BaseRankStrategy, ScoredDocument
 from .core.scorer import BaseScorer
-from .models import RerankContext, RerankRequest, RerankResult
+from .models import BackendType, RerankContext, RerankRequest, RerankResult
 
 logger = logging.getLogger(__name__)
 
@@ -27,19 +27,22 @@ class RerankConfig:
     """RerankEngine configuration.
 
     Attributes:
+        backend: Backend type (ONNX, API, LOCAL).
         scorer_type: Type of scorer ("onnx", "bm25", "vector", "hybrid").
         scorer_config: Configuration for the scorer.
         embedding_provider_name: Name of embedding provider (for vector/hybrid scorers).
-                                 Reserved for Docs/26 - embedding_provider coordination.
+        embedding_provider: Runtime-injected embedding provider instance.
         rank_strategy: Name of rank strategy ("standard", "diversity").
         rank_strategy_config: Configuration for rank strategy.
         post_processors: List of post-processor configs.
         enable_profiling: Enable timing/profiling.
     """
 
+    backend: BackendType = BackendType.ONNX
     scorer_type: str = "onnx"
     scorer_config: dict[str, Any] = field(default_factory=dict)
-    embedding_provider_name: str | None = None  # Reserved for Docs/26
+    embedding_provider_name: str | None = None
+    embedding_provider: Any | None = None  # Runtime-injected
     rank_strategy: str = "standard"
     rank_strategy_config: dict[str, Any] = field(default_factory=dict)
     post_processors: list[dict[str, Any]] = field(default_factory=list)
@@ -123,20 +126,18 @@ class RerankEngine:
         elif self.config.scorer_type == "vector":
             from .scorers.vector_scorer import VectorScorer
 
-            # TODO(#26): embedding_provider coordination in Docs/26
-            # Currently passing None - full implementation requires Pipeline coordination
-            # VectorScorer supports embedding_provider=None for basic usage
             return VectorScorer(
-                embedding_provider=None,
+                embedding_provider=self.config.embedding_provider,
                 **self.config.scorer_config,
             )
 
         elif self.config.scorer_type == "hybrid":
             from .scorers.hybrid_scorer import HybridFusionScorer
 
-            # HybridFusionScorer creates its own VectorScorer internally
-            # TODO(#26): Full embedding_provider support via Pipeline coordination
-            return HybridFusionScorer(**self.config.scorer_config)
+            return HybridFusionScorer(
+                embedding_provider=self.config.embedding_provider,
+                **self.config.scorer_config,
+            )
 
         else:
             raise ValueError(f"Unknown scorer type: {self.config.scorer_type}")

@@ -2,6 +2,46 @@
 
 ---
 
+## [2.6.14] - 2026-03-26
+
+### feat(rerank): 完成 embedding_provider 协调传递路径（Docs/27）
+
+- **时间**: 2026-03-26 10:40
+- **内容**: RerankConfig 新增 backend/embedding_provider 字段，
+  完成 Pipeline → RerankEngine 传递链
+
+#### Added
+
+- **RerankConfig.backend 字段**: 新增 `backend: BackendType` 区分 ONNX/API/LOCAL 后端
+- **RerankConfig.embedding_provider 字段**: 新增运行时注入的 embedding_provider 实例
+- **HybridFusionScorer.embedding_provider 参数**: 支持传入 embedding_provider
+
+#### Changed
+
+- **RerankEngineAdapter.from_config()**: 解析 backend 类型，从 Factory 获取 embedding_provider
+- **RerankEngine._create_scorer()**: VectorScorer 和 HybridScorer 使用配置中的 embedding_provider
+- **HybridFusionScorer.**init**()**: 新增 embedding_provider 参数传递给内部 VectorScorer
+- **APIBackendAdapter**: 添加 registry 注册装饰器
+- **config.yaml**: 修正模型路径为 `model.onnx`
+
+#### Tests
+
+- **test_integration/test_onnx_backend.py**: ONNX Backend 完整流程测试
+- **test_integration/test_api_backend.py**: API Backend 配置和注册测试
+- **test_integration/test_minimal_config.py**: 最小配置 E2E 测试
+- **test_integration/test_full_config.py**: 完整配置 E2E 测试
+- **test_providers/test_bm25_scorer.py**: BM25 Scorer 单元测试
+- **test_providers/test_vector_scorer.py**: Vector Scorer 单元测试
+- **test_providers/test_hybrid_scorer.py**: Hybrid Scorer 单元测试
+- **test_config/test_rerank_engine_config.py**: 新增 backend 和 embedding_provider 字段测试
+- **test_providers/test_rerank_engine_registration.py**: 新增 API backend 注册测试
+
+#### References
+
+- `Docs/27-Rerank-Execution-Plan.md`: 执行计划
+
+---
+
 ## [2.6.13] - 2026-03-25
 
 ### refactor(rerank): Rerank 架构修正（Docs/25）
@@ -197,6 +237,7 @@
 - **内容**: 修复 CI/CD 工作流配置问题，确保流水线正确执行
 
 #### Fixed
+
 - `.github/workflows/ci.yml`: Trivy action 版本从 `@master` 固定为 `@v0.35.0`
 - `.github/workflows/ci.yml`: 添加 security job 到 `all-passed` 依赖检查
 - `.github/workflows/ci.yml`: 移除 MyPy 和 frontend tests 的 `continue-on-error: true`
@@ -210,6 +251,7 @@
 - **内容**: 将生产代码从 tests/ 目录迁移到 src/raghub_mcp/evaluation/
 
 #### Fixed
+
 - 创建 `backend/src/raghub_mcp/evaluation/__init__.py`
 - 创建 `backend/src/raghub_mcp/evaluation/metrics.py`
 - 创建 `backend/src/raghub_mcp/evaluation/questions.py`
@@ -225,6 +267,7 @@
 - **内容**: 全面修复 Python 类型注解问题
 
 #### Fixed
+
 - `utils/singleton.py`: 修复 `any` → `Any` 类型
 - `providers/registry.py`: 添加 `_initialized`, `_items` 类型注解
 - `chunkers/registry.py`: 修复 `type: ignore` 注释
@@ -249,6 +292,7 @@
 - **内容**: 更新测试以匹配重构后的组件结构
 
 #### Fixed
+
 - `AppLayout.test.ts`: 更新选择器匹配新布局结构
   - `h1` → `.text-sm.font-semibold`
   - 移除 `aside.w-64` 检查
@@ -280,6 +324,7 @@
 - **内容**: 修复 MCP V2 工具中的相对导入路径，使用绝对导入
 
 #### Fixed
+
 - `backend/src/raghub_mcp/mcp_server/tools/v2/__init__.py`: 第 122 行导入路径从相对改为绝对
 
 ---
@@ -290,10 +335,12 @@
 - **内容**: 修复 RerankEngineAdapter 内部相对导入，并注册到 Provider Registry
 
 #### Fixed
+
 - `backend/src/raghub_mcp/providers/rerank/adapters.py`: 修复第 58、98 行相对导入为绝对导入
 - `backend/src/raghub_mcp/providers/rerank/adapters.py`: 添加 `@registry.register` 装饰器注册 RerankEngineAdapter
 
 #### Added
+
 - `backend/tests/test_mcp_server/test_import_fix.py`: MCP V2 导入修复测试
 - `backend/tests/test_providers/test_rerank_engine_registration.py`: RerankEngineAdapter 注册测试
 
@@ -305,9 +352,11 @@
 - **内容**: 在 config.yaml 中添加 RerankEngine Provider 配置
 
 #### Changed
+
 - `backend/config.yaml`: 添加 rerank-engine 实例配置（scorer_type=onnx, rank_strategy=standard）
 
 #### Added
+
 - `backend/tests/test_config/test_rerank_engine_config.py`: 配置加载测试
 
 ---
@@ -318,11 +367,13 @@
 - **内容**: Benchmark 页面从硬编码数据改为调用真实后端 API
 
 #### Changed
+
 - `frontend/src/views/Benchmark.vue`: 实现 `handleRun()` 调用 `/api/benchmark` API
 - `frontend/src/views/Benchmark.vue`: 添加结果转换函数 `transformResults()`
 - `frontend/src/views/Benchmark.vue`: 添加错误状态处理
 
 #### Added
+
 - `frontend/src/__tests__/Benchmark.integration.test.ts`: Benchmark API 集成测试（3 个测试）
 
 ---
@@ -333,11 +384,13 @@
 - **内容**: SearchTest 页面从 placeholder 实现改为调用真实后端 API
 
 #### Changed
+
 - `frontend/src/views/Test/SearchTest.vue`: 实现 `handleSearch()` 调用 `/api/search` API
 - `frontend/src/views/Test/SearchTest.vue`: 添加加载状态和错误处理
 - `frontend/src/views/Test/SearchTest.vue`: 显示搜索结果列表
 
 #### Added
+
 - `frontend/src/__tests__/SearchTest.integration.test.ts`: SearchTest API 集成测试（5 个测试）
 
 ---
@@ -348,6 +401,7 @@
 - **内容**: 为所有修正项添加测试验证
 
 #### Added
+
 - Backend: 3 个新测试文件，6 个测试用例（5 passed, 1 skipped）
 - Frontend: 2 个新测试文件，8 个测试用例（8 passed）
 - 总计: 14 个新测试，全部通过
@@ -362,21 +416,28 @@
 - **内容**: 分离种子数据与演示数据，首次启动为空白状态，演示数据移至demodata/
 
 #### Changed
+
 - `backend/config.yaml`: 重置为空白配置，移除预配置的 provider 实例
 - `backend/config.yaml.example`: 创建配置模板（包含示例配置）
 - `frontend/src/stores/rerank.ts`: 删除 mock 数据，改用真实 API 调用
 - `frontend/src/views/Test/RerankLab.vue`: 移除硬编码测试数据，动态加载演示数据
 - `frontend/src/views/Settings.vue`: 新增"开发工具"Tab，支持导入演示数据
+
 #### Added
+
 - `frontend/demodata/demo-rerank.ts`: 演示数据配置文件（Git 不跟踪）
 - `.gitignore`: 添加 `frontend/demodata/` 和 `demodata/` 忽略规则
 - `i18n`: 新增开发工具相关翻译（zh-CN, en-US）
+
 #### 设计说明
+
 数据状态分类：
+
 - **真实数据**: 程序运行必需，保留
 - **种子数据**: 配置模板，转为 `.example` 文件
 - **演示数据**: 测试/学习用，移至 `demodata/` 目录（Git 不跟踪）
 用户使用流程：
+
 1. 首次启动 → 空白状态（无预配置数据）
 2. Settings > DevTools → 导入演示数据（可选）
 3. 开发者可手动创建 `demodata/` 文件夹
@@ -391,6 +452,7 @@
 - **内容**: 修复托盘退出不清理进程、Python控制台窗口显示、默认语言、主题切换等问题
 
 #### Fixed
+
 - `pack/go/tray.go`: `onExit()` 调用 `stopPythonProcesses()` 清理进程
 - `pack/go/process.go`: `HideWindow: true` 隐藏 Python 控制台
 - `pack/build.bat`: `-H windowsgui` 隐藏 Go 控制台
@@ -399,6 +461,7 @@
 - `frontend/src/composables/useTheme.ts`: 使用 `useDark`
 
 #### Added
+
 - `Docs/24-Packaging-Attentions.md`: 打包注意事项文档
 
 ---
@@ -406,6 +469,7 @@
 ## [2.6.2] - 2026-03-23
 
 ### Fixed
+
 - fix(pack): 托盘图标不显示 - 重构为多平台嵌入方案
   - Windows: `icons/icon.ico` (多分辨率ICO)
   - macOS: `icons/icon_64.png` (Retina适配)
@@ -416,6 +480,7 @@
 - fix(frontend): 修复 Textarea rows 属性类型错误
 
 ### Added
+
 - feat(pack/go/config.go): 用户配置持久化系统
   - 首次启动引导
   - 浏览器自动打开偏好设置
@@ -424,6 +489,7 @@
 - feat(frontend/src/components/ui/card/index.ts): 导出 CardDescription
 
 ### Changed
+
 - refactor(icons): 图标从根目录迁移到 `pack/go/icons/`
 - docs: 更清晰的多平台打包支持文档
 
@@ -432,6 +498,7 @@
 ## [2.6.1] - 2026-03-23
 
 ### Fixed
+
 - fix(backend): 修复所有测试导入路径 (`from services.` → `from raghub_mcp.services.` 等), 删除废弃 `services/` 模块, 新增 `pipeline/bm25.py`, 创建6个缺失模块测试, 测试覆盖率 20% → 26%, 679测试通过
 
 ---
@@ -439,14 +506,17 @@
 ## [2.6.0] - 2026-03-23
 
 ### Changed
+
 - 包名重构: `src` → `raghub_mcp` (符合Python规范)
 - 所有导入: `from src.xxx` → `from raghub_mcp.xxx`
 
 ### Added
+
 - Go打包程序: pack/go/ (9源文件 + 6测试文件)
 - REST/MCP服务启动验证通过
 
 ### Fixed
+
 - MCP服务器: `streamable_http_app()` → `sse_app()`
 - 导入路径修正
 
@@ -516,7 +586,7 @@
   - 提供完整的迁移指南
   - 组件映射表：旧服务 -> 新 Pipeline
 
-- **backend/src/services/__init__.py**: 添加废弃警告
+- **backend/src/services/**init**.py**: 添加废弃警告
   - 模块导入时发出 `DeprecationWarning`
   - 引导用户使用 pipeline 模块
 
@@ -529,7 +599,7 @@
 
 ### Changed (MCP 工具更新)
 
-- **backend/src/mcp_server/tools/v2/__init__.py**: MCP ingest 工具更新
+- **backend/src/mcp_server/tools/v2/**init**.py**: MCP ingest 工具更新
   - 使用 `DefaultIndexPipeline` 替代直接依赖 (RULE-1)
   - 使用 `ChunkerFactory` 获取分块器 (RULE-3)
   - 添加兼容性注释说明架构变更
@@ -574,7 +644,7 @@
   - `compare_profiles()`: Profile 对比功能
   - 命令行接口支持 --profile、--top-k、--output、--format、--compare 参数
 
-- **backend/scripts/__init__.py**: 脚本模块初始化
+- **backend/scripts/**init**.py**: 脚本模块初始化
 
 - **backend/tests/test_scripts/test_evaluate.py**: 评估脚本测试
   - 16 个测试用例，全部通过
@@ -636,7 +706,7 @@
   - `QueryGenerationMode` 枚举: NONE/TEMPLATE/EXPANSION/LLM
   - `create_multi_query_generator()` 工厂函数
 
-- **backend/src/pipeline/__init__.py**: 导出新增模块
+- **backend/src/pipeline/**init**.py**: 导出新增模块
 
 - **backend/tests/test_pipeline/test_query_rewrite.py**: QueryRewriter 测试
   - 47 个测试用例，全部通过
@@ -1062,7 +1132,7 @@ raghub status --output json
   - RRF (Reciprocal Rank Fusion) 融合
   - Weighted RRF 融合
 
-- **backend/src/rerank_engine/scorers/__init__.py**: 导出新评分器
+- **backend/src/rerank_engine/scorers/**init**.py**: 导出新评分器
 
 - **backend/tests/test_rerank_engine/**: 新增测试
   - `test_bm25_scorer.py`: 24 个 BM25Scorer 测试
@@ -1196,7 +1266,7 @@ raghub status --output json
 
 - 前端自动启动在端口 3315
 - 后端自动启动在端口 8818
-- 浏览器自动打开 http://localhost:3315
+- 浏览器自动打开 <http://localhost:3315>
 - 控制台窗口已隐藏 (console=False)
 - 配置文件自动创建在 EXE 同目录的 runtime/config.yaml
 
@@ -1319,6 +1389,7 @@ raghub status --output json
 ### 文件变更
 
 **新增**:
+
 - `backend/src/utils/singleton.py` - Singleton 装饰器
 - `backend/src/utils/scoring.py` - 分数工具函数
 - `backend/tests/test_pipeline/test_context_builder_merge.py`
@@ -1327,10 +1398,12 @@ raghub status --output json
 - `backend/tests/test_providers/test_vectorstore/test_chroma_provider.py`
 
 **删除**:
+
 - `backend/tests/test_pipeline/test_retriever.py` (旧实现)
 - `backend/tests/test_providers/test_vectorstore/test_chroma.py` (旧实现)
 
 **修改**:
+
 - `backend/src/providers/vectorstore/chroma.py` - 直接封装 ChromaDB
 - `backend/src/pipeline/retriever.py` - 使用 ProviderFactory
 - `backend/src/pipeline/context_builder.py` - 实现 merge_consecutive
@@ -1435,4 +1508,3 @@ raghub status --output json
 - 全部能力可配置 (RULE-4)
 
 ---
-
