@@ -1,0 +1,35 @@
+{
+  "extraPaths": ["./src"],
+  "executionEnvironments": [
+    {
+      "root": "./backend"
+    }
+  ],
+  "include": ["src"],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    ".venv"
+  ],
+  "ignore": [],
+  "defineConstant": {},
+  "stubPath": "",
+  "venvPath": ".",
+  "venv": "venv",
+  "extraPaths": ["./src"],
+  "pythonVersion": "3.11",
+  "pythonPlatform": "All",
+  "executionEnvironments": [
+    {
+      "root": "."
+    }
+  ],
+  "typeCheckingMode": "basic",
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "reportUnusedImports": "warning",
+  "reportUnusedClass": "warning",
+  "reportUnusedFunction": "warning",
+  "reportUnusedVariable": "warning",
+  "reportDuplicateImport": "warning"
+}

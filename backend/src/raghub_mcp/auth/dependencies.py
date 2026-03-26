@@ -10,20 +10,51 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 logger = logging.getLogger(__name__)
 
 # Try to import FastAPI components
-_FASTAPI_AVAILABLE = False
 try:
-    from fastapi import HTTPException, status
+    from fastapi import HTTPException as FastAPIHTTPException
+    from fastapi import status as fastapi_status
     from fastapi.security import HTTPBearer
 
     _security = HTTPBearer(auto_error=False)
     _FASTAPI_AVAILABLE = True
-except (ImportError, NameError):
-    pass
+    # Use FastAPI types for runtime
+    HTTPException = FastAPIHTTPException
+    status = fastapi_status
+except ImportError:
+    _FASTAPI_AVAILABLE = False
+
+    # Fallback HTTPException for testing without FastAPI
+    class _FallbackHTTPException(Exception):
+        """Fallback HTTPException when FastAPI is not available."""
+
+        def __init__(self, status_code: int, detail: Any = None) -> None:
+            self.status_code = status_code
+            self.detail = detail
+            super().__init__(f"{status_code}: {detail}")
+
+    # Module-level names for runtime use
+    HTTPException = _FallbackHTTPException
+
+    class _FallbackStatus:
+        """Fallback status codes when FastAPI is not available."""
+
+        HTTP_401_UNAUTHORIZED: int = 401
+        HTTP_403_FORBIDDEN: int = 403
+        HTTP_404_NOT_FOUND: int = 404
+        HTTP_422_UNPROCESSABLE_ENTITY: int = 422
+        HTTP_500_INTERNAL_SERVER_ERROR: int = 500
+
+    status = _FallbackStatus()
+
+# Type checking imports (not executed at runtime)
+if TYPE_CHECKING:
+    from fastapi import HTTPException
+    from fastapi import status
 
 
 @dataclass
@@ -85,7 +116,7 @@ def get_current_active_user(
         return MockUser()
 
     if hasattr(current_user, "is_active") and not current_user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")  # type: ignore[misc]
 
     return current_user
 
@@ -129,8 +160,8 @@ class RoleChecker:
             role_value = user_role.value if hasattr(user_role, "value") else str(user_role)
 
         if role_value not in self.allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+            raise HTTPException(  # type: ignore[misc]
+                status_code=status.HTTP_403_FORBIDDEN,  # type: ignore[misc]
                 detail=f"Operation not permitted. Required role: {self.allowed_roles}",
             )
 
@@ -178,8 +209,9 @@ class PermissionChecker:
             if user.has_permission(self.permission):
                 return user
 
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=f"Permission denied: {self.permission}"
+        raise HTTPException(  # type: ignore[misc]
+            status_code=status.HTTP_403_FORBIDDEN,  # type: ignore[misc]
+            detail=f"Permission denied: {self.permission}",
         )
 
 
@@ -208,14 +240,7 @@ def is_fastapi_available() -> bool:
 
 
 # Convenience exports for FastAPI
-if _FASTAPI_AVAILABLE:
-    require_admin = RoleChecker(["admin"])
-    require_manager = RoleChecker(["admin", "manager"])
-    require_user = RoleChecker(["admin", "manager", "user"])
-    require_viewer = RoleChecker(["admin", "manager", "user", "viewer"])
-else:
-    # Create dummy objects for import
-    require_admin = RoleChecker(["admin"])
-    require_manager = RoleChecker(["admin", "manager"])
-    require_user = RoleChecker(["admin", "manager", "user"])
-    require_viewer = RoleChecker(["admin", "manager", "user", "viewer"])
+require_admin = RoleChecker(["admin"])
+require_manager = RoleChecker(["admin", "manager"])
+require_user = RoleChecker(["admin", "manager", "user"])
+require_viewer = RoleChecker(["admin", "manager", "user", "viewer"])

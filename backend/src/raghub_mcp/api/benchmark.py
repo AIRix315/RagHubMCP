@@ -143,10 +143,12 @@ async def run_benchmark(request: BenchmarkRequest) -> BenchmarkResponse:
                         rerank_provider=request.configs[i].rerank_provider,
                     )
                 )
+            elif isinstance(result, BenchmarkResult):
+                # Type guard: result is BenchmarkResult here
+                benchmark_results.append(result)
             else:
-                # result is BenchmarkResult here (Exception case handled above)
-                # asyncio.gather with return_exceptions=True returns list[BenchmarkResult | BaseException]
-                benchmark_results.append(result)  # type: ignore[arg-type]
+                # Unexpected type - log and skip
+                logger.warning(f"Unexpected result type for config {i}: {type(result)}")
 
         total_latency = (time.time() - start_time) * 1000
 

@@ -13,14 +13,12 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from pathlib import Path
 
 import bm25s
 
 logger = logging.getLogger(__name__)
-
-# Collection index storage: collection_name -> BM25Index
-_indexes: dict[str, BM25Index] = {}
 
 
 class BM25Index:
@@ -32,7 +30,7 @@ class BM25Index:
     def __init__(self) -> None:
         """Initialize an empty BM25 index."""
         self.retriever: bm25s.BM25 | None = None
-        self.corpus: list[str] = []
+        self.corpus: list[str] | None = None
         self.doc_ids: list[str] = []
         self.doc_id_to_idx: dict[str, int] = {}
 
@@ -85,7 +83,7 @@ class BM25Index:
                 logger.warning(f"Document ID '{doc_id}' already exists, will be replaced")
 
         # Merge with existing documents
-        all_docs = self.corpus.copy()
+        all_docs = list(self.corpus) if self.corpus is not None else []
         all_ids = self.doc_ids.copy()
 
         # Update or append
@@ -185,7 +183,7 @@ class BM25Index:
 
         self.doc_ids = metadata["doc_ids"]
         self.doc_id_to_idx = {doc_id: idx for idx, doc_id in enumerate(self.doc_ids)}
-        self.corpus = self.retriever.corpus if hasattr(self.retriever, "corpus") else []
+        self.corpus = self.retriever.corpus if hasattr(self.retriever, "corpus") and self.retriever.corpus is not None else []
 
         logger.debug(f"Loaded BM25 index from {path}")
 
@@ -314,12 +312,15 @@ class BM25Service:
         return list(self._indexes.keys())
 
 
-# Singleton instance
+# Singleton instance with thread-safe lock
 _bm25_service: BM25Service | None = None
+_bm25_service_lock = threading.Lock()
 
 
 def get_bm25_service(persist_dir: str | Path | None = None) -> BM25Service:
-    """Get the singleton BM25Service instance.
+    """Get the singleton BM25Service instance (thread-safe).
+
+    Uses double-checked locking pattern for thread safety.
 
     Args:
         persist_dir: Optional directory for persistent index storage.
@@ -330,14 +331,18 @@ def get_bm25_service(persist_dir: str | Path | None = None) -> BM25Service:
     """
     global _bm25_service
     if _bm25_service is None:
-        _bm25_service = BM25Service(persist_dir=persist_dir)
+        with _bm25_service_lock:
+            # Double-checked locking pattern
+            if _bm25_service is None:
+                _bm25_service = BM25Service(persist_dir=persist_dir)
     return _bm25_service
 
 
 def reset_bm25_service() -> None:
-    """Reset the BM25Service singleton.
+    """Reset the BM25Service singleton (thread-safe).
 
     This is primarily useful for testing.
     """
     global _bm25_service
-    _bm25_service = None
+    with _bm25_service_lock:
+        _bm25_service = None

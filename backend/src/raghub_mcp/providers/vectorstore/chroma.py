@@ -245,7 +245,8 @@ class ChromaProvider(BaseVectorStoreProvider):
             client = self._get_client()
             client.get_collection(name=name)
             return True
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Collection existence check failed for '{name}': {e}")
             return False
 
     def add(
@@ -435,9 +436,9 @@ class ChromaProvider(BaseVectorStoreProvider):
                 from raghub_mcp.providers.factory import factory
 
                 embedding_provider = factory.get_embedding_provider()
-            except Exception:
+            except Exception as e:
                 # No embedding provider available, will use ChromaDB default
-                pass
+                logger.debug(f"No embedding provider available from factory: {e}")
 
         return cls(
             persist_dir=config.get("persist_dir", "./data/chroma"),

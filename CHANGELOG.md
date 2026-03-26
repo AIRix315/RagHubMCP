@@ -2,6 +2,47 @@
 
 ---
 
+## [2.6.15] - 2026-03-26
+
+### fix(quality): 代码质量全面修复 - P0级别问题
+
+- **时间**: 2026-03-26 16:38
+- **内容**: 全面诊断并修复代码质量问题，包括类型安全、线程安全、异常处理等
+
+#### Fixed
+
+- **auth/dependencies.py**: 修复未绑定变量 HTTPException/status 问题
+  - 添加 try/except 块检测 FastAPI 可用性
+  - 定义 `_FallbackHTTPException` 和 `_FallbackStatus` 作为后备方案
+  - 使用 `TYPE_CHECKING` 解决类型提示问题
+
+- **pipeline/bm25.py**: 修复线程安全问题
+  - 添加 `_bm25_service_lock` 实现双检锁模式
+  - 为 `get_bm25_service()` 和 `reset_bm25_service()` 添加线程安全
+  - 修复 `BM25Index.corpus` 类型注解为 `list[str] | None`
+  - 清理未使用的模块级 `_indexes` 变量
+
+- **providers/vectorstore/chroma.py**: 改进异常处理
+  - `collection_exists()` 添加日志记录异常详情
+  - `from_config()` 添加日志记录 embedding provider 获取失败
+
+- **api/benchmark.py**: 修复类型错误
+  - 使用 `isinstance()` 类型守卫处理 `list[BenchmarkResult | BaseException]`
+  - 添加对意外类型的警告日志
+
+#### Added
+
+- **pyrightconfig.json**: 新增 LSP 配置文件
+  - 配置 `extraPaths` 解决包导入路径问题
+  - 配置 `executionEnvironments` 指向正确根目录
+
+#### Security
+
+- 所有修复符合 RULE.md 规范要求
+- 异常处理不再静默失败，提供日志追踪
+
+---
+
 ## [2.6.14] - 2026-03-26
 
 ### feat(rerank): 完成 embedding_provider 协调传递路径（Docs/27）
