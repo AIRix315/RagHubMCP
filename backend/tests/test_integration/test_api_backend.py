@@ -3,8 +3,9 @@
 Tests the external rerank API integration.
 """
 
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock, PropertyMock
 
 from raghub_mcp.providers.rerank.api_backend import APIBackendAdapter
 from raghub_mcp.providers.rerank.base import RerankResult
@@ -28,8 +29,8 @@ class TestAPIBackend:
 
     def test_api_backend_registration(self):
         """Test API backend is registered."""
-        from raghub_mcp.providers.registry import registry
         from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.registry import registry
 
         assert registry.is_registered(ProviderCategory.RERANK, "api-backend")
 

@@ -2,6 +2,36 @@
 
 ---
 
+## [2.6.16] - 2026-03-26
+
+### fix(ci): 修复 CI/CD 检查失败 - ruff linter 和 format
+
+- **时间**: 2026-03-26 17:00
+- **内容**: 修复 ruff linter 和 formatter 检查失败问题，符合 CI/CD 要求
+
+#### Fixed
+
+- **auth/dependencies.py**: 重构 FastAPI fallback 实现
+  - 移除 `TYPE_CHECKING` 块导致的类型冲突
+  - 简化 fallback 类定义，添加 `# noqa: N818` 和 `# noqa: N801` 注释
+  - 修复 ruff N818 (Exception name should end with Error) 警告
+
+- **ruff format**: 自动格式化所有文件
+  - 修复 4 个文件的格式问题
+  - 添加文件末尾换行符
+
+#### Tests
+
+- 所有 1171 个测试通过
+- ruff check: All checks passed
+- ruff format: 199 files already formatted
+
+#### References
+
+- RULE.md 第十节 CI/CD 环境规范
+
+---
+
 ## [2.6.15] - 2026-03-26
 
 ### fix(quality): 代码质量全面修复 - P0级别问题
@@ -13,8 +43,8 @@
 
 - **auth/dependencies.py**: 修复未绑定变量 HTTPException/status 问题
   - 添加 try/except 块检测 FastAPI 可用性
-  - 定义 `_FallbackHTTPException` 和 `_FallbackStatus` 作为后备方案
-  - 使用 `TYPE_CHECKING` 解决类型提示问题
+  - 定义 fallback 类作为后备方案
+  - 使用 TYPE_CHECKING 解决类型提示问题
 
 - **pipeline/bm25.py**: 修复线程安全问题
   - 添加 `_bm25_service_lock` 实现双检锁模式

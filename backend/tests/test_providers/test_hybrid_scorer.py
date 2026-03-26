@@ -3,8 +3,9 @@
 Tests for HybridFusionScorer with and without embedding provider.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from raghub_mcp.rerank_engine.scorers.hybrid_scorer import HybridFusionScorer
 

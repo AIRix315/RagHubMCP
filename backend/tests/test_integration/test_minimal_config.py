@@ -3,12 +3,12 @@
 Scenario: BM25 + ONNX rerank only.
 """
 
-import pytest
 from pathlib import Path
 
-from raghub_mcp.rerank_engine.engine import RerankEngine, RerankConfig
-from raghub_mcp.rerank_engine.models import BackendType, RerankRequest
+import pytest
 
+from raghub_mcp.rerank_engine.engine import RerankConfig, RerankEngine
+from raghub_mcp.rerank_engine.models import BackendType, RerankRequest
 
 MODEL_PATH = Path(__file__).parent.parent.parent / "data" / "models" / "model.onnx"
 
@@ -91,7 +91,7 @@ class TestMinimalConfig:
 
     @pytest.mark.skipif(
         not MODEL_PATH.exists(),
-        reason="Model file not found - run 'python scripts/download_rerank_model.py'"
+        reason="Model file not found - run 'python scripts/download_rerank_model.py'",
     )
     def test_minimal_config_rerank_execution(self):
         """Test reranking with minimal config - requires model file."""
@@ -102,7 +102,9 @@ class TestMinimalConfig:
             scorer_type="onnx",
             scorer_config={
                 "model_path": str(MODEL_PATH),
-                "tokenizer_path": str(tokenizer_path) if tokenizer_path.exists() else str(MODEL_PATH.parent / "tokenizer.json"),
+                "tokenizer_path": str(tokenizer_path)
+                if tokenizer_path.exists()
+                else str(MODEL_PATH.parent / "tokenizer.json"),
             },
         )
 

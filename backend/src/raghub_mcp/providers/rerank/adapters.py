@@ -124,7 +124,6 @@ class RerankEngineAdapter(BaseRerankProvider):
             Configured provider instance (RerankEngineAdapter or APIBackendAdapter).
         """
         from raghub_mcp.rerank_engine.engine import RerankConfig, RerankEngine
-        from raghub_mcp.rerank_engine.models import BackendType
 
         backend = config.get("backend", "onnx")
 
@@ -139,8 +138,7 @@ class RerankEngineAdapter(BaseRerankProvider):
         # LOCAL Backend: Reserved for future implementation
         if backend == BackendType.LOCAL:
             raise NotImplementedError(
-                "LOCAL backend is reserved for future implementation. "
-                "Use 'onnx' or 'api' backend."
+                "LOCAL backend is reserved for future implementation. Use 'onnx' or 'api' backend."
             )
 
         # ONNX Backend: Use RerankEngine

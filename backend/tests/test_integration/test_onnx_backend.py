@@ -3,12 +3,12 @@
 Tests the complete flow of ONNX-based reranking.
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from raghub_mcp.rerank_engine.engine import RerankConfig, RerankEngine
 from raghub_mcp.rerank_engine.models import BackendType, RerankRequest
-
 
 # Model path - use existing model in data/models/
 MODEL_PATH = Path(__file__).parent.parent.parent / "data" / "models" / "model.onnx"
@@ -20,8 +20,9 @@ class TestONNXBackend:
 
     def test_onnx_backend_registration(self):
         """Test ONNX backend is registered."""
-        from raghub_mcp.providers.registry import registry
         from raghub_mcp.providers.base import ProviderCategory
+        from raghub_mcp.providers.registry import registry
+
         # Import adapters to trigger registration
         from raghub_mcp.providers.rerank import adapters  # noqa: F401
 

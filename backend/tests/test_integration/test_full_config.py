@@ -3,8 +3,9 @@
 Scenario: Vector search + BM25 fusion + ONNX rerank.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 
 class TestFullConfig:

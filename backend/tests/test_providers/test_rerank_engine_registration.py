@@ -1,7 +1,8 @@
 """Test RerankEngineAdapter registration in provider registry."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from raghub_mcp.providers.base import ProviderCategory
 from raghub_mcp.providers.registry import registry
@@ -64,8 +65,8 @@ def test_rerank_engine_adapter_from_config_with_embedding():
 
 def test_rerank_engine_adapter_from_config_with_embedding_name():
     """Verify RerankEngineAdapter.from_config handles embedding_provider_name."""
-    from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
     from raghub_mcp.providers.factory import factory
+    from raghub_mcp.providers.rerank.adapters import RerankEngineAdapter
 
     # Mock factory to return a mock embedding provider
     mock_provider = MagicMock()

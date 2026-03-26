@@ -10,26 +10,22 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Try to import FastAPI components
 try:
-    from fastapi import HTTPException as FastAPIHTTPException
-    from fastapi import status as fastapi_status
+    from fastapi import HTTPException, status
     from fastapi.security import HTTPBearer
 
     _security = HTTPBearer(auto_error=False)
     _FASTAPI_AVAILABLE = True
-    # Use FastAPI types for runtime
-    HTTPException = FastAPIHTTPException
-    status = fastapi_status
 except ImportError:
     _FASTAPI_AVAILABLE = False
 
-    # Fallback HTTPException for testing without FastAPI
-    class _FallbackHTTPException(Exception):
+    # Fallback for environments without FastAPI
+    class HTTPException(Exception):  # noqa: N818
         """Fallback HTTPException when FastAPI is not available."""
 
         def __init__(self, status_code: int, detail: Any = None) -> None:
@@ -37,10 +33,7 @@ except ImportError:
             self.detail = detail
             super().__init__(f"{status_code}: {detail}")
 
-    # Module-level names for runtime use
-    HTTPException = _FallbackHTTPException
-
-    class _FallbackStatus:
+    class status:  # noqa: N801
         """Fallback status codes when FastAPI is not available."""
 
         HTTP_401_UNAUTHORIZED: int = 401
@@ -48,13 +41,6 @@ except ImportError:
         HTTP_404_NOT_FOUND: int = 404
         HTTP_422_UNPROCESSABLE_ENTITY: int = 422
         HTTP_500_INTERNAL_SERVER_ERROR: int = 500
-
-    status = _FallbackStatus()
-
-# Type checking imports (not executed at runtime)
-if TYPE_CHECKING:
-    from fastapi import HTTPException
-    from fastapi import status
 
 
 @dataclass
@@ -116,7 +102,7 @@ def get_current_active_user(
         return MockUser()
 
     if hasattr(current_user, "is_active") and not current_user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")  # type: ignore[misc]
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
 
     return current_user
 
@@ -160,8 +146,8 @@ class RoleChecker:
             role_value = user_role.value if hasattr(user_role, "value") else str(user_role)
 
         if role_value not in self.allowed_roles:
-            raise HTTPException(  # type: ignore[misc]
-                status_code=status.HTTP_403_FORBIDDEN,  # type: ignore[misc]
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Operation not permitted. Required role: {self.allowed_roles}",
             )
 
@@ -209,8 +195,8 @@ class PermissionChecker:
             if user.has_permission(self.permission):
                 return user
 
-        raise HTTPException(  # type: ignore[misc]
-            status_code=status.HTTP_403_FORBIDDEN,  # type: ignore[misc]
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Permission denied: {self.permission}",
         )
 

@@ -135,9 +135,7 @@ class APIBackendAdapter(BaseRerankProvider):
 
                     # Client error - don't retry
                     if 400 <= response.status_code < 500:
-                        raise RuntimeError(
-                            f"API error {response.status_code}: {response.text}"
-                        )
+                        raise RuntimeError(f"API error {response.status_code}: {response.text}")
 
                     # Server error - retry with backoff
                     last_error = RuntimeError(f"Server error {response.status_code}")
@@ -209,7 +207,7 @@ class APIBackendAdapter(BaseRerankProvider):
         return results
 
     @classmethod
-    def from_config(cls, config: dict[str, Any]) -> "APIBackendAdapter":
+    def from_config(cls, config: dict[str, Any]) -> APIBackendAdapter:
         """Create instance from configuration.
 
         Args:

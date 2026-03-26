@@ -3,8 +3,9 @@
 Tests for VectorScorer with and without embedding provider.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from raghub_mcp.rerank_engine.scorers.vector_scorer import VectorScorer
 

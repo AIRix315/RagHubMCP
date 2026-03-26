@@ -183,7 +183,11 @@ class BM25Index:
 
         self.doc_ids = metadata["doc_ids"]
         self.doc_id_to_idx = {doc_id: idx for idx, doc_id in enumerate(self.doc_ids)}
-        self.corpus = self.retriever.corpus if hasattr(self.retriever, "corpus") and self.retriever.corpus is not None else []
+        self.corpus = (
+            self.retriever.corpus
+            if hasattr(self.retriever, "corpus") and self.retriever.corpus is not None
+            else []
+        )
 
         logger.debug(f"Loaded BM25 index from {path}")
 
